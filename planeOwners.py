@@ -49,8 +49,8 @@ LOCS = [ICELAND]
 
 # Determines if you should use a proxy or not.
 # Examples:
-# proxies = {'http': '127.0.0.1:9150'} for TOR (The Onion Router)
-proxies = {}
+proxies = {'http': '127.0.0.1:9150'}
+#proxies = {}
 
 # Fake using a regular browser to avoid HTTP 401/501 errors
 user_agent = {'User-agent': 'Mozilla/5.0'}
@@ -138,7 +138,7 @@ class Plane:
 
 
 def getjson(jsonurl):
-    req = requests.get(jsonurl, headers=user_agent)
+    req = requests.get(jsonurl, headers=user_agent, proxies=proxies)
     if req.status_code is 200:
         print(bcolors.OKAY)
         print('✓ ' + str(req.status_code) + ' ' + jsonurl)
