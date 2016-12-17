@@ -27,13 +27,13 @@ This tool uses data pulled from flightradar24.com to look for planes owned by a 
 
 World aviation agencies ?
 
-*Europe
-	*Switzerland
-		*BAZL
-	*France
-		*DGAC
-	*UK
-		*CAA
-	*Turkey
-		*DGCA/SHGM
+* Europe
+	* Switzerland
+		* BAZL
+	* France
+		* DGAC
+	* UK
+		* CAA
+	* Turkey
+		* DGCA/SHGM
 
