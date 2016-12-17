@@ -7,13 +7,14 @@
 
 # TODO
 # Implement ADS-B
-# Implement news source, location API, and search based on location name  
+# Implement news source, location API, and search based on location name
 
 import requests
 import random as rand
 import json
 import logging
 from bs4 import BeautifulSoup
+import sys
 
 # Data sources
 flightradar = 'http://data.flightradar24.com/zones/fcgi/feed.js?bounds='
@@ -51,8 +52,8 @@ LOCS = [ICELAND]
 
 # Determines if you should use a proxy or not.
 # Examples:
-proxies = {'http': '127.0.0.1:9150'}
-#proxies = {}
+#proxies = {'http': '127.0.0.1:9150'}
+proxies = {}
 
 # Fake using a regular browser to avoid HTTP 401/501 errors
 user_agent = {'User-agent': 'Mozilla/5.0'}
@@ -68,7 +69,7 @@ class bcolors:
     STOP = '\033[0m'
 
 class Plane:
-    interestOwners = ['DELTA AIR LINES INC']
+    interestOwners = ['DELTA AIR LINES INC'] # Example
 
     def __init__(self, webi, numb, call, latt, lonn, orig, dest, alti):
         self.webi = webi
@@ -85,7 +86,7 @@ class Plane:
     def getowner(self):
         if self.numb is not '':
 
-        #Select country
+            #Select country
             if self.numb.startswith('C'):
                 url = CA+self.numb
 
@@ -95,6 +96,7 @@ class Plane:
                 if req.status_code is 200:
                     print(u'\u2713 ' + url)
                     with open('./html/'+self.numb, 'w') as fil:
+                        req.text = req.text.replace(u'\xa0', u' ') # Remove non-breaking space..breaking the code
                         fil.write(req.text)
                         soup = BeautifulSoup(req.text, 'html.parser')
                         own = soup.find('span', {'id':'content_lbOwnerName'})
@@ -164,7 +166,7 @@ def getareaplanes(latmin, latmax, lonmin, lonmax):
     if j is not None:
         print(len(j))
         for planeID in j:
-             # Filter out non-plane results
+            # Filter out non-plane results
              if planeID == 'full_count' or planeID == 'version' or planeID == 'stats':
                  pass
              else:
@@ -182,13 +184,18 @@ def getInterestingPlaces():
     return None
 
 
+def main():
+    while True:
+        RANDLOC = [rand_lat, rand_lat - 2, rand_long, rand_long - 2 ]
+        LOCS.append(RANDLOC)
+        for place in LOCS:
+            getareaplanes(place[1], place[0], place[3], place[2])
+            for plane in planelist:
+                if plane.owne is not None:
+                    print(plane.owne)
 
-while True:
-    RANDLOC = [rand_lat, rand_lat - 2, rand_long, rand_long - 2 ]
-    LOCS.append(RANDLOC)
-    for place in LOCS:
-        getareaplanes(place[1], place[0], place[3], place[2])
-
-    for plane in planelist:
-        if plane.owne is not None:
-            print(plane.owne)
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        main(sys.argv)
+    else:
+        main()
