@@ -25,14 +25,14 @@ This tool uses data pulled from flightradar24.com to look for planes owned by a 
     -other constuctors ?
     txtav ?
 
--Other agencies ?
-    -Europe
-        -Switzerland
-            BAZL
-        -France
-            DGAC
-        -UK
-            CAA
-        -Turkey
-            DGCA/SHGM
+World aviation agencies ?
+*Europe
+	*Switzerland
+		*BAZL
+	*France
+		*DGAC
+	*UK
+		*CAA
+	*Turkey
+		*DGCA/SHGM
 

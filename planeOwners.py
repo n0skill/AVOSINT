@@ -3,14 +3,14 @@
 
 
 # TODO
-# add angle parameter (area size)
+# Implement ADS-B
+# Implement news source, location API, and search based on location name  
 
 import requests
 import random as rand
 import json
 import logging
 from bs4 import BeautifulSoup
-
 
 # Data sources
 flightradar = 'http://data.flightradar24.com/zones/fcgi/feed.js?bounds='
@@ -22,6 +22,7 @@ AFP = 'Agence France Presse'
 AP_KEY = 'API KEY HERE'
 
 
+# Aviation agencies
 US = 'http://registry.faa.gov/aircraftinquiry/NNum_Results.aspx?MailProcess=1&nNumberTxt='
 UK = 'http://publicapps.caa.co.uk/modalapplication.aspx?catid=1&pagetype=65&appid=1&mode=detailnosummary&fullregmark='
 IS = 'http://www.icetra.is/aviation/aircraft/register?aq='
@@ -43,8 +44,6 @@ rand_long = rand.randrange(-124, -67)
 
 # Defines a list of areas to lookup.
 LOCS = [ICELAND]
-
-
 
 
 # Determines if you should use a proxy or not.
