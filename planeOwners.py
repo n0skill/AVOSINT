@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # Python script to lookup plane owner's in a particular geographic area using public data from planefinder.net and the federal aviation agency.
 # If a particular owner is found, the plane infos are shown
 
