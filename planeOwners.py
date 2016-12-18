@@ -139,14 +139,9 @@ class Plane:
 
             # Austria
             if self.numb.startswith('OE-'):
-                cookies = {
-                        'JSESSIONID': '6E27B5A4082739D76CF4E820BFC7FB17',
-                        'TS0117dd85': '01f60c9e4fd23e5ad0c2f0a544adce26dcb861d1119f800ab2c3bef6e1b3681d47f656a5512f5a5631910a247c309c22aca6882d53',
-                        }
 
                 headers = {
                         'Host': 'www.austrocontrol.at',
-                        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101 Firefox/45.0',
                         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                         'Accept-Language': 'en-US,en;q=0.5',
                         'Referer': 'https://www.austrocontrol.at/ta/OenflSucheEn?1',
@@ -167,7 +162,7 @@ class Plane:
                         'p::submit': ''
                         }
 
-                req = requests.post('https://www.austrocontrol.at/ta/OenflSucheEn?1-7.IFormSubmitListener-form', headers=headers, cookies=cookies, data=data)
+                req = requests.post('https://www.austrocontrol.at/ta/OenflSucheEn?1-7.IFormSubmitListener-form', headers=headers, data=data)
                 print(req.status_code)
                 soup = BeautifulSoup(req.text, 'html.parser')
                 table = soup.find('table', {'id':'resultTable'})
