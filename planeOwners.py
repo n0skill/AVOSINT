@@ -33,21 +33,17 @@ IS = 'http://www.icetra.is/aviation/aircraft/register?aq='
 NL = 'http://www.newfoundland.nl/luchtvaartregister/user/en/luchtvaartuig.php?registratie=PH-'
 BE = 'http://www.mobilit.fgov.be/bcaa/aircraft/search.jsf'
 CA = 'http://wwwapps.tc.gc.ca/saf-sec-sur/2/ccarcs-riacc/RchSimpRes.aspx?cn=||&mn=||&sn=||&on=||&m=|'
+CH = 'https://www.bazlwork.admin.ch/bazl-backend/lfr'
 
 # Defines areas to lookup.
 # Format:
 # AREA = [maxlat, minlat, maxlon, minlon]
 
-#LA = [35, 32, -115, -120]
-#TX = [37, 25, -92, -106]
-#NY = [41, 39, -72, -75]
-#CH = [42 , 40, -87, -89]
-ICELAND = [65, 63, -20, -22]
-rand_lat = rand.randrange(24, 49)
-rand_long = rand.randrange(-124, -67)
-
-# Defines a list of areas to lookup.
-LOCS = [ICELAND]
+LAT_LON_LA = (35, 32, -115, -120)
+LAT_LON_TX = (37, 25, -92, -106)
+LAT_LON_NY = (41, 39, -72, -75)
+LAT_LON_CH = [48.5 , 45, 4.5,12]
+LAT_LON_IS = (65, 63, -20, -22)
 
 
 # Determines if you should use a proxy or not.
@@ -87,17 +83,40 @@ class Plane:
         if self.numb is not '':
 
             #Select country
+
             if self.numb.startswith('C'):
                 url = CA+self.numb
 
-            if self.numb.startswith('N'):
+            if self.numb.startswith('HB-'): # Switzerland
+                headers = {
+                            'Origin': 'https://www.bazlwork.admin.ch',
+                            'Content-Type': 'application/json;charset=UTF-8',
+                            'Accept': 'application/json, text/plain, */*',
+                            'Referer': 'https://www.bazlwork.admin.ch/bazl/',
+                            'Connection': 'keep-alive',
+                            }
+
+                data = '{"page_result_limit":10,"current_page_number":1,"sort_list":"registration","totalItems":1,"query":{"registration":"'+str(self.numb)+'"},"language":"en","tab":"basic"}'
+
+                req = requests.post(CH, headers=headers, data=data)
+
+                if req.status_code is 200:
+                    print(u'\u2713 ' + req.url)
+                    json_obj = req.json()
+                    for i in json_obj:
+                        own_operator = str(i['ownerOperators'][0]['ownerOperator'])
+                        own_bil_addr = str(i['ownerOperators'][0]['billingAddress'])
+                        own_addr     = str(i['ownerOperators'][0]['address'])
+                        return str(own_operator + own_bil_addr + own_addr)
+
+            if self.numb.startswith('N'): # USA
                 url = US+self.numb
                 req = requests.get(url)
                 if req.status_code is 200:
-                    print(u'\u2713 ' + url)
+                    print(u'\u2713 ' + req.url)
                     with open('./html/'+self.numb, 'w') as fil:
-                        req.text = req.text.replace(u'\xa0', u' ') # Remove non-breaking space..breaking the code
-                        fil.write(req.text)
+                        txt =req.text.encode('utf8')
+                        fil.write(txt)
                         soup = BeautifulSoup(req.text, 'html.parser')
                         own = soup.find('span', {'id':'content_lbOwnerName'})
                         if own is not None:
@@ -107,22 +126,22 @@ class Plane:
                 else:
                     print(u'\u274C ' + str(req.status_code) + " " + url)
 
-            elif self.numb.startswith('G'):
+            elif self.numb.startswith('G'): # UK
                 url = UK+self.numb[2:]
                 req = requests.get(url)
                 if req.status_code is 200:
-                    print(u'\u2713 ' + url)
+                    print(u'\u2713 ' + req.url)
                     soup = BeautifulSoup(req.text, 'html.parser')
                     own = soup.find('span', {'id':'currentModule_currentModule_RegisteredOwners'}).contents[0].strip()
                     return own
                 else:
                     print(u'\u274C ' + str(req.status_code) + " " + url)
 
-            elif self.numb.startswith('TF'):
+            elif self.numb.startswith('TF'): # Iceland
                 url = IS+self.numb
                 req = requests.get(url)
                 if req.status_code is 200:
-                    print(u'\u2713 ' + url)
+                    print(u'\u2713 ' + req.url)
                     soup = BeautifulSoup(req.text, 'html.parser')
                     own = soup.find('li', {'class':'owner'})
                     if own is not None:
@@ -130,7 +149,7 @@ class Plane:
                         return own.text
                 else:
                     print(u'\u274C ' + str(req.status_code) + " " + url)
-
+                print(self.numb)
         return None
 
 
@@ -164,7 +183,6 @@ def getareaplanes(latmin, latmax, lonmin, lonmax):
     location = str(latmax)+'.00,'+str(latmin)+'.00,'+str(lonmax)+".00,"+str(lonmin)+".00"
     j = getjson(flightradar+location)
     if j is not None:
-        print(len(j))
         for planeID in j:
             # Filter out non-plane results
              if planeID == 'full_count' or planeID == 'version' or planeID == 'stats':
@@ -184,11 +202,14 @@ def getInterestingPlaces():
     return None
 
 
-def main():
+def main(argv):
+    coords = [] # List of places to look up
     while True:
-        RANDLOC = [rand_lat, rand_lat - 2, rand_long, rand_long - 2 ]
-        LOCS.append(RANDLOC)
-        for place in LOCS:
+        if argv[1] == 'CH':
+            coords.append(LAT_LON_CH)
+        if argv[1] == 'IS':
+            coords.append(LAT_LON_IS)
+        for place in coords:
             getareaplanes(place[1], place[0], place[3], place[2])
             for plane in planelist:
                 if plane.owne is not None:
