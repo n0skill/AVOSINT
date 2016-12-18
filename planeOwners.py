@@ -27,10 +27,11 @@ AP_KEY = 'API KEY HERE'
 
 
 # Aviation agencies
+AT = 'hhttps://www.austrocontrol.at/ta/OenflSucheEn?1-7.IFormSubmitListener-form'
 US = 'http://registry.faa.gov/aircraftinquiry/NNum_Results.aspx?MailProcess=1&nNumberTxt='
 UK = 'http://publicapps.caa.co.uk/modalapplication.aspx?catid=1&pagetype=65&appid=1&mode=detailnosummary&fullregmark='
 IS = 'http://www.icetra.is/aviation/aircraft/register?aq='
-NL = 'http://www.newfoundland.nl/luchtvaartregister/user/en/luchtvaartuig.php?registratie=PH-'
+NL = 'http://www.newfoundland.nl/luchtvaartregister/user/en/luchtvaartuig.php?registratie='
 BE = 'http://www.mobilit.fgov.be/bcaa/aircraft/search.jsf'
 CA = 'http://wwwapps.tc.gc.ca/saf-sec-sur/2/ccarcs-riacc/RchSimpRes.aspx?cn=||&mn=||&sn=||&on=||&m=|'
 CH = 'https://www.bazlwork.admin.ch/bazl-backend/lfr'
@@ -90,6 +91,125 @@ class Plane:
         if self.numb is not '':
 
             #Select country
+
+
+            # Afghanistan
+            if self.numb.startswith('YA-'):
+                pass
+            # Albania
+            if self.numb.startswith('ZA-'):
+                pass
+
+            # Algeria
+            if self.numb.startswith('7T-'):
+                pass
+
+            # Andorra
+            if self.numb.startswith('C3-'):
+                pass
+
+            # Angola
+            if self.numb.startswith('D2-'):
+                pass
+
+            # Anguilla
+            if self.numb.startswith('VP-A'):
+                pass
+
+            # Antigua and Barbuda
+            if self.numb.startswith('V2-'):
+                pass
+
+            # Argentina
+            if self.numb.startswith('LV-'):
+                pass
+            if self.numb.startswith('LQ-'):
+                pass
+            # Armenia
+            if self.numb.startswith('EK-'):
+                pass
+
+            # Aruba
+            if self.numb.startswith('P4-'):
+                pass
+
+            # Australia
+            if self.numb.startswith('VH-'):
+                pass
+
+            # Austria
+            if self.numb.startswith('OE-'):
+                cookies = {
+                        'JSESSIONID': '6E27B5A4082739D76CF4E820BFC7FB17',
+                        'TS0117dd85': '01f60c9e4fd23e5ad0c2f0a544adce26dcb861d1119f800ab2c3bef6e1b3681d47f656a5512f5a5631910a247c309c22aca6882d53',
+                        }
+
+                headers = {
+                        'Host': 'www.austrocontrol.at',
+                        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101 Firefox/45.0',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'Accept-Language': 'en-US,en;q=0.5',
+                        'Referer': 'https://www.austrocontrol.at/ta/OenflSucheEn?1',
+                        'Connection': 'keep-alive',
+                        }
+
+                data = {
+                        'id3_hf_0': '',
+                        'txtKennzeichen': 'aae',
+                        'txtOrdnungszahl': '',
+                        'txtHersteller': '',
+                        'txtBaumuster': '',
+                        'cmbLfzart': '',
+                        'txtSeriennummer': '',
+                        'radStartgewicht': '1',
+                        'txtStartgewicht': '',
+                        'txtHalter': '',
+                        'p::submit': ''
+                        }
+
+                req = requests.post('https://www.austrocontrol.at/ta/OenflSucheEn?1-7.IFormSubmitListener-form', headers=headers, cookies=cookies, data=data)
+                print(req.status_code)
+                soup = BeautifulSoup(req.text, 'html.parser')
+                table = soup.find('table', {'id':'resultTable'})
+                tds = table.findAll('td')
+                t = None
+                for t in tds:
+                    pass
+                t = t.stripped_strings
+                l = list(t)
+                addr = l[1].split(',')
+                zip = addr[0].split()[0]
+                return Owner(l[0], addr[1], addr[1], zip, l[2])
+
+            # Azerbaijan
+            if self.numb.startswith('4K--'):
+                pass
+
+            # Bahamas
+            if self.numb.startswith('C6-'):
+                pass
+
+            # Bahrain
+            if self.numb.startswith('A9C-'):
+                pass
+
+            # Bangladesh
+            if self.numb.startswith('S2'):
+                pass
+
+            # Barbaros
+            if self.numb.startswith('8P-'):
+                pass
+
+            # Belarus
+            if self.numb.startswith('EW-'):
+                pass
+
+
+            #Netherlands
+            if self.numb.startswith('PH-'):
+                req = requests.get(NL+self.numb)
+                soup = BeautifulSoup(req.text, 'html.parser')
 
             # Canada
             if self.numb.startswith('G-C'):
