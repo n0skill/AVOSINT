@@ -84,10 +84,12 @@ class Plane:
 
             #Select country
 
-            if self.numb.startswith('C'):
+            # Canada
+            if self.numb.startswith('G-C'):
                 url = CA+self.numb
 
-            if self.numb.startswith('HB-'): # Switzerland
+            # Switzerland
+            if self.numb.startswith('HB-'):
                 headers = {
                             'Origin': 'https://www.bazlwork.admin.ch',
                             'Content-Type': 'application/json;charset=UTF-8',
@@ -109,7 +111,8 @@ class Plane:
                         own_addr     = str(i['ownerOperators'][0]['address'].encode('utf-8'))
                         return str(own_operator + own_bil_addr + own_addr)
 
-            if self.numb.startswith('N'): # USA
+            # USA
+            if self.numb.startswith('N'):
                 url = US+self.numb
                 req = requests.get(url)
                 if req.status_code is 200:
@@ -126,7 +129,8 @@ class Plane:
                 else:
                     print(u'\u274C ' + str(req.status_code) + " " + url)
 
-            elif self.numb.startswith('G'): # UK
+            # UK
+            elif self.numb.startswith('G-E'):
                 url = UK+self.numb[2:]
                 req = requests.get(url)
                 if req.status_code is 200:
@@ -137,7 +141,8 @@ class Plane:
                 else:
                     print(u'\u274C ' + str(req.status_code) + " " + url)
 
-            elif self.numb.startswith('TF'): # Iceland
+            # Iceland
+            elif self.numb.startswith('TF'):
                 url = IS+self.numb
                 req = requests.get(url)
                 if req.status_code is 200:
@@ -149,6 +154,11 @@ class Plane:
                         return own.text
                 else:
                     print(u'\u274C ' + str(req.status_code) + " " + url)
+                print(self.numb)
+
+            # Germany
+            elif self.numb.startswith('D-'):
+            else
                 print(self.numb)
         return None
 
