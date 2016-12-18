@@ -104,9 +104,9 @@ class Plane:
                     print(u'\u2713 ' + req.url)
                     json_obj = req.json()
                     for i in json_obj:
-                        own_operator = str(i['ownerOperators'][0]['ownerOperator'])
-                        own_bil_addr = str(i['ownerOperators'][0]['billingAddress'])
-                        own_addr     = str(i['ownerOperators'][0]['address'])
+                        own_operator = str(i['ownerOperators'][0]['ownerOperator'].encode('utf-8'))
+                        own_bil_addr = str(i['ownerOperators'][0]['billingAddress'].encode('utf-8'))
+                        own_addr     = str(i['ownerOperators'][0]['address'].encode('utf-8'))
                         return str(own_operator + own_bil_addr + own_addr)
 
             if self.numb.startswith('N'): # USA
