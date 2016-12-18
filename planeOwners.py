@@ -43,7 +43,7 @@ LAT_LON_LA = (35, 32, -115, -120)
 LAT_LON_TX = (37, 25, -92, -106)
 LAT_LON_NY = (41, 39, -72, -75)
 LAT_LON_CH = [48.5 , 45, 4.5,12]
-LAT_LON_IS = (65, 63, -20, -22)
+LAT_LON_IS = (66, 63, -27, -19)
 
 
 # Determines if you should use a proxy or not.
@@ -63,6 +63,13 @@ class bcolors:
     WARN = '\033[91m'
     OKAY = '\033[32m'
     STOP = '\033[0m'
+class Owner:
+    def __init__(self, name, street, streetn, zipCode, country):
+        self.name = name
+        self.street = street
+        self.streetn= streetn
+        self.zipCode = zipCode
+        self.country = country
 
 class Plane:
     interestOwners = ['DELTA AIR LINES INC'] # Example
@@ -76,7 +83,7 @@ class Plane:
         self.orig = orig
         self.dest = dest
         self.alti = alti
-        self.owne = self.getowner()
+        self.owner = self.getowner()
 
     # Gets the owner of a plane
     def getowner(self):
@@ -107,9 +114,10 @@ class Plane:
                     json_obj = req.json()
                     for i in json_obj:
                         own_operator = str(i['ownerOperators'][0]['ownerOperator'].encode('utf-8'))
-                        own_bil_addr = str(i['ownerOperators'][0]['billingAddress'].encode('utf-8'))
-                        own_addr     = str(i['ownerOperators'][0]['address'].encode('utf-8'))
-                        return str(own_operator + own_bil_addr + own_addr)
+                        own_bil_addr = str(i['ownerOperators'][0]['billingAddress'])
+                        own_addr     = i['ownerOperators'][0]['address']
+                        print(own_addr)
+                        return Owner(own_operator, own_addr['street'], own_addr['streetNo'], own_addr['zipCode'], own_addr['country'])
 
             # USA
             if self.numb.startswith('N'):
@@ -121,11 +129,13 @@ class Plane:
                         txt =req.text.encode('utf8')
                         fil.write(txt)
                         soup = BeautifulSoup(req.text, 'html.parser')
-                        own = soup.find('span', {'id':'content_lbOwnerName'})
-                        if own is not None:
-                            return own.text
-                        else:
-                            pass
+                        name = soup.find('span', {'id':'content_lbOwnerName'}).text
+                        street = soup.find('span', {'id':'content_lbOwnerStreet'}).text
+                        street2= soup.find('span', {'id':'content_lbOwnerStreet'}).text
+                        city   = soup.find('span', {'id':'content_lbOwnerCity'}).text
+                        state  = soup.find('span', {'id':'content_lbOwnerState'}).text
+                        zip    = soup.find('span', {'id':'content_lbOwnerZip'}).text
+                        return Owner(name, street, str(city + ', ' + state), zip, 'United States')
                 else:
                     print(u'\u274C ' + str(req.status_code) + " " + url)
 
@@ -136,10 +146,10 @@ class Plane:
                 if req.status_code is 200:
                     print(u'\u2713 ' + req.url)
                     soup = BeautifulSoup(req.text, 'html.parser')
-                    own = soup.find('span', {'id':'currentModule_currentModule_RegisteredOwners'}).contents[0].strip()
-                    return own
+                    own = soup.find('span', {'id':'currentModule_currentModule_RegisteredOwners'}).contents
+                    return Owner(own[0], own[4], own[6], own[8], 'Great Britain')
                 else:
-                    print(u'\u274C ' + str(req.status_code) + " " + url)
+                    print(u'\u274C ' + str(req.status_code) + " " + req.url)
 
             # Iceland
             elif self.numb.startswith('TF'):
@@ -151,14 +161,15 @@ class Plane:
                     own = soup.find('li', {'class':'owner'})
                     if own is not None:
                         print(own.contents[2].strip())
-                        return own.text
+                        return None
                 else:
                     print(u'\u274C ' + str(req.status_code) + " " + url)
                 print(self.numb)
 
             # Germany
             elif self.numb.startswith('D-'):
-            else
+                pass
+            else:
                 print(self.numb)
         return None
 
@@ -222,8 +233,15 @@ def main(argv):
         for place in coords:
             getareaplanes(place[1], place[0], place[3], place[2])
             for plane in planelist:
-                if plane.owne is not None:
-                    print(plane.owne)
+                if plane.owner is not None:
+                    print(plane.numb)
+                    print(plane.owner.name)
+                    print(plane.owner.street)
+                    print(plane.owner.streetn)
+                    print(plane.owner.zipCode)
+                    print(plane.owner.country)
+                    print('\r')
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
