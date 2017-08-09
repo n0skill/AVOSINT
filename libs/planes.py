@@ -43,7 +43,7 @@ class Owner:
         return self.__repr__()
 
 class Plane:
-    def __init__(self, webi, numb, call, latitude, longitude, origin, destination, altitude):
+    def __init__(self, webi, numb, call, latitude, longitude, origin=None, destination=None, altitude=None):
         self.coordinates = Coordinates(latitude, longitude)
         self.webi = webi
         self.numb = numb
@@ -52,7 +52,8 @@ class Plane:
         self.destination = destination
         self.altitude = altitude
         self.agency = self.get_agency()
-        self.owner = self.get_owner()
+        #self.owner = self.get_owner()
+        self.path = self.get_path()
         self.heading = None
         pass
 
@@ -101,4 +102,5 @@ class Plane:
             return Agency('Iceland', 'icetra.is', 'http://www.icetra.is/aviation/aircraft/register?aq=')
 
     def get_path(self):
-        j = getjson(flight_data_src+self.name)
+        return []
+        #j = getjson(flight_data_src+self.name)

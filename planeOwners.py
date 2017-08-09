@@ -95,7 +95,6 @@ def getInterestingPlaces():
     # Wildfire, traffic accidents, police intervention, natural disasters, etc.
     return None
 
-
 def main():
     parser  = argparse.ArgumentParser()
     parser.add_argument("--proxy", help="Use proxy address", type=str)
