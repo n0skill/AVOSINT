@@ -47,9 +47,9 @@ def main():
                     for plane_obj in list_db_planes:
                         if plane_obj[0] == numb:
                             print('Plane already in list ! Append position to the path')
-                            print(eval(plane_obj[2]))
+                            path_array = eval(plane_obj[2])
                             point_to_add_to_path = (latitude, longitude)
-                            new_path = plane_obj[2].append(point_to_add_to_path)
+                            new_path = path_array.append(point_to_add_to_path)
                             print('New path: ' + new_path)
                             curs.execute('UPDATE planes SET path = %s  WHERE number = %s', (new_path, numb))
 
