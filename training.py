@@ -64,7 +64,7 @@ def main():
                         plane = Plane(webi, numb, callsign, latitude, longitude)
                         path =  []
                         path.append((plane.coordinates.latitude, plane.coordinates.longitude))
-                        curs.execute('INSERT INTO planes(number, callsign, path) values (%s, %s, %s)', (plane.numb, plane.call, path))
+                        curs.execute('INSERT INTO planes(number, callsign, path) values (%s, %s, %s)', (plane.numb, plane.call, str(path)))
                         conn.commit()
                 print("")
                 time.sleep(0.1)
