@@ -55,11 +55,11 @@ def main():
                             #curs.execute('UPDATE planes SET path = %s  WHERE number = %s', (new_path, numb))
 
                         # Else it is not yet in db. Add to db if we have number and position
-                        elif numb is not None and latitude is not None:
-                            plane = Plane(webi, numb, callsign, latitude, longitude)
-                            path =  [(plane.coordinates.latitude, plane.coordinates.longitude)]
-                            curs.execute('INSERT INTO planes(number, callsign, path) values (%s, %s, %s)', (plane.numb, plane.call, path))
-                            conn.commit()
+                    if numb is not None and latitude is not None:
+                        plane = Plane(webi, numb, callsign, latitude, longitude)
+                        path =  [(plane.coordinates.latitude, plane.coordinates.longitude)]
+                        curs.execute('INSERT INTO planes(number, callsign, path) values (%s, %s, %s)', (plane.numb, plane.call, path))
+                        conn.commit()
                 print("")
                 time.sleep(0.1)
             except ValueError as e:
