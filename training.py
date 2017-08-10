@@ -62,8 +62,7 @@ def main():
                         # Else it is not yet in db. Add to db if we have number and position
                     if not flg and numb is not None and latitude is not None:
                         plane = Plane(webi, numb, callsign, latitude, longitude)
-                        path =  []
-                        path.append((plane.coordinates.latitude, plane.coordinates.longitude))
+                        path = (plane.coordinates.latitude, plane.coordinates.longitude)
                         curs.execute('INSERT INTO planes(number, callsign, path) values (%s, %s, %s)', (plane.numb, plane.call, str(path)))
                         conn.commit()
                 print("")
