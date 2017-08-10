@@ -50,9 +50,9 @@ def main():
                             path_array = eval(plane_obj[2])
                             print(path_array)
                             point_to_add_to_path = (latitude, longitude)
-                            new_path = path_array.append(point_to_add_to_path)
-                            print('New path: ' + new_path)
-                            curs.execute('UPDATE planes SET path = %s  WHERE number = %s', (new_path, numb))
+                            path_array.append(point_to_add_to_path)
+                            print('New path: ' + path_array)
+                            curs.execute('UPDATE planes SET path = %s  WHERE number = %s', (path_array, numb))
 
                         # Else it is not yet in db. Add to db if we have number and position
                     if numb is not None and latitude is not None:
