@@ -48,6 +48,7 @@ def main():
                         if plane_obj[0] == numb:
                             print('Plane already in list ! Append position to the path')
                             path_array = eval(plane_obj[2])
+                            print(path_array)
                             point_to_add_to_path = (latitude, longitude)
                             new_path = path_array.append(point_to_add_to_path)
                             print('New path: ' + new_path)
