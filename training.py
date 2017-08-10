@@ -18,8 +18,6 @@ def main():
     parser.add_argument("-psql_user", type=str)
     parser.add_argument("-psql_pass", type=str)
     args  = parser.parse_args()
-    path = []
-    list_of_planes = []
     list_of_files = sorted(os.listdir(args.daydir))
 
     conn = psycopg2.connect(host='localhost', dbname=PSQL_DB, user=args.psql_user, password=args.psql_pass)
@@ -48,14 +46,15 @@ def main():
 
                     # search for plane in whole db
                     for plane_obj in list_db_planes:
-                        if plane_obj[0] == numb and latitude is not None:
-                            flg = True
-                            #print('Plane already in list ! Append position to the path')
-                            path_array = eval(plane_obj[2])
-                            point_to_add_to_path = (latitude, longitude)
-                            path_array.append(point_to_add_to_path)
-                            #print('New path: ' + str(path_array))
-                            curs.execute('UPDATE planes SET path = %s  WHERE number =  %s ', (str(path_array), numb))
+                    if any(plane[0]==numb for plane in list_db_planes) and latitude is not None:
+                        #if plane_obj[0] == numb and latitude is not None:
+                        flg = True
+                        #print('Plane already in list ! Append position to the path')
+                        path_array = eval(plane_obj[2])
+                        point_to_add_to_path = (latitude, longitude)
+                        path_array.append(point_to_add_to_path)
+                        #print('New path: ' + str(path_array))
+                        curs.execute('UPDATE planes SET path = %s  WHERE number =  %s ', (str(path_array), numb))
 
                         # Else it is not yet in db. Add to db if we have number and position
                     if not flg and numb is not None and latitude is not None:
