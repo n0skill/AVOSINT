@@ -45,7 +45,8 @@ def main():
                     callsign = aviato.get('Call')
                     latitude = aviato.get('Lat')
                     longitude = aviato.get('Long')
-                    if any(plane_tuple[0] == numb for plane_tuple in list_db_planes):
+                    if any(plane_tuple[0] == numb for i, plane_tuple in enumerate(list_db_planes)):
+                        print(i)
                         print('Plane already in list ! Append position to the path')
                         point_to_add_to_path = (latitude, longitude)
                         new_path = plane_tuple[2].append(point_to_add_to_path)
