@@ -49,7 +49,7 @@ def main():
                             print('Plane already in list ! Append position to the path')
                             print(plane_obj[2])
                             point_to_add_to_path = ((latitude, longitude))
-                            new_path = (plane_obj[2],) + (point_to_add_to_path)
+                            new_path = (plane_obj[2],) + point_to_add_to_path
                             curs.execute('UPDATE planes SET path = %s  WHERE number = %s', (new_path, numb))
 
                         # Else it is not yet in db. Add to db if we have number and position
