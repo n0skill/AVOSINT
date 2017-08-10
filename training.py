@@ -22,7 +22,7 @@ def main():
     list_of_planes = []
     list_of_files = sorted(os.listdir(args.daydir))
 
-    conn = psycopg2.connect(host='localhost', dbname=PSQL_DB, user=args.psql_user, pass=args.psql_pass)
+    conn = psycopg2.connect(host='localhost', dbname=PSQL_DB, user=args.psql_user, password=args.psql_pass)
     curs = conn.cursor()
 
     # For each file of the day
