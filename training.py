@@ -50,7 +50,7 @@ def main():
                             print(plane_obj[2])
                             point_to_add_to_path = (latitude, longitude)
                             new_path = plane_obj[2].append(point_to_add_to_path)
-                            print('New path': new_path)
+                            print('New path ' + str(new_path))
                             curs.execute('UPDATE planes SET path = %s  WHERE number = %s', (new_path, numb))
                             conn.commit()
 
