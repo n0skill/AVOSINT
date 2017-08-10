@@ -66,7 +66,7 @@ def main():
                 print("")
                 time.sleep(0.1)
             except ValueError as e:
-                passb
+                pass
 
 
     print('Enter interesting plane to check path')
