@@ -44,8 +44,12 @@ def main():
                     callsign = aviato.get('Call')
                     latitude = aviato.get('Lat')
                     longitude = aviato.get('Long')
+                    flg = False
+
+                    # search for plane in whole db
                     for plane_obj in list_db_planes:
                         if plane_obj[0] == numb:
+                            flg = True
                             print('Plane already in list ! Append position to the path')
                             path_array = eval(plane_obj[2])
                             print(path_array)
@@ -55,7 +59,7 @@ def main():
                             curs.execute('UPDATE planes SET path = %s  WHERE number =  %s ', (str(path_array), numb))
 
                         # Else it is not yet in db. Add to db if we have number and position
-                    if numb is not None and latitude is not None:
+                    if not flg:
                         plane = Plane(webi, numb, callsign, latitude, longitude)
                         path =  (plane.coordinates.latitude, plane.coordinates.longitude)
                         curs.execute('INSERT INTO planes(number, callsign, path) values (%s, %s, \'[ %s ]\')', (plane.numb, plane.call, path))
