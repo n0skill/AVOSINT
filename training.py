@@ -30,7 +30,7 @@ def main():
         os.system('clear')
         print('loading planes from file ' + filename)
         print('loading planes from db')
-        cur.execute('SELECT * FROM planes')
+        curs.execute('SELECT * FROM planes')
         list_db_planes = cur.fetchall()
         print(list_db_planes)
         with open(args.daydir + '/' + filename, encoding='utf-8') as f:
@@ -53,7 +53,7 @@ def main():
                     elif numb is not None and latitude is not None:
                         plane = Plane(webi, numb, callsign, latitude, longitude)
                         path = (plane.coordinates.latitude, plane.coordinates.longitude)
-                        cur.execute('INSERT INTO planes(number, callsign, path) values (%s, %s, %s)', (plane.numb, plane.call, path))
+                        curs.execute('INSERT INTO planes(number, callsign, path) values (%s, %s, %s)', (plane.numb, plane.call, path))
                 print("")
                 time.sleep(0.1)
             except ValueError as e:
