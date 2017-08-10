@@ -4,7 +4,7 @@ from libs.planes import *
 import numpy as np
 import argparse
 import json
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import os
 import time
 
@@ -46,8 +46,8 @@ def main():
     print('Enter interesting plane to check path')
     plane_numb = input()
     if any(plane.numb == plane_numb for plane in list_of_planes):
-        plot.plot(plane.path)
-        plt.savefig(plane.numb+'.png')
+        plt.plot(plane.path)
+        plt.savefig(str(plane.numb)+'.png')
 
 def printpath_and_classify(array):
     plt.plot(array)
