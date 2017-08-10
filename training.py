@@ -44,7 +44,7 @@ def main():
                     callsign = aviato.get('Call')
                     latitude = aviato.get('Lat')
                     longitude = aviato.get('Long')
-                    for number in list_db_plane:
+                    for number in list_db_planes:
                         if number == numb:
                             print('Plane already in list ! Append position to the path')
                             curs.execute('SELECT path FROM planes WHERE number = %s', numb)
