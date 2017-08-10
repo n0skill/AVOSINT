@@ -62,7 +62,6 @@ def main():
 
     print('Enter interesting plane to check path')
     plane_numb = input()
-    with open(temp_plane_file)
     if any(plane.numb == plane_numb for plane in f):
         plt.plot(plane.path)
         plt.savefig(str(plane.numb)+'.png')
