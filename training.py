@@ -45,7 +45,7 @@ def main():
                     callsign = aviato.get('Call')
                     latitude = aviato.get('Lat')
                     longitude = aviato.get('Long')
-                    if any(plane.numb == numb for plane in list_db_planes):
+                    if any(plane[0] == numb for plane in list_db_planes):
                         print('Plane already in list ! Append position to the path')
                         plane.path.append(Coordinates(latitude, longitude))
 
@@ -57,7 +57,7 @@ def main():
                 print("")
                 time.sleep(0.1)
             except ValueError as e:
-                pass
+                passb
 
 
     print('Enter interesting plane to check path')
