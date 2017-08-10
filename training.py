@@ -45,6 +45,7 @@ def main():
                     latitude = aviato.get('Lat')
                     longitude = aviato.get('Long')
                     for plane_obj in list_db_planes:
+                        print(plane_obj)
                         if plane_obj[0] == numb:
                             print('Plane already in list ! Append position to the path')
                             print(plane_obj[2])
