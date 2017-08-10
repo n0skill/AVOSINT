@@ -50,7 +50,7 @@ def main():
                     for plane_obj in list_db_planes:
                         if plane_obj[0] == numb and latitude is not None:
                             flg = True
-                            print('Plane already in list ! Append position to the path')
+                            #print('Plane already in list ! Append position to the path')
                             path_array = eval(plane_obj[2])
                             point_to_add_to_path = (latitude, longitude)
                             path_array.append(point_to_add_to_path)
