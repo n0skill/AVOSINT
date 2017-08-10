@@ -38,7 +38,7 @@ def main():
                         plane = Plane(webi, numb, callsign, latitude, longitude)
                         list_of_planes.append(plane)
                 print("")
-                time.sleep(0.05)
+                time.sleep(0.1)
             except ValueError as e:
                 pass
 
