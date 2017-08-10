@@ -44,12 +44,13 @@ def main():
                     callsign = aviato.get('Call')
                     latitude = aviato.get('Lat')
                     longitude = aviato.get('Long')
-                    if any(plane_iter[0] == numb for plane_iter in list_db_planes):
-                        print(plane_iter)
-                        print('Plane already in list ! Append position to the path')
-                        point_to_add_to_path = (latitude, longitude)
-                        new_path = .append(point_to_add_to_path)
-                        curs.execute('UPDATE planes SET path = \'%s\' WHERE number = %s', (new_path, numb))
+                    for plane_obj in list_db_planes:
+                        if plane_obj[0] == numb:
+                            print('Plane already in list ! Append position to the path')
+                            print(plane_obj[2])
+                            point_to_add_to_path = (latitude, longitude)
+                            new_path = plane_obj[2].append(point_to_add_to_path)
+                            curs.execute('UPDATE planes SET path = \'%s\' WHERE number = %s', (new_path, numb))
 
                     # Else it is not yet in db. Add to db if we have number and position
                     elif numb is not None and latitude is not None:
