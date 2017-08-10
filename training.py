@@ -49,8 +49,8 @@ def main():
                     if any(plane_obj[0]==numb for plane_obj in list_db_planes) and latitude is not None:
                         #if plane_obj[0] == numb and latitude is not None:
                         flg = True
-                        curs.execute('SELECT path from planes WHERE number =  %s ', numb)
-                        path = curs.fetchall()
+                        curs.execute('SELECT path from planes WHERE number =  %s ', (numb),)
+                        path = curs.fetchone()
                         print(path)
                         #print('Plane already in list ! Append position to the path')
                         path_array = eval(path)
