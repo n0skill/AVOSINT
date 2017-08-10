@@ -31,7 +31,7 @@ def main():
         print('loading planes from file ' + filename)
         print('loading planes from db')
         curs.execute('SELECT * FROM planes')
-        list_db_planes = cur.fetchall()
+        list_db_planes = curs.fetchall()
         print(list_db_planes)
         with open(args.daydir + '/' + filename, encoding='utf-8') as f:
             try:
