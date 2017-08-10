@@ -47,13 +47,13 @@ def main():
                     longitude = aviato.get('Long')
                     if any(plane.numb == numb for plane in list_db_planes):
                         print('Plane already in list ! Append position to the path')
-                        #plane.path.append(Coordinates(latitude, longitude))
+                        plane.path.append(Coordinates(latitude, longitude))
 
                     # Else it is not yet in db. Add to db if we have number and position
                     elif numb is not None and latitude is not None:
                         plane = Plane(webi, numb, callsign, latitude, longitude)
-                        path = str(plane.coordinates.latitude, plane.coordinates.longitude)
-                        curs.execute('INSERT INTO planes(number, callsign, path) values (%s, %s, %s)', (plane.numb, plane.call, path))
+                        path = (plane.coordinates.latitude, plane.coordinates.longitude)
+                        curs.execute('INSERT INTO planes(number, callsign, path) values (%s, %s, \'%s\')', (plane.numb, plane.call, path))
                 print("")
                 time.sleep(0.1)
             except ValueError as e:
