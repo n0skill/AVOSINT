@@ -32,7 +32,6 @@ def main():
         print('loading planes from db')
         curs.execute('SELECT * FROM planes')
         list_db_planes = curs.fetchall()
-        print(list_db_planes)
         with open(args.daydir + '/' + filename, encoding='utf-8') as f:
             try:
                 j = json.load(f)
@@ -55,7 +54,7 @@ def main():
                     # Else it is not yet in db. Add to db if we have number and position
                     elif numb is not None and latitude is not None:
                         plane = Plane(webi, numb, callsign, latitude, longitude)
-                        path = (plane.coordinates.latitude, plane.coordinates.longitude)
+                        path =  (plane.coordinates.latitude, plane.coordinates.longitude)
                         curs.execute('INSERT INTO planes(number, callsign, path) values (%s, %s, \'%s\')', (plane.numb, plane.call, path))
                         conn.commit()
                 print("")
