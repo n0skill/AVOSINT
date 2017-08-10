@@ -52,7 +52,7 @@ def main():
                     # Else it is not yet in db. Add to db if we have number and position
                     elif numb is not None and latitude is not None:
                         plane = Plane(webi, numb, callsign, latitude, longitude)
-                        path = (plane.coordinates.latitude, plane.coordinates.longitude)
+                        path = str(plane.coordinates.latitude, plane.coordinates.longitude)
                         curs.execute('INSERT INTO planes(number, callsign, path) values (%s, %s, %s)', (plane.numb, plane.call, path))
                 print("")
                 time.sleep(0.1)
