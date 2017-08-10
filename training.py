@@ -46,7 +46,7 @@ def main():
 
                     # search for plane in whole db
                     #for plane_obj in list_db_planes:
-                    if any(plane[0]==numb for plane in list_db_planes) and latitude is not None:
+                    if any(plane_obj[0]==numb for plane_obj in list_db_planes) and latitude is not None:
                         #if plane_obj[0] == numb and latitude is not None:
                         flg = True
                         #print('Plane already in list ! Append position to the path')
