@@ -6,6 +6,7 @@ import argparse
 import json
 import matplotlib as plt
 import os
+import time
 
 def main():
     parser  = argparse.ArgumentParser()
@@ -37,6 +38,7 @@ def main():
                         plane = Plane(webi, numb, callsign, latitude, longitude)
                         list_of_planes.append(plane)
                 print("")
+                time.sleep(0.01)
             except ValueError as e:
                 pass
 
