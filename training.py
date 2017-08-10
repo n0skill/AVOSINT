@@ -30,7 +30,7 @@ def main():
         os.system('clear')
         print('loading planes from file ' + filename)
         print('loading planes from db')
-        curs.execute('SELECT * FROM planes')
+        curs.execute('SELECT number FROM planes')
         list_db_planes = curs.fetchall()
         with open(args.daydir + '/' + filename, encoding='utf-8') as f:
             try:
@@ -44,15 +44,17 @@ def main():
                     callsign = aviato.get('Call')
                     latitude = aviato.get('Lat')
                     longitude = aviato.get('Long')
-                    for plane_obj in list_db_planes:
-                        if plane_obj[0] == numb:
+                    for number in list_db_plane:
+                        if number == numb:
                             print('Plane already in list ! Append position to the path')
-                            print(plane_obj[2])
-                            point_to_add_to_path = (latitude, longitude)
-                            new_path = plane_obj[2].append(point_to_add_to_path)
-                            print('New path ' + str(new_path))
-                            curs.execute('UPDATE planes SET path = %s  WHERE number = %s', (new_path, numb))
-                            conn.commit()
+                            curs.execute('SELECT path FROM planes WHERE number = %s', numb)
+                            path = curs.fetchall()
+                            print(path)
+                            #point_to_add_to_path = (latitude, longitude)
+                            #new_path = plane_obj[2].append(point_to_add_to_path)
+                            #print('New path ' + str(new_path))
+                            #curs.execute('UPDATE planes SET path = %s  WHERE number = %s', (new_path, numb))
+                            #conn.commit()
 
                         # Else it is not yet in db. Add to db if we have number and position
                     if numb is not None and latitude is not None:
