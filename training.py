@@ -48,7 +48,7 @@ def main():
 
                     # search for plane in whole db
                     for plane_obj in list_db_planes:
-                        if plane_obj[0] == numb:
+                        if plane_obj[0] == numb and latitude is not None:
                             flg = True
                             print('Plane already in list ! Append position to the path')
                             path_array = eval(plane_obj[2])
@@ -60,7 +60,6 @@ def main():
 
                         # Else it is not yet in db. Add to db if we have number and position
                     if not flg and numb is not None and latitude is not None:
-                        print(numb)
                         plane = Plane(webi, numb, callsign, latitude, longitude)
                         path =  (plane.coordinates.latitude, plane.coordinates.longitude)
                         curs.execute('INSERT INTO planes(number, callsign, path) values (%s, %s, \'[ %s ]\')', (plane.numb, plane.call, path))
