@@ -4,6 +4,8 @@ from libs.planes import *
 import numpy as np
 import argparse
 import json
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 import os
 import time
