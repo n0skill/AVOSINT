@@ -55,7 +55,7 @@ def main():
                         flg = True
                         curs.execute('SELECT path from planes WHERE number =  %s ', (numb,))
                         path_str = curs.fetchone()[0]
-                        path = cast_path(path_str, curs)
+                        path_array = cast_path(path_str, curs)
                         curs.execute('UPDATE planes SET path = %s  WHERE number =  %s ', (path_array, numb))
 
                         # Else it is not yet in db. Add to db if we have number and position
@@ -94,12 +94,12 @@ def adapt_path(path):
         pts.append(pt_ad)
     return AsIs("'(%s)'" % pts)
 
-# should return an array
+# should return an array of coordinates
 def cast_path(tuple_of_tuples_str, curs):
     arr = []
     actual_tuple = eval(tuple_of_tuples_str)
     for tuple in actual_tuple:
-        arr.append(tuple)
+        arr.append(Coordinates(tuple[0], tuple[1]))
     return arr
 
 
