@@ -53,14 +53,13 @@ def main():
                     if any(plane_obj[0]==numb for plane_obj in list_db_planes) and latitude is not None:
                         #if plane_obj[0] == numb and latitude is not None:
                         flg = True
-                        curs.execute('SELECT * from path where number = %s', (numb,))
+                        curs.execute('SELECT * from path where number = %s ORDER BY index DESC LIMIT 1', (numb,)) # order by index
                         path_index = curs.fetchone()[1]
-                        curs.execute('SELECT path from planes WHERE number =  %s ', (numb,))
                         path_str = curs.fetchone()
                         print('Path index is ' + str(path_index))
                         path_index = path_index + 1
                         curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s) WHERE number =  %s', (numb, path_index, latitude, longitude))
-
+                        curs.commit()
                         # Else it is not yet in db. Add to db if we have number and position
                     if not flg and numb is not None and latitude is not None:
                         #plane = Plane(webi, numb, callsign, latitude, longitude)
