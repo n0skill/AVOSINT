@@ -56,9 +56,9 @@ def main():
                         path_tuple = curs.fetchone()
                         path_array = []
                         for tuple in path_tuple:
-                            coord = Coordinates(tuple)
+                            coord = Coordinates(tuple[0, tuple[1])
                             print(coord)
-                        path_array.append(Coordinates(coord) for coord in path_tuple)
+                        p#ath_array.append(Coordinates(coord) for coord in path_tuple)
                         point_to_add_to_path = Coordinates(latitude, longitude)
                         path_array.append( point_to_add_to_path)
                         curs.execute('UPDATE planes SET path = %s  WHERE number =  %s ', (path_array, numb))
