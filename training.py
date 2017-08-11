@@ -87,13 +87,6 @@ def adapt_point(point):
     y = adapt(point.longitude).getquoted()
     return AsIs("'(%s, %s)'" % (x, y))
 
-def adapt_path(path):
-    pts = []
-    for point in path:
-        pt_ad = adapt_point(point)
-        pts.append(pt_ad)
-    return AsIs("'(%s)'" % pts)
-
 # should return an array of coordinates
 def cast_path(tuple_of_tuples_str, curs):
     arr = []
