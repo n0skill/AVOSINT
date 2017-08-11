@@ -98,7 +98,7 @@ def adapt_path(path):
 
 # should return an array
 def cast_path(tuple_of_tuples_str, curs):
-    actual_tuple = eval(tuple_of_tuples)
+    actual_tuple = eval(tuple_of_tuples_str)
     print(actual_tuple)
     m = re.match(r"\(([^)]+),([^)]+)\)", str)
     print(m)
