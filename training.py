@@ -35,53 +35,53 @@ def main():
         plt.savefig(str(plane_numb)+'.png')
 
 
-    # For each file of the day
-    for filename in list_of_files:
-        os.system('clear')
-        print('loading planes from file ' + filename)
-        print('loading planes from db')
-        curs.execute('SELECT * FROM planes')
-        list_db_planes = curs.fetchall()
-        with open(args.daydir + '/' + filename, encoding='utf-8') as f:
-            try:
-                j = json.load(f)
-                aviatos_list_from_file = j['acList']
-                leng = len(aviatos_list_from_file)
-                for i, aviato in enumerate(aviatos_list_from_file):
-                    path = []
-                    os.sys.stdout.write('\r' + str(i+1) + '/' + str(leng))
-                    webi = aviato.get('Reg')
-                    numb = aviato.get('Reg')
-                    callsign = aviato.get('Call')
-                    latitude = aviato.get('Lat')
-                    longitude = aviato.get('Long')
-                    flg = False
+    else:
+        # For each file of the day
+        for filename in list_of_files:
+            os.system('clear')
+            print('loading planes from file ' + filename)
+            print('loading planes from db')
+            curs.execute('SELECT * FROM planes')
+            list_db_planes = curs.fetchall()
+            with open(args.daydir + '/' + filename, encoding='utf-8') as f:
+                try:
+                    j = json.load(f)
+                    aviatos_list_from_file = j['acList']
+                    leng = len(aviatos_list_from_file)
+                    for i, aviato in enumerate(aviatos_list_from_file):
+                        path = []
+                        os.sys.stdout.write('\r' + str(i+1) + '/' + str(leng))
+                        webi = aviato.get('Reg')
+                        numb = aviato.get('Reg')
+                        callsign = aviato.get('Call')
+                        latitude = aviato.get('Lat')
+                        longitude = aviato.get('Long')
+                        flg = False
 
-                    if any(plane_obj[0]==numb for plane_obj in list_db_planes) and latitude is not None:
-                        #if plane_obj[0] == numb and latitude is not None:
-                        flg = True
-                        curs.execute('SELECT * from path where number = %s ORDER BY index DESC LIMIT 1', (numb,)) # order by index
-                        path_obj = curs.fetchone()
-                        path_index = path_obj[1]
-                        #print('Path index is ' + str(path_index))
-                        path_index = path_index + 1
-                        curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, path_index, latitude, longitude))
-                        conn.commit()
+                        if any(plane_obj[0]==numb for plane_obj in list_db_planes) and latitude is not None:
+                            #if plane_obj[0] == numb and latitude is not None:
+                            flg = True
+                            curs.execute('SELECT * from path where number = %s ORDER BY index DESC LIMIT 1', (numb,)) # order by index
+                            path_obj = curs.fetchone()
+                            path_index = path_obj[1]
+                            #print('Path index is ' + str(path_index))
+                            path_index = path_index + 1
+                            curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, path_index, latitude, longitude))
+                            conn.commit()
 
-                        # Else it is not yet in db. Add to db if we have number and position
-                    if not flg and numb is not None and latitude is not None:
-                        #plane = Plane(webi, numb, callsign, latitude, longitude)
-                        #coords = Coordinates(latitude, longitude)
-                        curs.execute('INSERT INTO planes(number, callsign) values (%s, %s)', (numb, callsign))
-                        conn.commit()
-                        curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, 0, latitude, longitude))
-                        conn.commit()
-                print("")
-                time.sleep(0.1)
-                
-            except ValueError as e:
-                pass
+                            # Else it is not yet in db. Add to db if we have number and position
+                        if not flg and numb is not None and latitude is not None:
+                            #plane = Plane(webi, numb, callsign, latitude, longitude)
+                            #coords = Coordinates(latitude, longitude)
+                            curs.execute('INSERT INTO planes(number, callsign) values (%s, %s)', (numb, callsign))
+                            conn.commit()
+                            curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, 0, latitude, longitude))
+                            conn.commit()
+                    print("")
+                    time.sleep(0.1)
 
+                except ValueError as e:
+                    pass
 
 
 def get_path(plane_numb, curs):
