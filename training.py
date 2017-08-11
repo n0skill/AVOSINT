@@ -86,7 +86,7 @@ def printpath_and_classify(array):
 def adapt_point(point):
     x = adapt(point.latitude).getquoted()
     y = adapt(point.longitude).getquoted()
-    return AsIs("'(%s, %s)'" % (x, y))
+    return AsIs("'%s, %s'" % (x, y))
 
 def adapt_path(path):
     pts = []
