@@ -61,7 +61,7 @@ def main():
 
                         # Else it is not yet in db. Add to db if we have number and position
                     if not flg and numb is not None and latitude is not None:
-                        plane = Plane(webi, numb, callsign, latitude, longitude)vars
+                        plane = Plane(webi, numb, callsign, latitude, longitude)
                         point = Coordinates(latitude, longitude)
                         path = []
                         path.append(point)
