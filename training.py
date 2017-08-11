@@ -56,7 +56,7 @@ def main():
                         path = curs.fetchone()
                         print(path)
                         point_to_add_to_path = Coordinates(latitude, longitude)
-                        path.append(point_to_add_to_path)
+                        path = path + point_to_add_to_path
                         curs.execute('UPDATE planes SET path = %s  WHERE number =  %s ', (path, numb))
 
                         # Else it is not yet in db. Add to db if we have number and position
