@@ -95,6 +95,7 @@ def adapt_path(path):
     return AsIs("'[%s]'" % pts)
 
 def cast_path(str, curs):
+    print(str)
     m = re.match(r"\(([^)]+),([^)]+)\)", str)
     if m:
         return Coordinates(m.group[0], m.group[1])
