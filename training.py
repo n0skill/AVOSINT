@@ -27,11 +27,10 @@ def main():
     curs = conn.cursor()
     if args.plot:
         plane_numb = args.reg
-        if any(plane.numb == plane_numb for plane in f):
-            path = get_path(plane_numb, curs)
-            print('Path is: ' + path)
-            plt.plot(path)
-            plt.savefig(str(plane_numb)+'.png')
+        path = get_path(plane_numb, curs)
+        print('Path is: ' + path)
+        plt.plot(path)
+        plt.savefig(str(plane_numb)+'.png')
 
 
     # For each file of the day
