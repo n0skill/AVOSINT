@@ -94,6 +94,7 @@ def adapt_path(path):
         pts.append(pt_ad)
     return AsIs("'[%s]'" % pts)
 
+# should return an array
 def cast_path(str, curs):
     m = re.match(r"\(([^)]+),([^)]+)\)", str)
     print(vars(m))
