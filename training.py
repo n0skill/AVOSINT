@@ -53,8 +53,9 @@ def main():
                         flg = True
                         curs.execute('SELECT * from path where number = %s ORDER BY index DESC LIMIT 1', (numb,)) # order by index
                         path_obj = curs.fetchone()
-                        print('Path index is ' + str(path_obj))
-                        #path_index = path_index + 1
+                        path_index = path_obj[1]
+                        print('Path index is ' + str(path_index))
+                        path_index = path_index + 1
                         curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s) WHERE number =  %s', (numb, path_index, latitude, longitude))
                         conn.commit()
 
