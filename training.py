@@ -60,14 +60,13 @@ def main():
                         path_index = path_index + 1
                         curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s) WHERE number =  %s', (numb, path_index, latitude, longitude))
                         conn.commit()
-            
+
                         # Else it is not yet in db. Add to db if we have number and position
                     if not flg and numb is not None and latitude is not None:
                         #plane = Plane(webi, numb, callsign, latitude, longitude)
                         #coords = Coordinates(latitude, longitude)
                         curs.execute('INSERT INTO planes(number, callsign) values (%s, %s)', (numb, callsign))
-                        cus.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s)', (plane.numb, 0, latitude, longitude)
-
+                        curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s)', (plane.numb, 0, latitude, longitude))
                         conn.commit()
                 print("")
                 time.sleep(0.1)
