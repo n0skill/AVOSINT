@@ -98,7 +98,7 @@ def cast_path(str, curs):
     print(str)
     m = re.match(r"\(([^)]+),([^)]+)\)", str)
     if m:
-        return Coordinates(m.group[0], m.group[1])
+        return Coordinates(m.group(0), m.group(1))
 
 if __name__ == "__main__":
     main()
