@@ -16,16 +16,24 @@ PSQL_TABLE = "planes"
 
 def main():
     parser  = argparse.ArgumentParser()
+    parser.add_argument("--plot", action="store_true")
+    parser.add_argument("--reg", type=str)
     parser.add_argument("-daydir", type=str)
     parser.add_argument("-psql_user", type=str)
     parser.add_argument("-psql_pass", type=str)
     args  = parser.parse_args()
     list_of_files = sorted(os.listdir(args.daydir))
-
     conn = psycopg2.connect(host='localhost', dbname=PSQL_DB, user=args.psql_user, password=args.psql_pass)
     curs = conn.cursor()
-    #register_adapter(Coordinates, adapt_point)
-    #register_adapter([Coordinates], adapt_path)
+    if args.plot:
+        plane_numb = args.reg
+        if any(plane.numb == plane_numb for plane in f):
+            path = get_path(plane_numb)
+            print('Path is: ' + path)
+            plt.plot(path)
+            plt.savefig(str(plane_numb)+'.png')
+
+
     # For each file of the day
     for filename in list_of_files:
         os.system('clear')
@@ -54,7 +62,7 @@ def main():
                         curs.execute('SELECT * from path where number = %s ORDER BY index DESC LIMIT 1', (numb,)) # order by index
                         path_obj = curs.fetchone()
                         path_index = path_obj[1]
-                        print('Path index is ' + str(path_index))
+                        #print('Path index is ' + str(path_index))
                         path_index = path_index + 1
                         curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, path_index, latitude, longitude))
                         conn.commit()
@@ -69,32 +77,21 @@ def main():
                         conn.commit()
                 print("")
                 time.sleep(0.1)
+                cont = input()
+                if not cont:
+                    pass
             except ValueError as e:
                 pass
 
 
-    print('Enter interesting plane to check path')
-    plane_numb = input()
-    if any(plane.numb == plane_numb for plane in f):
-        plt.plot(plane.path)
-        plt.savefig(str(plane.numb)+'.png')
+
+def get_path(plane_numb):
+    curs.execute('SELECT * from path where number = %s order by index DESC')
+    return curs.fetchall()
 
 def printpath_and_classify(array):
     plt.plot(array)
     plt.show()
-
-def adapt_point(coord):
-    x = adapt(coord.latitude).getquoted()
-    y = adapt(coord.longitude).getquoted()
-    return AsIs("'(%s, %s)'" % (x, y))
-
-# should return an array of coordinates
-def cast_path(tuple_of_tuples_str, curs):
-    arr = []
-    actual_tuple = eval(tuple_of_tuples_str)
-    for tuple in actual_tuple:
-        arr.append(Coordinates(tuple[0], tuple[1]))
-    return arr
 
 
 if __name__ == "__main__":
