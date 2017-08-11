@@ -55,6 +55,9 @@ def main():
                         curs.execute('SELECT path from planes WHERE number =  %s ', (numb,))
                         path_tuple = curs.fetchone()
                         path_array = []
+                        for tuple in path_tuple:
+                            coord = Coordinates(tuple)
+                            print(coord)
                         path_array.append(Coordinates(coord) for coord in path_tuple)
                         point_to_add_to_path = Coordinates(latitude, longitude)
                         path_array.append( point_to_add_to_path)
