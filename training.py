@@ -28,7 +28,7 @@ def main():
     if args.plot:
         plane_numb = args.reg
         if any(plane.numb == plane_numb for plane in f):
-            path = get_path(plane_numb)
+            path = get_path(plane_numb, curs)
             print('Path is: ' + path)
             plt.plot(path)
             plt.savefig(str(plane_numb)+'.png')
@@ -85,7 +85,7 @@ def main():
 
 
 
-def get_path(plane_numb):
+def get_path(plane_numb, curs):
     curs.execute('SELECT * from path where number = %s order by index DESC')
     return curs.fetchall()
 
