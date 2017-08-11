@@ -56,7 +56,7 @@ def main():
                         curs.execute('SELECT path from planes WHERE number =  %s ', (numb,))
                         path_str = curs.fetchone()[0]
                         path_array = cast_path(path_str, curs)
-                        curs.execute('UPDATE planes SET path = %s::path  WHERE number =  %s', (path_array, numb))
+                        curs.execute('UPDATE planes SET path = %s::path[]  WHERE number =  %s', (path_array, numb))
 
                         # Else it is not yet in db. Add to db if we have number and position
                     if not flg and numb is not None and latitude is not None:
