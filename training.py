@@ -78,9 +78,7 @@ def main():
                         conn.commit()
                 print("")
                 time.sleep(0.1)
-                cont = input()
-                if not cont:
-                    pass
+                
             except ValueError as e:
                 pass
 
