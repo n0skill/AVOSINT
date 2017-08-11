@@ -54,13 +54,14 @@ def main():
                         #if plane_obj[0] == numb and latitude is not None:
                         flg = True
                         curs.execute('SELECT path from planes WHERE number =  %s ', (numb,))
-                        path_tuple = curs.fetchone()[0]
+                        path_tuple = curs.fetchone()
+                        print('Returned from db: ' + path_tuple)
                         path = cast_path(path_tuple, curs)
                         #curs.execute('UPDATE planes SET path = %s  WHERE number =  %s ', (path_array, numb))
 
                         # Else it is not yet in db. Add to db if we have number and position
                     if not flg and numb is not None and latitude is not None:
-                        plane = Plane(webi, numb, callsign, latitude, longitude)
+                        plane = Plane(webi, numb, callsign, latitude, longitude)vars
                         point = Coordinates(latitude, longitude)
                         path = []
                         path.append(point)
