@@ -54,7 +54,7 @@ def main():
                         #if plane_obj[0] == numb and latitude is not None:
                         flg = True
                         curs.execute('SELECT path from planes WHERE number =  %s ', (numb,))
-                        path_tuple = curs.fetchone()
+                        path_tuple = curs.fetchone()[0]
                         print(cast_path(path_tuple, curs))
                         #curs.execute('UPDATE planes SET path = %s  WHERE number =  %s ', (path_array, numb))
 
