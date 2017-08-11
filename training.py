@@ -24,7 +24,7 @@ def main():
     conn = psycopg2.connect(host='localhost', dbname=PSQL_DB, user=args.psql_user, password=args.psql_pass)
     curs = conn.cursor()
     register_adapter(Coordinates, adapt_point)
-    register_adapter(Coordinates[], adapt_path)
+    register_adapter([Coordinates], adapt_path)
     # For each file of the day
     for filename in list_of_files:
         os.system('clear')
