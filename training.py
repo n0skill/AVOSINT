@@ -85,7 +85,7 @@ def main():
 
 
 def get_path(plane_numb, curs):
-    curs.execute('SELECT * from path where number = %s order by index DESC')
+    curs.execute('SELECT * from path where number = %s order by index DESC', (plane_numb,))
     return curs.fetchall()
 
 def printpath_and_classify(array):
