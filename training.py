@@ -48,8 +48,6 @@ def main():
                     longitude = aviato.get('Long')
                     flg = False
 
-                    # search for plane in whole db
-                    #for plane_obj in list_db_planes:
                     if any(plane_obj[0]==numb for plane_obj in list_db_planes) and latitude is not None:
                         #if plane_obj[0] == numb and latitude is not None:
                         flg = True
@@ -66,7 +64,7 @@ def main():
                         #plane = Plane(webi, numb, callsign, latitude, longitude)
                         #coords = Coordinates(latitude, longitude)
                         curs.execute('INSERT INTO planes(number, callsign) values (%s, %s)', (numb, callsign))
-                        curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s)', (plane.numb, 0, latitude, longitude))
+                        curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (plane.numb, 0, latitude, longitude))
                         conn.commit()
                 print("")
                 time.sleep(0.1)
