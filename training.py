@@ -54,7 +54,8 @@ def main():
                         #if plane_obj[0] == numb and latitude is not None:
                         flg = True
                         curs.execute('SELECT path from planes WHERE number =  %s ', (numb,))
-                        path_tuple = curs.fetchone()
+                        path_str = curs.fetchone()[0]
+                        cast_path(path_str, curs)
                         print('Returned from db: ' + str(path_tuple))
                         path = cast_path(path_tuple, curs)
                         #curs.execute('UPDATE planes SET path = %s  WHERE number =  %s ', (path_array, numb))
@@ -86,14 +87,14 @@ def printpath_and_classify(array):
 def adapt_point(point):
     x = adapt(point.latitude).getquoted()
     y = adapt(point.longitude).getquoted()
-    return AsIs("'%s, %s'" % (x, y))
+    return AsIs("'(%s, %s)'" % (x, y))
 
 def adapt_path(path):
     pts = []
     for point in path:
         pt_ad = adapt_point(point)
         pts.append(pt_ad)
-    return AsIs("'[%s]'" % pts)
+    return AsIs("'(%s)'" % pts)
 
 # should return an array
 def cast_path(str, curs):
