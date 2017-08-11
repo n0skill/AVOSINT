@@ -31,7 +31,7 @@ def main():
         plane_numb = args.reg
         path = get_path(plane_numb, curs)
         print('Path is: ' + str(path))
-        plt.scatter(path)
+        plt.scatter(zip(path))
         plt.savefig(str(plane_numb)+'.png')
 
 
