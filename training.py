@@ -56,7 +56,7 @@ def main():
                         path_index = path_obj[1]
                         print('Path index is ' + str(path_index))
                         path_index = path_index + 1
-                        curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s) WHERE number =  %s', (numb, path_index, latitude, longitude))
+                        curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, path_index, latitude, longitude))
                         conn.commit()
 
                         # Else it is not yet in db. Add to db if we have number and position
