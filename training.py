@@ -56,7 +56,7 @@ def main():
                         path_tuple = curs.fetchone()
                         path_array = []
                         for tuple in path_tuple:
-                            print tuple
+                            print(tuple)
                             coord = Coordinates(tuple[0], tuple[1])
                             print(coord)
                         path_array.append(Coordinates(coord) for coord in path_tuple)
