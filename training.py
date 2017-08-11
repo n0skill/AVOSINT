@@ -52,10 +52,9 @@ def main():
                         #if plane_obj[0] == numb and latitude is not None:
                         flg = True
                         curs.execute('SELECT * from path where number = %s ORDER BY index DESC LIMIT 1', (numb,)) # order by index
-                        path_index = curs.fetchone()[1]
-                        path_str = curs.fetchone()
-                        print('Path index is ' + str(path_index))
-                        path_index = path_index + 1
+                        path_obj = curs.fetchone()
+                        print('Path index is ' + str(path_obj))
+                        #path_index = path_index + 1
                         curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s) WHERE number =  %s', (numb, path_index, latitude, longitude))
                         conn.commit()
 
@@ -64,7 +63,8 @@ def main():
                         #plane = Plane(webi, numb, callsign, latitude, longitude)
                         #coords = Coordinates(latitude, longitude)
                         curs.execute('INSERT INTO planes(number, callsign) values (%s, %s)', (numb, callsign))
-                        curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (plane.numb, 0, latitude, longitude))
+                        conn.commit()
+                        curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, 0, latitude, longitude))
                         conn.commit()
                 print("")
                 time.sleep(0.1)
