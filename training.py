@@ -54,7 +54,7 @@ def main():
                         flg = True
                         curs.execute('SELECT path from planes WHERE number =  %s ', (numb,))
                         path = curs.fetchone()
-                        #print('Plane already in list ! Append position to the path')
+                        print(path)
                         point_to_add_to_path = Coordinates(latitude, longitude)
                         path.append(point_to_add_to_path)
                         curs.execute('UPDATE planes SET path = %s  WHERE number =  %s ', (path, numb))
