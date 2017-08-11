@@ -97,8 +97,10 @@ def adapt_path(path):
     return AsIs("'(%s)'" % pts)
 
 # should return an array
-def cast_path(str, curs):
-    m = re.match(r"\((([^)]+),([^)]+))\)", str)
+def cast_path(tuple_of_tuples_str, curs):
+    actual_tuple = eval(tuple_of_tuples)
+    print(actual_tuple)
+    m = re.match(r"\(([^)]+),([^)]+)\)", str)
     print(m)
     if m:
         return Coordinates(m.group(0), m.group(1))
