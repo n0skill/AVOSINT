@@ -54,15 +54,8 @@ def main():
                         flg = True
                         curs.execute('SELECT path from planes WHERE number =  %s ', (numb,))
                         path_tuple = curs.fetchone()
-                        path_array = []
-                        for tuple in path_tuple:
-                            print(tuple)
-                            coord = Coordinates(tuple[0], tuple[1])
-                            print(coord)
-                        path_array.append(Coordinates(coord) for coord in path_tuple)
-                        point_to_add_to_path = Coordinates(latitude, longitude)
-                        path_array.append( point_to_add_to_path)
-                        curs.execute('UPDATE planes SET path = %s  WHERE number =  %s ', (path_array, numb))
+                        print(cast_path(path_tuple))
+                        #curs.execute('UPDATE planes SET path = %s  WHERE number =  %s ', (path_array, numb))
 
                         # Else it is not yet in db. Add to db if we have number and position
                     if not flg and numb is not None and latitude is not None:
@@ -100,6 +93,10 @@ def adapt_path(path):
         pts.append(pt_ad)
     return AsIs("'[%s]'" % pts)
 
+def cast_path(str):
+    m = re.match(r"\(([^)]+),([^)]+)\)", str)
+    if m:
+        return Coordinates(m.group[0], m.group[1])
 
 if __name__ == "__main__":
     main()
