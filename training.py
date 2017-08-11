@@ -9,6 +9,7 @@ import os
 import time
 import psycopg2
 from psycopg2.extensions import adapt, register_adapter, AsIs
+import re
 
 PSQL_DB = "planes"
 PSQL_TABLE = "planes"
