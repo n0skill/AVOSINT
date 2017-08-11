@@ -28,7 +28,7 @@ def main():
     if args.plot:
         plane_numb = args.reg
         path = get_path(plane_numb, curs)
-        print('Path is: ' + path)
+        print('Path is: ' + str(path))
         plt.plot(path)
         plt.savefig(str(plane_numb)+'.png')
 
