@@ -100,10 +100,7 @@ def adapt_path(path):
 def cast_path(tuple_of_tuples_str, curs):
     actual_tuple = eval(tuple_of_tuples_str)
     print(actual_tuple)
-    m = re.match(r"\(([^)]+),([^)]+)\)", str)
-    print(m)
-    if m:
-        return Coordinates(m.group(0), m.group(1))
+    print(actual_tuple[0])
 
 if __name__ == "__main__":
     main()
