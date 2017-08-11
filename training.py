@@ -24,7 +24,7 @@ def main():
 
     conn = psycopg2.connect(host='localhost', dbname=PSQL_DB, user=args.psql_user, password=args.psql_pass)
     curs = conn.cursor()
-    register_adapter(Coordinates, adapt_point)
+    #register_adapter(Coordinates, adapt_point)
     #register_adapter([Coordinates], adapt_path)
     # For each file of the day
     for filename in list_of_files:
@@ -53,20 +53,21 @@ def main():
                     if any(plane_obj[0]==numb for plane_obj in list_db_planes) and latitude is not None:
                         #if plane_obj[0] == numb and latitude is not None:
                         flg = True
+                        curs.execute('SELECT * from path where number = %s', (numb,))
+                        path_index = curs.fetchone()[1]
                         curs.execute('SELECT path from planes WHERE number =  %s ', (numb,))
                         path_str = curs.fetchone()
-                        print(path_str)
-                        path_array = None
-                        curs.execute('UPDATE planes SET path = %s::point[]  WHERE number =  %s', ((path_array,), numb))
+                        print('Path index is ' + str(path_index))
+                        path_index = path_index + 1
+                        curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s) WHERE number =  %s', (numb, path_index, latitude, longitude))
 
                         # Else it is not yet in db. Add to db if we have number and position
                     if not flg and numb is not None and latitude is not None:
-                        plane = Plane(webi, numb, callsign, latitude, longitude)
-                        coords = Coordinates(latitude, longitude)
-                        path = [] # Path is a list of coordinates (that have an adapter)
-                        path.append(coords)
-                        #insert = "insert into t (p) values (%s::point[])"
-                        curs.execute('INSERT INTO planes(number, callsign, path) values (%s, %s, %s::point[])', (plane.numb, plane.call, (path,)))
+                        #plane = Plane(webi, numb, callsign, latitude, longitude)
+                        #coords = Coordinates(latitude, longitude)
+                        curs.execute('INSERT INTO planes(number, callsign) values (%s, %s)', (numb, callsign))
+                        cus.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s)', (plane.numb, 0, latitude, longitude)
+
                         conn.commit()
                 print("")
                 time.sleep(0.1)
@@ -84,9 +85,9 @@ def printpath_and_classify(array):
     plt.plot(array)
     plt.show()
 
-def adapt_point(point):
-    x = adapt(point.latitude).getquoted()
-    y = adapt(point.longitude).getquoted()
+def adapt_point(coord):
+    x = adapt(coord.latitude).getquoted()
+    y = adapt(coord.longitude).getquoted()
     return AsIs("'(%s, %s)'" % (x, y))
 
 # should return an array of coordinates
