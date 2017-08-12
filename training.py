@@ -38,25 +38,28 @@ def main():
         # For each file of the day
         for filename in list_of_files:
             os.system('clear')
-            print('loading planes from db')
-            curs.execute('SELECT DISTINCT number FROM planes')
-            list_db_planes = curs.fetchall()
             with open(args.daydir + '/' + filename, encoding='utf-8') as f:
                 try:
                     print('loading planes from file ' + filename)
                     j = json.load(f) # Loads the whole thing when we don't really need it
                     aviatos_list_from_file = j['acList']
                     leng = len(aviatos_list_from_file)
+                    # This is the innefficient loop
                     for i, aviato in enumerate(aviatos_list_from_file):
+                        # TODO: query db with plane number instead of looking in long list
                         os.sys.stdout.write('\r' + str(i+1) + '/' + str(leng))
-                        webi = aviato.get('Reg')
+                        #webi = aviato.get('Reg')
                         numb = aviato.get('Reg')
                         callsign = aviato.get('Call')
                         latitude = aviato.get('Lat')
                         longitude = aviato.get('Long')
                         flg = False
 
-                        if any(plane_obj[0]==numb for plane_obj in list_db_planes) and latitude is not None:
+                        curs.execute('SELECT * FROM planes WHERE number = %s', numb)
+                        entry = curs.fetchone()
+
+                        # If the plane is already in the DB and we got its position
+                        if entry[0]==numb and latitude is not None:
                             #if plane_obj[0] == numb and latitude is not None:
                             flg = True
                             curs.execute('SELECT * from path where number = %s ORDER BY index DESC LIMIT 1', (numb,)) # order by index
@@ -66,15 +69,12 @@ def main():
                             curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, path_index, latitude, longitude))
                             conn.commit()
 
-                            # Else it is not yet in db. Add to db if we have number and position
-                        if not flg and numb is not None and latitude is not None:
-                            #plane = Plane(webi, numb, callsign, latitude, longitude)
-                            #coords = Coordinates(latitude, longitude)
+                        # Else it is not yet in db. Add to db if we have number and position
+                        elif not flg and numb is not None and latitude is not None:
                             curs.execute('INSERT INTO planes(number, callsign) values (%s, %s)', (numb, callsign))
-                            curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, 0, latitude, longitude))
                             conn.commit()
                         time.sleep(0.001)
-                    time.sleep(1) # Pause between files
+                    time.sleep(0.5) # Pause between files
 
                 except ValueError as e:
                     pass
