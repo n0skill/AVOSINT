@@ -55,7 +55,7 @@ def main():
                         longitude = aviato.get('Long')
                         flg = False
 
-                        curs.execute('SELECT * FROM planes WHERE number = %s', numb)
+                        curs.execute('SELECT * FROM planes WHERE number = %s', (numb,))
                         entry = curs.fetchone()
 
                         # If the plane is already in the DB and we got its position
