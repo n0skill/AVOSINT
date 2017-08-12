@@ -34,22 +34,20 @@ def main():
         plt.scatter(*zip(*path))
         plt.savefig(str(plane_numb)+'.png')
 
-
     else:
         # For each file of the day
         for filename in list_of_files:
             os.system('clear')
-            print('loading planes from file ' + filename)
             print('loading planes from db')
             curs.execute('SELECT * FROM planes')
             list_db_planes = curs.fetchall()
             with open(args.daydir + '/' + filename, encoding='utf-8') as f:
                 try:
-                    j = json.load(f)
+                    print('loading planes from file ' + filename)
+                    j = json.load(f) # Loads the whole thing when we don't really need it
                     aviatos_list_from_file = j['acList']
                     leng = len(aviatos_list_from_file)
                     for i, aviato in enumerate(aviatos_list_from_file):
-                        path = []
                         os.sys.stdout.write('\r' + str(i+1) + '/' + str(leng))
                         webi = aviato.get('Reg')
                         numb = aviato.get('Reg')
@@ -62,8 +60,7 @@ def main():
                             #if plane_obj[0] == numb and latitude is not None:
                             flg = True
                             curs.execute('SELECT * from path where number = %s ORDER BY index DESC LIMIT 1', (numb,)) # order by index
-                            path_obj = curs.fetchone()
-                            path_index = path_obj[1]
+                            path_index = curs.fetchone()[1]
                             #print('Path index is ' + str(path_index))
                             path_index = path_index + 1
                             curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, path_index, latitude, longitude))
@@ -74,12 +71,10 @@ def main():
                             #plane = Plane(webi, numb, callsign, latitude, longitude)
                             #coords = Coordinates(latitude, longitude)
                             curs.execute('INSERT INTO planes(number, callsign) values (%s, %s)', (numb, callsign))
-                            conn.commit()
                             curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, 0, latitude, longitude))
                             conn.commit()
-
-                        time.sleep(0.002)
-                    time.sleep(5) # Pause between files
+                        time.sleep(0.001)
+                    time.sleep(1) # Pause between files
 
                 except ValueError as e:
                     pass
