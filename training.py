@@ -78,7 +78,8 @@ def main():
                             curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, 0, latitude, longitude))
                             conn.commit()
 
-                        time.sleep(0.005)
+                        time.sleep(0.001)
+                    time.sleep(2) # Pause between files
 
                 except ValueError as e:
                     pass
