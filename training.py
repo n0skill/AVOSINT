@@ -39,7 +39,7 @@ def main():
         for filename in list_of_files:
             os.system('clear')
             print('loading planes from db')
-            curs.execute('SELECT DISTINCT * FROM planes')
+            curs.execute('SELECT DISTINCT number FROM planes')
             list_db_planes = curs.fetchall()
             with open(args.daydir + '/' + filename, encoding='utf-8') as f:
                 try:
