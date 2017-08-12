@@ -59,7 +59,7 @@ def main():
                         entry = curs.fetchone()
 
                         # If the plane is already in the DB and we got its position
-                        if entry[0]==numb and latitude is not None:
+                        if entry is not None and entry[0]==numb and latitude is not None:
                             #if plane_obj[0] == numb and latitude is not None:
                             flg = True
                             curs.execute('SELECT * from path where number = %s ORDER BY index DESC LIMIT 1', (numb,)) # order by index
