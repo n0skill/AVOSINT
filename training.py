@@ -72,8 +72,11 @@ def main():
                             conn.commit()
                         else: # Planes with no reg or no position
                             pass
+                        if i > 4:
+                            return True
                         time.sleep(0.001)
                     time.sleep(0.5) # Pause between files
+
 
                 except ValueError as e:
                     pass
