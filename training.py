@@ -44,41 +44,35 @@ def main():
                     j = json.load(f) # Loads the whole thing when we don't really need it
                     aviatos_list_from_file = j['acList']
                     leng = len(aviatos_list_from_file)
-                    # This is the innefficient loop
+
+                    # For every plane dict in the list from the json file
                     for i, aviato in enumerate(aviatos_list_from_file):
-                        # TODO: query db with plane number instead of looking in long list
                         os.sys.stdout.write('\r' + str(i+1) + '/' + str(leng))
-                        #webi = aviato.get('Reg')
                         numb = aviato.get('Reg')
                         callsign = aviato.get('Call')
                         latitude = aviato.get('Lat')
                         longitude = aviato.get('Long')
-                        flg = False
 
-                        curs.execute('SELECT * FROM planes WHERE number = %s', (numb,))
-                        entry = curs.fetchone()
-
-                        # If the plane is already in the DB and we got its position
-                        if entry is not None and entry[0]==numb and latitude is not None:
-                            #if plane_obj[0] == numb and latitude is not None:
-                            flg = True
-                            curs.execute('SELECT * from path where number = %s ORDER BY index DESC LIMIT 1', (numb,)) # order by index
-                            rep = curs.fetchone()
-
-                            # No path yet
-                            if rep is None:
-                                curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, 0, latitude, longitude))
+                        if numb is not none and latitude is not None:
+                            # Query for current plane
+                            curs.execute('SELECT * FROM planes WHERE number = %s', (numb,))
+                            entry = curs.fetchone()
+                            # If the plane is already in the DB, update path
+                            if entry is not None:
+                                curs.execute('SELECT index from path where number = %s ORDER BY index DESC LIMIT 1', (numb,)) # order by index
+                                rep = curs.fetchone()
+                                if rep is None: # No path yet. Insert with index 0
+                                    curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, 0, latitude, longitude))
+                                else: # There's a path !
+                                    path_index = rep[0]
+                                    path_index = path_index + 1
+                                    curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, path_index, latitude, longitude))
+                            # Else plane not yet in db. Insert it
                             else:
-                                path_index = rep[1]
-                            #print('Path index is ' + str(path_index))
-                                path_index = path_index + 1
-                                curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, path_index, latitude, longitude))
+                                curs.execute('INSERT INTO planes(number, callsign) values (%s, %s)', (numb, callsign))
                             conn.commit()
-
-                        # Else it is not yet in db. Add to db if we have number and position
-                        elif not flg and numb is not None and latitude is not None:
-                            curs.execute('INSERT INTO planes(number, callsign) values (%s, %s)', (numb, callsign))
-                            conn.commit()
+                        else: # Planes with no reg or no position
+                            pass
                         time.sleep(0.001)
                     time.sleep(0.5) # Pause between files
 
