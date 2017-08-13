@@ -62,11 +62,10 @@ def main():
                                 curs.execute('SELECT index from path where number = %s ORDER BY index DESC LIMIT 1', (numb,)) # order by index
                                 rep = curs.fetchone()
                                 if rep is None: # No path yet. Insert with index 0
-                                    curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, 0, latitude, longitude))
+                                    path_index = 0
                                 else: # There's a path !
-                                    path_index = rep[0]
-                                    path_index = path_index + 1
-                                    curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, path_index, latitude, longitude))
+                                    path_index = rep[0] + 1
+                                curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, path_index, latitude, longitude))
                             # Else plane not yet in db. Insert it
                             else:
                                 curs.execute('INSERT INTO planes(number, callsign) values (%s, %s)', (numb, callsign))
