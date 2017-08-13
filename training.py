@@ -53,7 +53,7 @@ def main():
                         latitude = aviato.get('Lat')
                         longitude = aviato.get('Long')
 
-                        if numb is not none and latitude is not None:
+                        if numb is not None and latitude is not None:
                             # Query for current plane
                             curs.execute('SELECT * FROM planes WHERE number = %s', (numb,))
                             entry = curs.fetchone()
