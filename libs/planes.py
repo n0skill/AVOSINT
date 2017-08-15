@@ -44,16 +44,16 @@ class Owner:
 
 class Plane:
     def __init__(self, webi, numb, call, latitude, longitude, origin=None, destination=None, altitude=None):
-        self.coordinates = Coordinates(latitude, longitude)
+        self.coords = Coordinates(latitude, longitude)
         self.webi = webi
         self.numb = numb
         self.call = call
         self.origin = origin
         self.destination = destination
         self.altitude = altitude
-        self.agency = self.get_agency()
+        #self.agency = self.get_agency()
         #self.owner = self.get_owner()
-        self.path = self.get_path()
+        #self.path = self.get_path()
         self.heading = None
         pass
 

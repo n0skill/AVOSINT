@@ -8,13 +8,79 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 import os
-import time
 import psycopg2
 from psycopg2.extensions import adapt, register_adapter, AsIs
 import re
+import time
+from  time import time, sleep
 
 PSQL_DB = "planes"
 PSQL_TABLE = "planes"
+
+mean_times = {}
+plane_path_index = {} # Because querying took too long
+
+def timer(func):
+    def wrap(*args, **kwargs):
+        before = time()
+        rv = func(*args, **kwargs)
+        after = time()
+        array = []
+        if func.__name__ in mean_times:
+            array = mean_times[func.__name__]
+        else:
+            pass
+        array.append(after-before)
+        mean_times.update({func.__name__:array})
+        print("%s Mean\t%.5f" % (func.__name__, sum(mean_times[func.__name__])/len(mean_times[func.__name__])))
+        return rv
+    return wrap
+
+
+# OK
+#@timer
+def insert_db_plane(numb, callsign, curs):
+    curs.execute('INSERT INTO planes(number, callsign) VALUES (%s, %s)', (numb, callsign))
+    return None
+#OK
+#@timer
+def insert_db_path(numb, index, latitude, longitude, curs):
+    curs.execute('INSERT INTO path (number, index, point_x, point_y) VALUES (%s, %s, %s, %s)', (numb, index, latitude, longitude))
+    return None
+
+
+# FIXME SLOWS DOWN has to do with postgres mechanism.
+# We could store a dict instead with the path and the index in memory
+#   @timer
+def get_db_plane_path_index(numb, curs):
+    curs.execute('SELECT MAX(index) from path where number = %s', (numb,))
+    return curs.fetchone()
+
+# FIXME SLOWS DOWN but not that much
+#@timer
+def get_db_plane(numb, curs):
+    curs.execute('SELECT * FROM planes WHERE number = %s', (numb,))
+    return curs.fetchone()
+
+
+#@timer
+def get_path(plane_numb, curs):
+    curs.execute('SELECT point_x, point_y from path where number = %s order by index DESC', (plane_numb,))
+    return curs.fetchall()
+
+#@timer
+def printpath_and_classify(array):
+    plt.plot(array)
+    plt.show()
+
+# OK
+# @timer
+def create_plane(plane_dict):
+    numb = plane_dict.get('Reg')
+    callsign = plane_dict.get('Call')
+    latitude = plane_dict.get('Lat')
+    longitude = plane_dict.get('Long')
+    return Plane(numb, numb, callsign, latitude, longitude)
 
 def main():
     parser  = argparse.ArgumentParser()
@@ -25,8 +91,9 @@ def main():
     parser.add_argument("-psql_pass", type=str)
     args  = parser.parse_args()
     list_of_files = sorted(os.listdir(args.daydir))
-    conn = psycopg2.connect(host='localhost', dbname=PSQL_DB, user=args.psql_user, password=args.psql_pass)
+    conn = psycopg2.connect(host='localhost', dbname=PSQL_DB, user="postgres", password="oijojio3")
     curs = conn.cursor()
+
     if args.plot:
         plane_numb = args.reg
         path = get_path(plane_numb, curs)
@@ -36,7 +103,7 @@ def main():
 
     else:
         # For each file of the day
-        for filename in list_of_files:
+        for a, filename in enumerate(list_of_files):
             os.system('clear')
             with open(args.daydir + '/' + filename, encoding='utf-8') as f:
                 try:
@@ -47,48 +114,36 @@ def main():
 
                     # For every plane dict in the list from the json file
                     for i, aviato in enumerate(aviatos_list_from_file):
-                        os.sys.stdout.write('\r' + str(i+1) + '/' + str(leng))
-                        numb = aviato.get('Reg')
-                        callsign = aviato.get('Call')
-                        latitude = aviato.get('Lat')
-                        longitude = aviato.get('Long')
+                        os.sys.stdout.write('\r' + str(i+1) + '/' + str(leng) + '\n')
+                        plane = create_plane(aviato)
 
-                        if numb is not None and latitude is not None:
+                        if plane.numb is not None and plane.coords.latitude is not None:
                             # Query for current plane
-                            curs.execute('SELECT * FROM planes WHERE number = %s', (numb,))
-                            entry = curs.fetchone()
-                            # If the plane is already in the DB, update path
-                            if entry is not None:
-                                curs.execute('SELECT index from path where number = %s ORDER BY index DESC LIMIT 1', (numb,)) # order by index
-                                rep = curs.fetchone()
-                                if rep is None: # No path yet. Insert with index 0
+                            entry = get_db_plane(plane.numb, curs)
+
+                            if entry is not None:   # If the plane is already in the DB, update path
+                                rep = get_db_plane_path_index(plane.numb, curs)
+                                if rep[0] is None:     # No path yet. Insert with index 0
                                     path_index = 0
-                                else: # There's a path !
+                                else:               # There's a path !
                                     path_index = rep[0] + 1
-                                curs.execute('INSERT INTO path (number, index, point_x, point_y) values (%s, %s, %s, %s)', (numb, path_index, latitude, longitude))
+                                insert_db_path(plane.numb, path_index, plane.coords.latitude, plane.coords.longitude, curs)
+                                conn.commit()
+
                             # Else plane not yet in db. Insert it
                             else:
-                                curs.execute('INSERT INTO planes(number, callsign) values (%s, %s)', (numb, callsign))
-                            conn.commit()
+                                insert_db_plane(plane.numb, plane.call, curs)
+                                conn.commit()
                         else: # Planes with no reg or no position
                             pass
-                        if i > 4:
-                            return True
-                        time.sleep(0.001)
-                    time.sleep(0.5) # Pause between files
+                        #time.sleep(0.001)
+                    #if a > 3:
+                    #    return True
+                    #time.sleep(0.5) # Pause between files
 
 
                 except ValueError as e:
                     pass
-
-
-def get_path(plane_numb, curs):
-    curs.execute('SELECT point_x, point_y from path where number = %s order by index DESC', (plane_numb,))
-    return curs.fetchall()
-
-def printpath_and_classify(array):
-    plt.plot(array)
-    plt.show()
 
 
 if __name__ == "__main__":
