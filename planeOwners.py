@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+# coding: utf8
 # Python script to lookup plane owner's in a particular geographic area using public data from planefinder.net and the federal aviation agency.
 # If a particular owner is found, the plane infos are shown
 
@@ -25,13 +25,18 @@ from libs.display import *
 flightradar = 'http://data.flightradar24.com/zones/fcgi/feed.js?bounds='
 planefinder = 'https://planefinder.net/endpoints/update.php?callback=planeDataCallback&faa=1&routetype=iata&cfCache=true&bounds=37%2C-80%2C40%2C-74&_=1452535140'
 flight_data_src = 'http://data-live.flightradar24.com/clickhandler/?version=1.5&flight='
+
+
 # News source
 AP = 'Associated Press'
 AFP = 'Agence France Presse'
 AP_KEY = 'API KEY HERE'
 
-# Define areas to lookup.
-CH_AREA = Area(Coordinates(48.5 , 4.5), Coordinates(45,10))
+# Hard-coded areas
+
+CH_AREA = [Coordinates(45,4.5), Coordinates(48.5 , 10)]
+IS_AREA = [Coordinates(62.76,-32.18), Coordinates(66.92, -3.5)]
+US_AREA = [Coordinates(0,0), Coordinates(0,0)]
 
 
 # Determines if you should use a proxy or not.
@@ -42,6 +47,8 @@ proxies = {}
 # Fake using a regular browser to avoid HTTP 401/501 errors
 user_agent = {'User-agent': 'Mozilla/5.0'}
 
+# GLOBAL VARIABLES
+FLG_DEBUG = False
 
 # Text colors using ANSI escaping. Surely theres a better way to do this
 class bcolors:
@@ -50,9 +57,14 @@ class bcolors:
     OKAY = '\033[32m'
     STOP = '\033[0m'
 
+
+def test_connection_f24():
+    req = requests.get('')
+
 def getjson(jsonurl):
     req = requests.get(jsonurl, headers=user_agent, proxies=proxies)
-    print(req.url)
+    if FLG_DEBUG:
+        print(req.url)
     if req.status_code is 200:
         try:
             json = req.json()
@@ -68,6 +80,7 @@ def getjson(jsonurl):
 
 # This method gets plane from an area and puts them in a list
 def fetch_planes_from_area(coords_1, coords_2):
+    print(coords_1, coords_2)
     planelist = []
     location = str(coords_2.latitude)+'.00,'+str(coords_1.latitude)+'.00,'+str(coords_1.longitude)+'.00,'+str(coords_2.longitude)+'.00'
     try:
@@ -94,34 +107,41 @@ def main():
     parser  = argparse.ArgumentParser()
     parser.add_argument("--proxy", help="Use proxy address", type=str)
     parser.add_argument("--interactive", action="store_true")
+    parser.add_argument("--debug", action="store_true")
     require_group = parser.add_mutually_exclusive_group(required=True)
     require_group.add_argument("--country", help="country code", type=str)
     require_group.add_argument("--coords", help="longitude coord in decimal format", nargs=4, type=float)
-    args    = parser.parse_args()
 
-    # List of places to visit
-    areas = []
+    args    = parser.parse_args()
     corner_1 = None
     corner_2 = None
+
+    if args.debug:
+        FLG_DEBUG = True
     # Convert coords to coords objects
     if args.coords:
         corner_1 = Coordinates(args.coords[0], args.coords[1])
         corner_2 = Coordinates(args.coords[2], args.coords[3])
     elif args.country:
         if args.country == 'CH':
-            areas.append(CH_AREA)
+            corner_1 = CH_AREA[0]
+            corner_2 = CH_AREA[1]
         if args.country == 'IS':
-            areas.append(LAT_LON_IS)
+            corner_1 = IS_AREA[0]
+            corner_2 = IS_AREA[1]
         if args.country == 'US':
-            areas.append(LAT_LON_US)
+            corner_1 = US_AREA[0]
+            corner_2 = US_AREA[1]
     else:
         print('Nothing has really been specified, wtf dude ?')
+
+
 
     while True:
         if args.interactive:
             disp = Display()
             plane_list = fetch_planes_from_area(corner_1, corner_2)
-            disp.update(planelist)
+            disp.update(plane_list)
         else:
             plane_list = fetch_planes_from_area(corner_1, corner_2)
             for plane in plane_list:

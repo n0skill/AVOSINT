@@ -6,16 +6,13 @@ class Display:
     def __init__(self):
         self.selected_index = 0
         self.i = 0
+        # TODO: start a thread for interaction and non blocking inputs
         return
     def update(self, plane_list):
         upd_chr = ''
         net_chr = ''
-        print("\n"*len(plane_list))
-        inp = '' # TODO: non blocking input
-        if inp == '\x1b[A':
-            self.selected_index = self.selected_index-1
-        if inp == '\x1b[B':
-            self.selected_index = self.selected_index+1
+        os.system('clear')
+
 
         print('Interactive interface for plane owners')
         print('Flight #\t Position\t Heading\t Owner\t Is_hovering\t ')
@@ -23,5 +20,5 @@ class Display:
             selector = ''
             if ind == self.selected_index:
                 selector = '<--'
-            print(str(plane) + selector)
+            print(str(plane))
         time.sleep(1)

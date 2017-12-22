@@ -1,6 +1,7 @@
 from .geoloc import *
 import requests
 from bs4 import BeautifulSoup
+import json
 
 # Aviation agencies sources
 AT = 'https://www.austrocontrol.at/ta/OenflSucheEn?1-7.IFormSubmitListener-form'
@@ -10,7 +11,7 @@ IS = 'http://www.icetra.is/aviation/aircraft/register?aq='
 NL = 'http://www.newfoundland.nl/luchtvaartregister/user/en/luchtvaartuig.php?registratie='
 BE = 'http://www.mobilit.fgov.be/bcaa/aircraft/search.jsf'
 CA = 'http://wwwapps.tc.gc.ca/saf-sec-sur/2/ccarcs-riacc/RchSimpRes.aspx?cn=||&mn=||&sn=||&on=||&m=|'
-CH = 'https://www.bazlwork.admin.ch/bazl-backend/lfr'
+URL_CH = 'https://www.bazlwork.admin.ch/bazl-backend/lfr'
 
 # TODO
 class OwnerGetter:
@@ -37,9 +38,9 @@ class Owner:
         self.country = country
 
     def __repr__(self):
-        return "%s\r%s\r%s\r%s\r%s" % (self.name, self.street, self.street_n, self.zip_code, self.country)
+        return "%s\n\t\t\t\t\t%s\t%s\n\t\t\t\t\t%s\n\t\t\t\t\t%s" % (self.name, self.street, self.street_n, self.zip_code, self.country)
 
-    def __str__():
+    def __str__(self):
         return self.__repr__()
 
 class Plane:
@@ -57,8 +58,10 @@ class Plane:
         self.heading = None
         pass
 
+    def __str__(self):
+        return self.__repr__()
     def __repr__(self):
-        return "%s\t%s\t%s\t%s" % (self.numb, self.call, self.coords, self.altitude)
+        return "%s\t%s\t%s\t%s\t%s" % (self.numb, self.call, self.coords, self.altitude, str(self.owner))
 
     def get_owner(self):
         if self.numb.startswith('N'):
@@ -72,24 +75,54 @@ class Plane:
                 state  = soup.find('span', {'id':'content_lbOwnerState'}).text
                 zip    = soup.find('span', {'id':'content_lbOwnerZip'}).text
                 own = Owner(name, street, str(city + ', ' + state), zip, 'United States')
-                print(str(own))
                 return own
 
         elif self.numb.startswith('G-E'):
+
             req = requests.get(self.agency.data_url + self.numb[2:])
             soup = BeautifulSoup(req.text, 'html.parser')
             own = soup.find('span', {'id':'currentModule_currentModule_RegisteredOwners'}).contents
-            return str(own[0] + own[4] +  own[6] +  own[8] + 'Great Britain')
+
+            return Owner(own[0], own[4],   own[6],   own[8],  'Great Britain')
+
         elif self.numb.startswith('TF'):
             req = requests.get(self.agency.data_url+self.numb)
             if req.status_code is 200:
                 soup = BeautifulSoup(req.text, 'html.parser')
                 own = soup.find(own = soup.find('li', {'class':'owner'}))
-                return own
                 if own is not None:
                     return None
             return None
 
+        elif self.numb.startswith('HB-'):
+            url=URL_CH
+            headers = {
+                'Pragma': 'no-cache',
+                'Origin': 'https://www.bazlwork.admin.ch',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Accept': 'application/json, text/plain, */*',
+                'Cache-Control': 'no-cache',
+                'Referer': 'https://www.bazlwork.admin.ch/bazl/',
+                'Connection': 'keep-alive',
+            }
+            data = '{"page_result_limit":10,"current_page_number":1,"sort_list":"registration","totalItems":3337,"query":{"registration":"' +self.numb[3:]+'"},"language":"fr","tab":"basic"}'
+
+            response = requests.post('https://www.bazlwork.admin.ch/bazl-backend/lfr', headers=headers, data=data)
+            text = response.text
+            jsonobj = json.loads(text)
+            leng = len(jsonobj[0].get('ownerOperators'))
+            name = str(jsonobj[0].get('ownerOperators')[leng-1].get('ownerOperator'))
+            street = str(jsonobj[0].get('ownerOperators')[leng-1].get('address').get('street').encode())
+            street_n = str(jsonobj[0].get('ownerOperators')[leng-1].get('address').get('streetNo').encode())
+            zipcode = str(jsonobj[0].get('ownerOperators')[leng-1].get('address').get('zipCode').encode())
+            own = Owner(name, street, street_n, zipcode, "Switzerland")
+            return own
+
+        else:
+            return None
 
     def get_agency(self):
         if self.numb.startswith('OE-'):
