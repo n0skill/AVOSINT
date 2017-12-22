@@ -19,7 +19,6 @@ from threading import Thread
 import time
 
 from libs.planes import *
-from libs.planes import *
 from libs.display import *
 
 # Data sources
@@ -55,9 +54,8 @@ class bcolors:
 
 def getjson(jsonurl):
     req = requests.get(jsonurl, headers=user_agent, proxies=proxies)
+    print(req.url)
     if req.status_code is 200:
-        print(bcolors.OKAY)
-        print(bcolors.STOP)
         try:
             json = req.json()
         except:
@@ -72,10 +70,7 @@ def getjson(jsonurl):
 
 # This method gets plane from an area and puts them in a list
 def fetch_planes_from_area(coords_1, coords_2):
-    location = str(coords_1.latitude)+'.00,'
-        +str(coords_2.latitude)+'.00,'
-        +str(coords_1.longitude)+'.00,'
-        +str(coords_2.longitude)+'.00'
+    location = str(coords_2.latitude)+'.00,'+str(coords_1.latitude)+'.00,'+str(coords_1.longitude)+'.00,'+str(coords_2.longitude)+'.00'
     try:
         j = getjson(flightradar+location)
     except Exception as e:
@@ -84,9 +79,9 @@ def fetch_planes_from_area(coords_1, coords_2):
     if j is not None:
         for planeID in j:
             # Filter out non-plane results
-             if planeID == 'full_count' or planeID == 'version' or planeID == 'stats':
-                 pass
-             else:
+            if planeID == 'full_count' or planeID == 'version' or planeID == 'stats':
+                pass
+            else:
                  p = Plane(planeID, j[planeID][9], j[planeID][16], j[planeID][1], j[planeID][2], j[planeID][11], j[planeID][12], j[planeID][4])
                  planelist.append(p)
 
@@ -106,8 +101,12 @@ def main():
 
     # List of places to visit
     areas = []
+    corner_1 = None
+    corner_2 = None
+    # Convert coords to coords objects
     if args.coords:
-        coords.append(args.coords)
+        corner_1 = Coordinates(args.coords[0], args.coords[1])
+        corner_2 = Coordinates(args.coords[2], args.coords[3])
     elif args.country:
         if args.country == 'CH':
             areas.append(CH_AREA)
@@ -121,23 +120,21 @@ def main():
     while True:
         if args.interactive:
             disp = Display()
-            for place in areas:
-                try:
-                    t1 = Thread(target=fetch_planes_from_area(place.corner_1, place.corner_2))
-                    t1.start()
-                    t1.join()
-                    disp.update(planelist)
-                except:
-                    print('Exception thrown while trying to create thread')
-                    disp.update(planelist)
-                    return
-                pass
+            try:
+                t1 = Thread(target=fetch_planes_from_area(corner_1, corner_2))
+                t1.start()
+                t1.join()
+                disp.update(planelist)
+            except:
+                print('Exception thrown while trying to create thread')
+                disp.update(planelist)
+                return
         else:
-            for place in coords:
-               for plane in planelist:
-                    if plane.owner is not None:
-                        print(plane.numb)
-                        print(plane.owner)
+            fetch_planes_from_area(corner_1, corner_2)
+            for plane in planelist:
+                if plane.owner is not None:
+                    print(plane.numb)
+                    print(plane.owner)
 
 if __name__ == "__main__":
         main()

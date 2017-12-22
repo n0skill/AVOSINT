@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 class Display:
     def __init__(self):
@@ -17,10 +18,10 @@ class Display:
             self.selected_index = self.selected_index+1
 
         print('Interactive interface for plane owners')
-        print('▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀')
         print('Flight #\t Position\t Heading\t Owner\t Is_hovering\t ')
         for ind, plane in enumerate(plane_list):
             selector = ''
             if ind == self.selected_index:
                 selector = '<--'
             print(str(plane) + selector)
+        time.sleep(1)

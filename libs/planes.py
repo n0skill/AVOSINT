@@ -51,14 +51,14 @@ class Plane:
         self.origin = origin
         self.destination = destination
         self.altitude = altitude
-        #self.agency = self.get_agency()
-        #self.owner = self.get_owner()
+        self.agency = self.get_agency()
+        self.owner = self.get_owner()
         #self.path = self.get_path()
         self.heading = None
         pass
 
     def __repr__(self):
-        return "%s\t%s\t%s\t%s" % (self.numb, self.call, self.coordinates, self.altitude)
+        return "%s\t%s\t%s\t%s" % (self.numb, self.call, self.coords, self.altitude)
 
     def get_owner(self):
         if self.numb.startswith('N'):
@@ -71,18 +71,21 @@ class Plane:
                 city   = soup.find('span', {'id':'content_lbOwnerCity'}).text
                 state  = soup.find('span', {'id':'content_lbOwnerState'}).text
                 zip    = soup.find('span', {'id':'content_lbOwnerZip'}).text
-                return Owner(name, street, str(city + ', ' + state), zip, 'United States')
+                own = Owner(name, street, str(city + ', ' + state), zip, 'United States')
+                print(str(own))
+                return own
 
         elif self.numb.startswith('G-E'):
             req = requests.get(self.agency.data_url + self.numb[2:])
             soup = BeautifulSoup(req.text, 'html.parser')
             own = soup.find('span', {'id':'currentModule_currentModule_RegisteredOwners'}).contents
-            return Owner(own[0], own[4], own[6], own[8], 'Great Britain')
+            return str(own[0] + own[4] +  own[6] +  own[8] + 'Great Britain')
         elif self.numb.startswith('TF'):
             req = requests.get(self.agency.data_url+self.numb)
             if req.status_code is 200:
                 soup = BeautifulSoup(req.text, 'html.parser')
                 own = soup.find(own = soup.find('li', {'class':'owner'}))
+                return own
                 if own is not None:
                     return None
             return None
