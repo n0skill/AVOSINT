@@ -42,8 +42,6 @@ proxies = {}
 # Fake using a regular browser to avoid HTTP 401/501 errors
 user_agent = {'User-agent': 'Mozilla/5.0'}
 
-# Plane list of area
-planelist = []
 
 # Text colors using ANSI escaping. Surely theres a better way to do this
 class bcolors:
@@ -70,6 +68,7 @@ def getjson(jsonurl):
 
 # This method gets plane from an area and puts them in a list
 def fetch_planes_from_area(coords_1, coords_2):
+    planelist = []
     location = str(coords_2.latitude)+'.00,'+str(coords_1.latitude)+'.00,'+str(coords_1.longitude)+'.00,'+str(coords_2.longitude)+'.00'
     try:
         j = getjson(flightradar+location)
@@ -84,6 +83,7 @@ def fetch_planes_from_area(coords_1, coords_2):
             else:
                  p = Plane(planeID, j[planeID][9], j[planeID][16], j[planeID][1], j[planeID][2], j[planeID][11], j[planeID][12], j[planeID][4])
                  planelist.append(p)
+    return planelist
 
 def getInterestingPlaces():
     # Get news feed about things that could require a plane flyover
@@ -120,18 +120,11 @@ def main():
     while True:
         if args.interactive:
             disp = Display()
-            try:
-                t1 = Thread(target=fetch_planes_from_area(corner_1, corner_2))
-                t1.start()
-                t1.join()
-                disp.update(planelist)
-            except:
-                print('Exception thrown while trying to create thread')
-                disp.update(planelist)
-                return
+            plane_list = fetch_planes_from_area(corner_1, corner_2)
+            disp.update(planelist)
         else:
-            fetch_planes_from_area(corner_1, corner_2)
-            for plane in planelist:
+            plane_list = fetch_planes_from_area(corner_1, corner_2)
+            for plane in plane_list:
                 if plane.owner is not None:
                     print(plane.numb)
                     print(plane.owner)

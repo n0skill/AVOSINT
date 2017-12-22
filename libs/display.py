@@ -10,7 +10,7 @@ class Display:
     def update(self, plane_list):
         upd_chr = ''
         net_chr = ''
-        os.system('clear')
+        print("\n"*len(plane_list))
         inp = '' # TODO: non blocking input
         if inp == '\x1b[A':
             self.selected_index = self.selected_index-1
