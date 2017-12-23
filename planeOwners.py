@@ -111,6 +111,7 @@ def main():
     require_group = parser.add_mutually_exclusive_group(required=True)
     require_group.add_argument("--country", help="country code", type=str)
     require_group.add_argument("--coords", help="longitude coord in decimal format", nargs=4, type=float)
+    require_group.add_argument("--number", help="Specify plane number")
 
     args    = parser.parse_args()
     corner_1 = None
@@ -119,10 +120,18 @@ def main():
     if args.debug:
         FLG_DEBUG = True
     # Convert coords to coords objects
-    if args.coords:
+    flg_lookup = False
+
+    if args.number is not None:
+        p = Plane(None, args.number, None, None, None)
+        print(p.owner)
+
+    elif args.coords:
         corner_1 = Coordinates(args.coords[0], args.coords[1])
         corner_2 = Coordinates(args.coords[2], args.coords[3])
+        flg_lookup = True
     elif args.country:
+        flg_lookup = True
         if args.country == 'CH':
             corner_1 = CH_AREA[0]
             corner_2 = CH_AREA[1]
@@ -132,22 +141,19 @@ def main():
         if args.country == 'US':
             corner_1 = US_AREA[0]
             corner_2 = US_AREA[1]
-    else:
-        print('Nothing has really been specified, wtf dude ?')
 
-
-
-    while True:
-        if args.interactive:
-            disp = Display()
-            plane_list = fetch_planes_from_area(corner_1, corner_2)
-            disp.update(plane_list)
-        else:
-            plane_list = fetch_planes_from_area(corner_1, corner_2)
-            for plane in plane_list:
-                if plane.owner is not None:
-                    print(plane.numb)
-                    print(plane.owner)
+    if flg_lookup:
+        while True:
+            if args.interactive:
+                disp = Display()
+                plane_list = fetch_planes_from_area(corner_1, corner_2)
+                disp.update(plane_list)
+            else:
+                plane_list = fetch_planes_from_area(corner_1, corner_2)
+                for plane in plane_list:
+                    if plane.owner is not None:
+                        print(plane.numb)
+                        print(plane.owner)
 
 if __name__ == "__main__":
         main()

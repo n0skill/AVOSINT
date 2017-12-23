@@ -38,7 +38,7 @@ class Owner:
         self.country = country
 
     def __repr__(self):
-        return "%s\n\t\t\t\t\t%s\t%s\n\t\t\t\t\t%s\n\t\t\t\t\t%s" % (self.name, self.street, self.street_n, self.zip_code, self.country)
+        return "%s\n%s %s\n%s\n%s" % (self.name, self.street, self.street_n, self.zip_code, self.country)
 
     def __str__(self):
         return self.__repr__()
@@ -115,9 +115,9 @@ class Plane:
             jsonobj = json.loads(text)
             leng = len(jsonobj[0].get('ownerOperators'))
             name = str(jsonobj[0].get('ownerOperators')[leng-1].get('ownerOperator'))
-            street = str(jsonobj[0].get('ownerOperators')[leng-1].get('address').get('street').encode())
-            street_n = str(jsonobj[0].get('ownerOperators')[leng-1].get('address').get('streetNo').encode())
-            zipcode = str(jsonobj[0].get('ownerOperators')[leng-1].get('address').get('zipCode').encode())
+            street = str(jsonobj[0].get('ownerOperators')[leng-1].get('address').get('street').encode(), 'utf-8')
+            street_n = str(jsonobj[0].get('ownerOperators')[leng-1].get('address').get('streetNo').encode(), 'utf-8')
+            zipcode = str(jsonobj[0].get('ownerOperators')[leng-1].get('address').get('zipCode').encode(), 'utf-8')
             own = Owner(name, street, street_n, zipcode, "Switzerland")
             return own
 
