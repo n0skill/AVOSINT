@@ -8,7 +8,12 @@ import json
 AT = 'https://www.austrocontrol.at/ta/OenflSucheEn?1-7.IFormSubmitListener-form'
 NL = 'http://www.newfoundland.nl/luchtvaartregister/user/en/luchtvaartuig.php?registratie='
 BE = 'http://www.mobilit.fgov.be/bcaa/aircraft/search.jsf'
+
 CA = 'http://wwwapps.tc.gc.ca/saf-sec-sur/2/ccarcs-riacc/RchSimpRes.aspx?cn=||&mn=||&sn=||&on=||&m=|'
+
+
+# Implemented
+URL_DE = ''
 URL_IS = 'http://www.icetra.is/aviation/aircraft/register?aq='
 URL_CH = 'https://www.bazlwork.admin.ch/bazl-backend/lfr'
 URL_UK = 'http://publicapps.caa.co.uk/modalapplication.aspx?catid=1&pagetype=65&appid=1&mode=detailnosummary&fullregmark='
@@ -76,12 +81,24 @@ class Plane:
 
         # ICELAND
         elif self.numb.startswith('TF'):
+            name = ''
+            street = ''
+            city = ''
             req = requests.get(URL_IS+self.numb)
             if req.status_code is 200:
                 soup = BeautifulSoup(req.text, 'html.parser')
-                own = soup.find(own = soup.find('li', {'class':'owner'}))
+                own = soup.find('li', {'class':'owner'})
+                won = own.stripped_strings
+
+                for i,j in enumerate(won):
+                    if i == 1:
+                        name = j
+                    if i == 2:
+                        street = j
+                    if i == 3:
+                        city = j
                 if own is not None:
-                    return None
+                    return Owner(name, street, city, '', 'Iceland')
             return None
 
         # FRANCE

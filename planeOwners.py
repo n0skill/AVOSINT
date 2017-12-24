@@ -1,12 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+# AVOSINT - Aviation Open Source Intelligence Tool
+# A complete tool to search Aviation-related OSINT from sources such as
+# 1) Online live aviation maps
+# 2) Radio signals (ADSB via SDR)
+# 3) Official aircraft registeries
+
+# As of now, this tools supports registeries from
+# The United States of America
+# The United Kingdom
+# Switzerland
+# France
+# Iceland
+
 # Python script to lookup plane owner's in a particular geographic area using public data from planefinder.net and the federal aviation agency.
-# If a particular owner is found, the plane infos are shown
 
 
 # TODO
 # Implement ADS-B
-# Implement news source, location API, and search based on location name
+# Add support for multiple countries registeries
+
+
 
 import requests
 import random as rand
