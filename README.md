@@ -1,5 +1,6 @@
 # AVOSINT
 ![Logo of AVOSINT](./logo/AVOSINT.svg)
+<img src="./logo/AVOSINT.svg">
 A tool to search Aviation-related intelligence from public sources.
 
 ## TODO
