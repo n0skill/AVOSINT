@@ -13,6 +13,7 @@
 # Switzerland
 # France
 # Iceland
+# Austria
 
 # Python script to lookup plane owner's in a particular geographic area using public data from planefinder.net and the federal aviation agency.
 
@@ -30,6 +31,7 @@ import logging
 import argparse
 from bs4 import BeautifulSoup
 from threading import Thread
+from multiprocessing.pool import ThreadPool
 import time
 
 from libs.planes import *
@@ -94,7 +96,6 @@ def getjson(jsonurl):
 
 # This method gets plane from an area and puts them in a list
 def fetch_planes_from_area(coords_1, coords_2):
-    print(coords_1, coords_2)
     planelist = []
     location = str(coords_2.latitude)+'.00,'+str(coords_1.latitude)+'.00,'+str(coords_1.longitude)+'.00,'+str(coords_2.longitude)+'.00'
     try:
@@ -119,6 +120,7 @@ def getInterestingPlaces():
 
 def main():
     parser  = argparse.ArgumentParser()
+    pool = ThreadPool(processes=1)
     parser.add_argument("--proxy", help="Use proxy address", type=str)
     parser.add_argument("--interactive", action="store_true")
     parser.add_argument("--debug", action="store_true")
@@ -157,10 +159,12 @@ def main():
             corner_2 = US_AREA[1]
 
     if flg_lookup:
+        disp = Display()
         while True:
             if args.interactive:
-                disp = Display()
-                plane_list = fetch_planes_from_area(corner_1, corner_2)
+                async_result = pool.apply_async(fetch_planes_from_area, (corner_1, corner_2))
+                disp.loading()
+                plane_list = async_result.get()
                 disp.update(plane_list)
             else:
                 plane_list = fetch_planes_from_area(corner_1, corner_2)

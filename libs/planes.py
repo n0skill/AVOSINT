@@ -19,12 +19,6 @@ URL_CH = 'https://www.bazlwork.admin.ch/bazl-backend/lfr'
 URL_UK = 'http://publicapps.caa.co.uk/modalapplication.aspx?catid=1&pagetype=65&appid=1&mode=detailnosummary&fullregmark='
 URL_US = 'http://registry.faa.gov/aircraftinquiry/NNum_Results.aspx?MailProcess=1&nNumberTxt='
 
-# TODO
-class OwnerGetter:
-    def __init__(self, agency, **specs):
-        # Specs are specifics methods for retrieving the owner data
-        pass
-
 class Owner:
     def __init__(self, name, street, city, zip_code, country):
         self.name = name
@@ -34,7 +28,7 @@ class Owner:
         self.country = country
 
     def __repr__(self):
-        return "%s\n%s\n%s\n%s\n%s" % (self.name, self.street, self.city, self.zip_code, self.country)
+        return "%s %s %s %s %s" % (self.name, self.street, self.city, self.zip_code, self.country)
 
     def __str__(self):
         return self.__repr__()
@@ -77,7 +71,7 @@ class Plane:
             soup = BeautifulSoup(req.text, 'html.parser')
             own = soup.find('span', {'id':'currentModule_currentModule_RegisteredOwners'}).contents
 
-            return Owner(own[0], own[4],   own[6],   own[8],  'Great Britain')
+            return Owner(own[0], own[4], own[6], own[8], 'Great Britain')
 
         # ICELAND
         elif self.numb.startswith('TF'):
@@ -178,8 +172,8 @@ class Plane:
             leng        = len(own_ops)
             name        = own_ops[leng-1].get('ownerOperator').encode().decode()
             addr        = own_ops[leng-1].get('address')
-            street      = addr.get('street').encode().decode()
-            street_n    = addr.get('streetNo').encode().decode()
+            street      = str(addr.get('street').encode())
+            street_n    = str(addr.get('streetNo').encode())
             zipcode     = addr.get('zipCode').encode().decode()
             own         = Owner(name, street + ' ' + street_n, 'CITY TODO',zipcode, "Switzerland")
             return own
@@ -197,7 +191,7 @@ class Plane:
                 'Accept-Language': 'en-US,en;q=0.9',
                 'Upgrade-Insecure-Requests': '1',
                 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
                 'Cache-Control': 'no-cache',
                 'Referer': 'https://www.austrocontrol.at/ta/OenflSucheEn?4',
@@ -228,12 +222,11 @@ class Plane:
             tds = table.find_all('td')
             ownerinfos = tds[4] # Owner infos contained in 5th column
             parag = ownerinfos.find('p')
-            infos = parag.decode().split('<br>')
+            infos = parag.encode().decode().split('<br>')
             name = infos[0].replace('<p>', '').encode()
-            addr_city = infos[1].split(',')[0].encode()
             addr_street = infos[1].split(',')[1].encode()
-            country = infos[2]
-            return Owner(name, addr_street, addr_city, 'N/A', 'Austria')
+            addr_city = infos[1].split(',')[0].encode()
+            return Owner(name, addr_street, addr_city, '', 'Austria')
         else:
             return None
 
