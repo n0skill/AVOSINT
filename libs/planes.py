@@ -141,7 +141,7 @@ class Plane:
             bls = soup.find('a', string=self.numb)
 
             response = requests.get('http://www.immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'], headers=headers, data=data)
-            soup = BeautifulSoup(response.text, 'html.parser')
+            soup = BeautifulPSoup(response.text, 'html.parser')
             bls = soup.find('a', string="Données juridiques")
 
             response = requests.get('http://www.immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'], headers=headers, data=data)
@@ -184,6 +184,56 @@ class Plane:
             own         = Owner(name, street + ' ' + street_n, 'CITY TODO',zipcode, "Switzerland")
             return own
 
+        elif self.numb.startswith('OE'):
+            cookies = {
+                'JSESSIONID': '5FBDACF3598077D88445BF60A6741886',
+                'TS01efbd85': '01f60c9e4f1ea3e8a93276490ec04ebcb3eb255a85b97d8425918ae1d7b64e53fbc1f81377d2d68acc1c60ec4afc4673babca57c0a638ba77560cbaac9f438ef173ad6ca85',
+            }
+
+            headers = {
+                'Pragma': 'no-cache',
+                'Origin': 'https://www.austrocontrol.at',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Upgrade-Insecure-Requests': '1',
+                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                'Cache-Control': 'no-cache',
+                'Referer': 'https://www.austrocontrol.at/ta/OenflSucheEn?4',
+                'Connection': 'keep-alive',
+            }
+
+            params = (
+                ('4-5.IFormSubmitListener-form', ''),
+            )
+
+            data = [
+              ('id3_hf_0', ''),
+              ('txtKennzeichen', self.numb[3:]),
+              ('txtOrdnungszahl', ''),
+              ('txtHersteller', ''),
+              ('txtBaumuster', ''),
+              ('cmbLfzart', ''),
+              ('txtSeriennummer', ''),
+              ('radStartgewicht', '1'),
+              ('txtStartgewicht', ''),
+              ('txtHalter', ''),
+              ('p::submit', ''),
+            ]
+
+            response = requests.post('https://www.austrocontrol.at/ta/OenflSucheEn', headers=headers, params=params, cookies=cookies, data=data)
+            soup = BeautifulSoup(response.text, 'html.parser')
+            table = soup.find('table', {'id':'resultTable'})
+            tds = table.find_all('td')
+            ownerinfos = tds[4] # Owner infos contained in 5th column
+            parag = ownerinfos.find('p')
+            infos = parag.decode().split('<br>')
+            name = infos[0].replace('<p>', '').encode()
+            addr_city = infos[1].split(',')[0].encode()
+            addr_street = infos[1].split(',')[1].encode()
+            country = infos[2]
+            return Owner(name, addr_street, addr_city, 'N/A', 'Austria')
         else:
             return None
 
