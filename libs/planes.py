@@ -141,7 +141,7 @@ class Plane:
             bls = soup.find('a', string=self.numb)
 
             response = requests.get('http://www.immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'], headers=headers, data=data)
-            soup = BeautifulPSoup(response.text, 'html.parser')
+            soup = BeautifulSoup(response.text, 'html.parser')
             bls = soup.find('a', string="Données juridiques")
 
             response = requests.get('http://www.immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'], headers=headers, data=data)
