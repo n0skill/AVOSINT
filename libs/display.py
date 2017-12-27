@@ -4,6 +4,7 @@ import time
 
 class Display:
     header = "Interactive interface for AVOSINT"
+    titles = "Tail #\t Position\t Heading\t Owner\t Is_hovering\t "
     last_res = []
     def __init__(self):
         self.selected_index = 0
@@ -18,7 +19,7 @@ class Display:
     def loading(self):
         os.system('clear')
         print(Display.header + '\t loading planes from area...')
-        print('Flight #\t Position\t Heading\t Owner\t Is_hovering\t ')
+        print(Display.titles)
         for ind, plane in enumerate(Display.last_res):
             selector = ''
             if ind == self.selected_index:
@@ -30,7 +31,7 @@ class Display:
         net_chr = ''
         os.system('clear')
         print(Display.header)
-        print('Flight #\t Position\t Heading\t Owner\t Is_hovering\t ')
+        print(Display.titles)
         for ind, plane in enumerate(plane_list):
             selector = ''
             if ind == self.selected_index:

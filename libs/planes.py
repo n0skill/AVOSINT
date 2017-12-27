@@ -179,10 +179,11 @@ class Plane:
             return own
 
         elif self.numb.startswith('OE'):
-            cookies = {
-                'JSESSIONID': '5FBDACF3598077D88445BF60A6741886',
-                'TS01efbd85': '01f60c9e4f1ea3e8a93276490ec04ebcb3eb255a85b97d8425918ae1d7b64e53fbc1f81377d2d68acc1c60ec4afc4673babca57c0a638ba77560cbaac9f438ef173ad6ca85',
-            }
+            # Austria
+            # FIXME: Needs new cookies to function proprely
+            s = requests.session()
+            response = s.get('https://www.austrocontrol.at/en/aviation_agency/aircraft/aircraft_register/search_online')
+            print(s.cookies)
 
             headers = {
                 'Pragma': 'no-cache',
@@ -191,17 +192,16 @@ class Plane:
                 'Accept-Language': 'en-US,en;q=0.9',
                 'Upgrade-Insecure-Requests': '1',
                 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
-                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                'Content-Type': 'application/x-www-form-urlencoded',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
                 'Cache-Control': 'no-cache',
-                'Referer': 'https://www.austrocontrol.at/ta/OenflSucheEn?4',
+                'Referer': 'https://www.austrocontrol.at/ta/OenflSucheEn?0',
                 'Connection': 'keep-alive',
             }
 
             params = (
-                ('4-5.IFormSubmitListener-form', ''),
+                ('1-2.IFormSubmitListener-form', ''),
             )
-
             data = [
               ('id3_hf_0', ''),
               ('txtKennzeichen', self.numb[3:]),
@@ -216,7 +216,12 @@ class Plane:
               ('p::submit', ''),
             ]
 
-            response = requests.post('https://www.austrocontrol.at/ta/OenflSucheEn', headers=headers, params=params, cookies=cookies, data=data)
+            response = s.post('https://www.austrocontrol.at/ta/OenflSucheEn?1', data=data)
+            print(s.cookies)
+            if response.status_code is not 200:
+                print(response.status_code)
+                return None
+
             soup = BeautifulSoup(response.text, 'html.parser')
             table = soup.find('table', {'id':'resultTable'})
             tds = table.find_all('td')
@@ -227,6 +232,12 @@ class Plane:
             addr_street = infos[1].split(',')[1].encode()
             addr_city = infos[1].split(',')[0].encode()
             return Owner(name, addr_street, addr_city, '', 'Austria')
+        elif self.numb.startswith('VH-'):
+            response = requests.get('https://www.casa.gov.au/aircraft-register?search_api_views_fulltext=&vh='+ self.numb[2:] +'&field_ar_serial=')
+            soup = BeautifulSoup(response.text, 'html.parser')
+            infos = soup.find('div', {'class':'field-name-field-ar-registration-holder'})
+            onlyinfo = infos.text.replace('Registration holder:', '')
+            return Owner(onlyinfo[4:], '', '', '', '')
         else:
             return None
 

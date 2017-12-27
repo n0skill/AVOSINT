@@ -97,7 +97,7 @@ def getjson(jsonurl):
 # This method gets plane from an area and puts them in a list
 def fetch_planes_from_area(coords_1, coords_2):
     planelist = []
-    location = str(coords_2.latitude)+'.00,'+str(coords_1.latitude)+'.00,'+str(coords_1.longitude)+'.00,'+str(coords_2.longitude)+'.00'
+    location = str(coords_2.latitude)+','+str(coords_1.latitude)+','+str(coords_1.longitude)+','+str(coords_2.longitude)
     try:
         j = getjson(flightradar+location)
     except Exception as e:
