@@ -98,17 +98,8 @@ class Plane:
         # FRANCE
         elif self.numb.startswith('F-'):
             headers = {
-                'Pragma': 'no-cache',
                 'Origin': 'http://www.immat.aviation-civile.gouv.fr',
-                'Accept-Encoding': 'gzip, deflate',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Upgrade-Insecure-Requests': '1',
-                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-                'Cache-Control': 'no-cache',
-                'Referer': 'http://www.immat.aviation-civile.gouv.fr/immat/servlet/aeronef_liste.html',
-                'Connection': 'keep-alive',
+                'Referer': 'http://www.immat.aviation-civile.gouv.fr/immat/servlet/aeronef_liste.html'
             }
 
             data = [
@@ -116,7 +107,7 @@ class Plane:
               ('FORM_ACTION', 'SEARCH'),
               ('FORM_CHECK', 'true'),
               ('FORM_ROW', ''),
-              ('CTRL_ID', '145814_ad541de4'),
+              ('CTRL_ID', '1010'),
               ('SUBFORM_DTC_ID', 'DTC_1'),
               ('$DTO_RECHERCHE_AER$PER_ID', ''),
               ('$DTO_RECHERCHE_AER$PER_VERSION', ''),
@@ -134,33 +125,31 @@ class Plane:
             soup = BeautifulSoup(response.text, 'html.parser')
             bls = soup.find('a', string=self.numb)
 
-            response = requests.get('http://www.immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'], headers=headers, data=data)
-            soup = BeautifulSoup(response.text, 'html.parser')
-            bls = soup.find('a', string="Données juridiques")
+            if bls is not None:
+                response = requests.get('http://www.immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'], headers=headers, data=data)
+                soup = BeautifulSoup(response.text, 'html.parser')
+                bls = soup.find('a', string="Données juridiques")
 
-            response = requests.get('http://www.immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'], headers=headers, data=data)
-            soup = BeautifulSoup(response.text, 'html.parser')
-            bls = soup.find_all('td', {'class':"tdLigneListe"})
+                response = requests.get('http://www.immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'], headers=headers, data=data)
+                soup = BeautifulSoup(response.text, 'html.parser')
+                bls = soup.find_all('td', {'class':"tdLigneListe"})
 
-            name = bls[0].text
-            addr = bls[1].text
-            city = bls[2].text
-            return Owner(name, addr, city, '', 'France')
+                name = bls[0].text
+                addr = bls[1].text
+                city = bls[2].text
+                return Owner(name, addr, city, '', 'France')
 
+            else:
+                return None
 
         elif self.numb.startswith('HB-'):
             url=URL_CH
             headers = {
                 'Pragma': 'no-cache',
                 'Origin': 'https://www.bazlwork.admin.ch',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
                 'Content-Type': 'application/json;charset=UTF-8',
                 'Accept': 'application/json, text/plain, */*',
-                'Cache-Control': 'no-cache',
-                'Referer': 'https://www.bazlwork.admin.ch/bazl/',
-                'Connection': 'keep-alive',
+                'Referer': 'https://www.bazlwork.admin.ch/bazl/'
             }
             data = '{"page_result_limit":10,"current_page_number":1,"sort_list":"registration","totalItems":0,"query":{"registration":"' +self.numb[3:]+'"},"language":"fr","tab":"basic"}'
 
@@ -175,6 +164,7 @@ class Plane:
             street      = str(addr.get('street').encode())
             street_n    = str(addr.get('streetNo').encode())
             zipcode     = addr.get('zipCode').encode().decode()
+
             own         = Owner(name, street + ' ' + street_n, 'CITY TODO',zipcode, "Switzerland")
             return own
 
@@ -183,22 +173,7 @@ class Plane:
             # FIXME: Needs new cookies to function proprely
             s = requests.session()
             response = s.get('https://www.austrocontrol.at/en/aviation_agency/aircraft/aircraft_register/search_online')
-            print(s.cookies)
-
-            headers = {
-                'Pragma': 'no-cache',
-                'Origin': 'https://www.austrocontrol.at',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Upgrade-Insecure-Requests': '1',
-                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-                'Cache-Control': 'no-cache',
-                'Referer': 'https://www.austrocontrol.at/ta/OenflSucheEn?0',
-                'Connection': 'keep-alive',
-            }
-
+            #print(s.cookies)
             params = (
                 ('1-2.IFormSubmitListener-form', ''),
             )
@@ -216,14 +191,22 @@ class Plane:
               ('p::submit', ''),
             ]
 
-            response = s.post('https://www.austrocontrol.at/ta/OenflSucheEn?1', data=data)
-            print(s.cookies)
+            headers = {
+                'Origin': 'https://www.austrocontrol.at',
+                'Referer': 'https://www.austrocontrol.at/ta/OenflSucheEn?1',
+            }
+            response = s.post('https://www.austrocontrol.at/ta/OenflSucheEn?0-1.IFormSubmitListener-form', data=data, headers=headers)
             if response.status_code is not 200:
                 print(response.status_code)
                 return None
 
             soup = BeautifulSoup(response.text, 'html.parser')
+
             table = soup.find('table', {'id':'resultTable'})
+
+            if table is None:
+                return None
+
             tds = table.find_all('td')
             ownerinfos = tds[4] # Owner infos contained in 5th column
             parag = ownerinfos.find('p')
@@ -238,6 +221,65 @@ class Plane:
             infos = soup.find('div', {'class':'field-name-field-ar-registration-holder'})
             onlyinfo = infos.text.replace('Registration holder:', '')
             return Owner(onlyinfo[4:], '', '', '', '')
+        elif self.numb.startswith('OO-'):
+            s = requests.session()
+
+            response = s.get('http://www.mobilit.fgov.be:7081/bcaa/aircraft/search.jsf')
+
+
+            data = [
+              ('javax.faces.partial.ajax', 'true'),
+              ('javax.faces.source', 'form:j_idt104'),
+              ('javax.faces.partial.execute', 'form:j_idt104'),
+              ('javax.faces.partial.render', 'form'),
+              ('javax.faces.behavior.event', 'rowSelect'),
+              ('javax.faces.partial.event', 'rowSelect'),
+              ('form:j_idt104_instantSelectedRowKey', '3479'),
+              ('form', 'form'),
+              ('form:j_idt38:j_idt41:inputText', 'OO-LEL'),
+              ('form:j_idt38:j_idt52:inputText', ''),
+              ('form:j_idt38:j_idt53:selectManyCheckbox', 'REGISTERED'),
+              ('form:j_idt38:j_idt53:selectManyCheckbox', 'CANCELLED'),
+              ('form:j_idt38:j_idt60:inputText', ''),
+              ('form:j_idt38:j_idt61:inputText', ''),
+              ('form:j_idt38:j_idt63:inputText', ''),
+              ('form:j_idt38:j_idt64:selectOneMenu', ''),
+              ('form:j_idt38:j_idt73:selectOneMenu', ''),
+              ('form:j_idt38:j_idt74:selectOneMenu', ''),
+              ('form:j_idt104_selection', '3479'),
+              ('form:j_idt104_scrollState', '0,0'),
+              ('javax.faces.ViewState', '8392740435488277566:1147169290838077729'),
+            ]
+
+            response = s.post('http://www.mobilit.fgov.be:7081/bcaa/aircraft/search.jsf;', data=data)
+            #print(response.text.encode())
+            soup = BeautifulSoup(response.text, 'html.parser')
+            found = soup.find('div', {'id':'form:results'})
+            print(found)
+
+        elif self.numb.startswith('C-'):
+            response = requests.get('         http://wwwapps.tc.gc.ca/saf-sec-sur/2/ccarcs-riacc/RchSimpRes.aspx?cn=%7c%7c&mn=%7c%7c&sn=%7c%7c&on=%7c%7c&m=%7c' + self.numb[2:] + '%7c', allow_redirects=True)
+            soup = BeautifulSoup(response.text, 'html.parser')
+            div = soup.find('div', {'id':'dvOwnerName'})
+
+            if div is None:
+                return None 
+            name = div.find()
+
+            name = div.select('div')[1].get_text(strip=True)
+
+            div = soup.find('div', {'id':'divOwnerAddress'})
+            street = div.select('div')[1].get_text(strip=True)
+
+            div = soup.find('div', {'id':'divOwnerCity'})
+            city = div.select('div')[1].get_text(strip=True)
+            code = div.select('div')[3].get_text(strip=True)
+
+            div = soup.find('div', {'id':'divOwnerProvince'})
+            prov = div.select('div')[1].get_text(strip=True)
+
+            return Owner(name, street, city + ' ' + code, prov, 'Canada')
+
         else:
             return None
 

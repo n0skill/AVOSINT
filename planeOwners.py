@@ -33,9 +33,10 @@ from bs4 import BeautifulSoup
 from threading import Thread
 from multiprocessing.pool import ThreadPool
 import time
-
+from subprocess import Popen
 from libs.planes import *
 from libs.display import *
+from libs.icao_converter import *
 
 # Data sources
 flightradar = 'http://data.flightradar24.com/zones/fcgi/feed.js?bounds='
@@ -128,6 +129,7 @@ def main():
     require_group.add_argument("--country", help="country code", type=str)
     require_group.add_argument("--coords", help="longitude coord in decimal format", nargs=4, type=float)
     require_group.add_argument("--number", help="Specify plane number")
+    require_group.add_argument("--sdr", help="Use sdr source instead", action="store_true")
 
     args    = parser.parse_args()
     corner_1 = None
@@ -140,7 +142,7 @@ def main():
 
     if args.number is not None:
         p = Plane(None, args.number, None, None, None)
-        print(p.owner)
+        print(str(p.owner).encode())
 
     elif args.coords:
         corner_1 = Coordinates(args.coords[0], args.coords[1])
@@ -158,6 +160,23 @@ def main():
             corner_1 = US_AREA[0]
             corner_2 = US_AREA[1]
 
+    elif args.sdr:
+        # Launch dump1090
+        Popen(["dump1090", "--net", "--quiet"])
+        while True:
+            time.sleep(2)
+            j = getjson('http://127.0.0.1:8080/dump1090/data.json')
+            print('hello')
+            for i in j:
+                hexn = int(i['hex'], 16)
+                print(i['hex'])
+
+                if hexn > 0xA00001 and hexn < 0xADF669: # If american, we know how to convert back to tail number
+                    print(icao_to_tail(hexn))
+
+
+        # get json
+
     if flg_lookup:
         disp = Display()
         while True:
@@ -170,8 +189,8 @@ def main():
                 plane_list = fetch_planes_from_area(corner_1, corner_2)
                 for plane in plane_list:
                     if plane.owner is not None:
-                        print(plane.numb)
-                        print(plane.owner)
+                        print(plane.numb.encode())
+                        print(plane.owner.encode())
 
 if __name__ == "__main__":
         main()
