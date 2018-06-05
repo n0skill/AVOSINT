@@ -22,8 +22,6 @@
 # Implement ADS-B
 # Add support for multiple countries registeries
 
-
-
 import requests
 import random as rand
 import json
@@ -142,7 +140,7 @@ def main():
 
     if args.number is not None:
         p = Plane(None, args.number, None, None, None)
-        print(str(p.owner).encode())
+        print(p.owner)
 
     elif args.coords:
         corner_1 = Coordinates(args.coords[0], args.coords[1])

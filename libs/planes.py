@@ -14,7 +14,7 @@ CA = 'http://wwwapps.tc.gc.ca/saf-sec-sur/2/ccarcs-riacc/RchSimpRes.aspx?cn=||&m
 
 # Implemented
 URL_DE = ''
-URL_IS = 'http://www.icetra.is/aviation/aircraft/register?aq='
+URL_IS = 'https://www.icetra.is/aviation/aircraft/register?aq='
 URL_CH = 'https://www.bazlwork.admin.ch/bazl-backend/lfr'
 URL_UK = 'http://publicapps.caa.co.uk/modalapplication.aspx?catid=1&pagetype=65&appid=1&mode=detailnosummary&fullregmark='
 URL_US = 'http://registry.faa.gov/aircraftinquiry/NNum_Results.aspx?MailProcess=1&nNumberTxt='
@@ -74,25 +74,25 @@ class Plane:
             return Owner(own[0], own[4], own[6], own[8], 'Great Britain')
 
         # ICELAND
-        elif self.numb.startswith('TF'):
-            name = ''
-            street = ''
-            city = ''
-            req = requests.get(URL_IS+self.numb)
-            if req.status_code is 200:
-                soup = BeautifulSoup(req.text, 'html.parser')
-                own = soup.find('li', {'class':'owner'})
-                won = own.stripped_strings
-
-                for i,j in enumerate(won):
-                    if i == 1:
-                        name = j
-                    if i == 2:
-                        street = j
-                    if i == 3:
-                        city = j
-                if own is not None:
-                    return Owner(name, street, city, '', 'Iceland')
+        # elif self.numb.startswith('TF'):
+        #     name = ''
+        #     street = ''
+        #     city = ''
+        #     req = requests.get(URL_IS+self.numb)
+        #     if req.status_code is 200:
+        #         soup = BeautifulSoup(req.text, 'html.parser')
+        #         own = soup.find('li', {'class':'owner'})
+        #         won = own.stripped_strings
+        #
+        #         for i,j in enumerate(won):
+        #             if i == 1:
+        #                 name = j
+        #             if i == 2:
+        #                 street = j
+        #             if i == 3:
+        #                 city = j
+        #         if own is not None:
+        #             return Owner(name, street, city, '', 'Iceland')
             return None
 
         # FRANCE
@@ -159,11 +159,11 @@ class Plane:
             infoarray   = jsonobj[0]
             own_ops     = infoarray.get('ownerOperators')
             leng        = len(own_ops)
-            name        = own_ops[leng-1].get('ownerOperator').encode().decode()
+            name        = own_ops[leng-1].get('ownerOperator').encode('latin-1').decode()
             addr        = own_ops[leng-1].get('address')
-            street      = str(addr.get('street').encode())
-            street_n    = str(addr.get('streetNo').encode())
-            zipcode     = addr.get('zipCode').encode().decode()
+            street      = str(addr.get('street').encode('latin-1').decode())
+            street_n    = str(addr.get('streetNo').encode('latin-1').decode())
+            zipcode     = addr.get('zipCode').encode('latin-1').decode()
 
             own         = Owner(name, street + ' ' + street_n, 'CITY TODO',zipcode, "Switzerland")
             return own
@@ -210,7 +210,7 @@ class Plane:
             tds = table.find_all('td')
             ownerinfos = tds[4] # Owner infos contained in 5th column
             parag = ownerinfos.find('p')
-            infos = parag.encode().decode().split('<br>')
+            infos = parag.encode('latin-1').split('<br>')
             name = infos[0].replace('<p>', '').encode()
             addr_street = infos[1].split(',')[1].encode()
             addr_city = infos[1].split(',')[0].encode()
@@ -263,7 +263,7 @@ class Plane:
             div = soup.find('div', {'id':'dvOwnerName'})
 
             if div is None:
-                return None 
+                return None
             name = div.find()
 
             name = div.select('div')[1].get_text(strip=True)
