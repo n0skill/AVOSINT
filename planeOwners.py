@@ -118,6 +118,7 @@ def getInterestingPlaces():
     return None
 
 def main():
+    plane_list = []
     parser  = argparse.ArgumentParser()
     pool = ThreadPool(processes=1)
     parser.add_argument("--proxy", help="Use proxy address", type=str)
@@ -164,11 +165,8 @@ def main():
         while True:
             time.sleep(2)
             j = getjson('http://127.0.0.1:8080/dump1090/data.json')
-            print('hello')
             for i in j:
                 hexn = int(i['hex'], 16)
-                print(i['hex'])
-
                 if hexn > 0xA00001 and hexn < 0xADF669: # If american, we know how to convert back to tail number
                     print(icao_to_tail(hexn))
 
@@ -187,8 +185,9 @@ def main():
                 plane_list = fetch_planes_from_area(corner_1, corner_2)
                 for plane in plane_list:
                     if plane.owner is not None:
-                        print(plane.numb.encode())
-                        print(plane.owner.encode())
-
+                        print(plane.numb)
+                        print(plane.owner)
+            time.sleep(0.2)
+    
 if __name__ == "__main__":
         main()

@@ -23,3 +23,5 @@ A tool to search Aviation-related intelligence from public sources.
 * ROK
 * Qatar
 * Singapore
+
+### Automatic test of agencies response to my requests
