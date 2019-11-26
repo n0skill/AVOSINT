@@ -96,7 +96,7 @@ class Plane:
             return None
 
         # FRANCE
-        elif self.numb.startswith('F-'):
+        elif self.numb.startswith('F-'): # TODO fixme
             headers = {
                 'Origin': 'http://www.immat.aviation-civile.gouv.fr',
                 'Referer': 'http://www.immat.aviation-civile.gouv.fr/immat/servlet/aeronef_liste.html'
