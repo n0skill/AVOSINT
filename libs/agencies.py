@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
-
+from requests.packages.urllib3.util.ssl_ import create_urllib3_context
 
 class TLSv1Adapter(HTTPAdapter):
     """"Transport adapter" that allows us to use TLSv1."""
@@ -16,6 +16,14 @@ class TLSv1Adapter(HTTPAdapter):
                                        maxsize=maxsize,
                                        block=block,
                                        ssl_version=ssl.PROTOCOL_TLSv1)
+
+class NODHAdapter(HTTPAdapter):
+    def init_poolmanager(self, connections, maxsize, block=False):
+    	self.poolmanager = PoolManager(num_pools=connections,
+						   context = create_urllib3_context(ciphers='DEFAULT:!DH'),
+						   maxsize=maxsize,
+						   block=block,
+						   ssl_version=ssl.PROTOCOL_TLSv1)
 
 
 # Gather data from various agencies depending on country code of tail number
@@ -116,5 +124,27 @@ def FR(tail_n):
 						addr = bls[1].text
 						city = bls[2].text
 						return Owner(name, addr, city, '', 'France')
-
 					return None
+
+
+def IS(tail_n):
+	name = ''
+	street = ''
+	city = ''
+	s = requests.session()
+	s.mount("https://", TLSv1Adapter())
+	req = s.get('https://www.icetra.is/aviation/aircraft/register?aq='+tail_n)
+	if req.status_code is 200:
+		soup = BeautifulSoup(req.text, 'html.parser')
+		own = soup.find('li', {'class':'owner'})
+		if own is not None:
+			won = own.stripped_strings
+			for i,j in enumerate(won):
+				if i == 1:
+					name = j
+				if i == 2:
+					street = j
+				if i == 3:
+					city = j
+			if own is not None:
+				return Owner(name, street, city, '', 'Iceland')

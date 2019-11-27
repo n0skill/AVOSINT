@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import json
 
 # Decoders for countries here
-from .agencies import CH, FR
+from .agencies import CH, FR, IS, US
 
 # Aviation agencies sources
 AT = 'https://www.austrocontrol.at/ta/OenflSucheEn?1-7.IFormSubmitListener-form'
@@ -61,7 +61,11 @@ class Craft:
             self.owner = CH(self.numb)
         elif self.numb.startswith('F-'):
             self.owner = FR(self.numb)
+        elif self.numb.startswith('TF'):
+            self.owner = IS(self.numb)
         else:
+            print('Unknown agency')
+			
             self.owner = None
 
     def get_path(self):

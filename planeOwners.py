@@ -142,13 +142,13 @@ def main():
 		FLG_DEBUG = True
 
 	if args.number is not None:
-		if len(args.number) > 1:
-			for tail_number in args.number:
-				p = Craft(None, tail_number, None, None, None)
-				print(json.dumps(p, default=lambda x: x.__dict__))
-				if args.file is not None:
-					with open(args.file, 'w') as f:
-						f.write(json.dumps(p, default=lambda x: x.__dict__))
+		for tail_number in args.number:
+			p = Craft(None, tail_number, None, None, None)
+			print(json.dumps(p, default=lambda x: x.__dict__))
+			if args.file is not None:
+				with open(args.file, 'w') as f:
+					f.write(json.dumps(p, default=lambda x: x.__dict__))
+			
 	
 	elif args.coords:
 		corner_1 = Coordinates(args.coords[0], args.coords[1])

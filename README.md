@@ -27,6 +27,7 @@ A tool to search Aviation-related intelligence from public sources.
 - [ ] Qatar
 - [ ] Singapore
 - [x] France
+- [x] Iceland
 
 ### Implement real-time behaviour detection for specific aircraft
 
