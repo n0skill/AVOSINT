@@ -22,6 +22,10 @@ URL_IS = 'https://www.icetra.is/aviation/aircraft/register?aq='
 URL_UK = 'http://publicapps.caa.co.uk/modalapplication.aspx?catid=1&pagetype=65&appid=1&mode=detailnosummary&fullregmark='
 URL_US = 'http://registry.faa.gov/aircraftinquiry/NNum_Results.aspx?MailProcess=1&nNumberTxt='
 
+
+class RT_craft(Craft):
+	pass
+
 class Owner:
     def __init__(self, name, street, city, zip_code, country):
         self.name = name
@@ -36,8 +40,9 @@ class Owner:
     def __str__(self):
         return self.__repr__()
 
-class Plane:
-    def __init__(self, webi, numb, call, latitude, longitude, origin=None, destination=None, altitude=None):
+# TODO: move location stuff to another class "realtime plane"
+class Craft:
+    def __init__(self, webi, numb, call, latitude, longitude, craft_type =None, origin=None, destination=None, altitude=None):
         self.coords = Coordinates(latitude, longitude)
         self.webi = webi
         self.numb = numb
@@ -46,9 +51,7 @@ class Plane:
         self.destination = destination
         self.altitude = altitude
         self.owner = self.get_owner()
-        #self.path = self.get_path()
-        self.heading = None
-        pass
+
 
     def __str__(self):
         return self.__repr__()
