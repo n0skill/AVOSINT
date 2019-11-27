@@ -5,8 +5,7 @@ from bs4 import BeautifulSoup
 import json
 
 # Decoders for countries here
-from .agencies import CH, FR, IS, US
-
+from .agencies import CH, FR, IS 
 # Aviation agencies sources
 AT = 'https://www.austrocontrol.at/ta/OenflSucheEn?1-7.IFormSubmitListener-form'
 NL = 'http://www.newfoundland.nl/luchtvaartregister/user/en/luchtvaartuig.php?registratie='
