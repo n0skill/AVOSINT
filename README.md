@@ -5,7 +5,7 @@ A tool to search Aviation-related intelligence from public sources.
 
 ## TODO
 
-### Implement basic information gathering for the following countries
+#### Implement basic information gathering for the following countries
 
 - [ ] Australia
 - [ ] Austria
@@ -29,6 +29,10 @@ A tool to search Aviation-related intelligence from public sources.
 - [x] France
 - [x] Iceland
 
-### Implement real-time behaviour detection for specific aircraft
+#### Implement realtime behaviour lookup
+- [ ] Position (lat, long, altitude)
+- [ ] Heading
+- [ ] Vertical Speed
+- [ ] Pattern
 
-### Automatic test of agencies response to my requests
+#### Automatic test of agencies response to my requests
