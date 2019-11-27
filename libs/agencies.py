@@ -71,7 +71,6 @@ def CH(tail_n):
 		zipcode     = addr.get('zipCode')
 		city		= addr.get('city')
 		own         = Owner(name, street + ' ' + street_n, city ,zipcode, "Switzerland")
-			
 		return own
 	else:
 		return Owner('Unknown', 'Unknown','Unknown','Unknown','Unknown')
@@ -126,6 +125,16 @@ def FR(tail_n):
 						return Owner(name, addr, city, '', 'France')
 					return None
 
+def US(tail_n):
+	resp = requests.get("https://registry.faa.gov/aircraftinquiry/NNum_Results.aspx?nNumberTxt="+tail_n)
+	if resp.status_code == 200:
+		soup = BeautifulSoup(resp.text, 'html.parser')
+		name = soup.find('span', {'id':'ctl00_content_lbMfrName'}).text
+		city = soup.find('span', {'id':'ctl00_content_lbOwnerCity'}).text
+		addr = soup.find('span', {'id':'ctl00_content_lbOwnerStreet2'}).text
+		return Owner(name, addr, city, '', 'USA')
+	else:
+		return None
 
 def IS(tail_n):
 	name = ''

@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import json
 
 # Decoders for countries here
-from .agencies import CH, FR, IS 
+from .agencies import CH, FR, IS, US
 # Aviation agencies sources
 AT = 'https://www.austrocontrol.at/ta/OenflSucheEn?1-7.IFormSubmitListener-form'
 NL = 'http://www.newfoundland.nl/luchtvaartregister/user/en/luchtvaartuig.php?registratie='
@@ -16,9 +16,7 @@ CA = 'http://wwwapps.tc.gc.ca/saf-sec-sur/2/ccarcs-riacc/RchSimpRes.aspx?cn=||&m
 
 # Implemented
 URL_DE = ''
-URL_IS = 'https://www.icetra.is/aviation/aircraft/register?aq='
 URL_UK = 'http://publicapps.caa.co.uk/modalapplication.aspx?catid=1&pagetype=65&appid=1&mode=detailnosummary&fullregmark='
-URL_US = 'http://registry.faa.gov/aircraftinquiry/NNum_Results.aspx?MailProcess=1&nNumberTxt='
 
 
 
@@ -62,9 +60,9 @@ class Craft:
             self.owner = FR(self.numb)
         elif self.numb.startswith('TF'):
             self.owner = IS(self.numb)
+        elif self.numb.startswith('N'):
+            self.owner = US(self.numb)
         else:
-            print('Unknown agency')
-			
             self.owner = None
 
     def get_path(self):
