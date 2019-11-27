@@ -28,6 +28,7 @@ A tool to search Aviation-related intelligence from public sources.
 - [ ] Singapore
 - [x] France
 - [x] Iceland
+- [x] USA
 
 #### Implement realtime behaviour lookup
 - [ ] Position (lat, long, altitude)
