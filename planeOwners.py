@@ -63,7 +63,7 @@ user_agent = {'User-agent': 'Mozilla/5.0'}
 
 # GLOBAL VARIABLES
 FLG_DEBUG = False
-
+flg_lookup = False
 # Text colors using ANSI escaping. Surely theres a better way to do this
 class bcolors:
 	ERRO = '\033[31m'
@@ -105,7 +105,7 @@ def fetch_planes_from_area(coords_1, coords_2):
 					if planeID == 'full_count' or planeID == 'version' or planeID == 'stats':
 						pass
 					else:
-						p = Plane(planeID, 
+						p = Craft(planeID, 
 								j[planeID][9],
 								j[planeID][16],
 								j[planeID][1], 
@@ -115,10 +115,9 @@ def fetch_planes_from_area(coords_1, coords_2):
 								j[planeID][4])
 						planelist.append(p)
 		except Exception as e:
-			raise e
+			print(e)
 	else:
 		location = None
-		print("Location is none")
 		return []
 	return planelist
 
@@ -145,12 +144,13 @@ def main():
 	corner_1 = None
 	corner_2 = None
 
+	flg_lookup = False
+	
 	if args.debug:
 		FLG_DEBUG = True
-		flg_lookup = False
 
 	if args.number is not None:
-		p = Plane(None, args.number, None, None, None)
+		p = Craft(None, args.number, None, None, None)
 		print(p.owner)
 
 	elif args.coords:
@@ -179,7 +179,6 @@ def main():
 				if hexn > 0xA00001 and hexn < 0xADF669: # If american, we know how to convert back to tail number
 					print(icao_to_tail(hexn))
 
-# get json
 
 	if flg_lookup:
 		disp = Display()

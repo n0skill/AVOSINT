@@ -5,8 +5,7 @@ from bs4 import BeautifulSoup
 import json
 
 # Decoders for countries here
-from .agencies import CH
-
+from .agencies import CH, FR
 
 # Aviation agencies sources
 AT = 'https://www.austrocontrol.at/ta/OenflSucheEn?1-7.IFormSubmitListener-form'
@@ -23,8 +22,6 @@ URL_UK = 'http://publicapps.caa.co.uk/modalapplication.aspx?catid=1&pagetype=65&
 URL_US = 'http://registry.faa.gov/aircraftinquiry/NNum_Results.aspx?MailProcess=1&nNumberTxt='
 
 
-class RT_craft(Craft):
-	pass
 
 class Owner:
     def __init__(self, name, street, city, zip_code, country):
@@ -42,7 +39,7 @@ class Owner:
 
 # TODO: move location stuff to another class "realtime plane"
 class Craft:
-    def __init__(self, webi, numb, call, latitude, longitude, craft_type =None, origin=None, destination=None, altitude=None):
+    def __init__(self, webi, numb, call, latitude, longitude, craft_type=None, origin=None, destination=None, altitude=None):
         self.coords = Coordinates(latitude, longitude)
         self.webi = webi
         self.numb = numb
@@ -50,21 +47,26 @@ class Craft:
         self.origin = origin
         self.destination = destination
         self.altitude = altitude
-        self.owner = self.get_owner()
+        self.get_owner()
 
 
     def __str__(self):
         return self.__repr__()
+
     def __repr__(self):
         return "%s\t%s\t%s\t%s\t%s" % (self.numb, self.call, self.coords, self.altitude, str(self.owner))
 
     def get_owner(self):
         if self.numb.startswith('HB-'):
-            owner = CH(self.numb)
-            return owner
+            self.owner = CH(self.numb)
+        elif self.numb.startswith('F-'):
+            self.owner = FR(self.numb)
         else:
-            return None
+            self.owner = None
 
     def get_path(self):
         return []
         #j = getjson(flight_data_src+self.name)
+
+class RT_craft(Craft):
+	pass
