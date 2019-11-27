@@ -8,19 +8,11 @@
 # 3) Official aircraft registeries
 
 # As of now, this tools supports registeries from
-# The United States of America
-# The United Kingdom
 # Switzerland
 # France
-# Iceland
-# Austria
 
 # Python script to lookup plane owner's in a particular geographic area using public data from planefinder.net and the federal aviation agency.
 
-
-# TODO
-# Implement ADS-B
-# Add support for multiple countries registeries
 
 import requests
 import random as rand
@@ -133,26 +125,31 @@ def main():
 	parser.add_argument("--proxy", help="Use proxy address", type=str)
 	parser.add_argument("--interactive", action="store_true")
 	parser.add_argument("--debug", action="store_true")
+	parser.add_argument("--file", type=str)
 	
 	require_group = parser.add_mutually_exclusive_group(required=True)
 	require_group.add_argument("--country", help="country code", type=str)
 	require_group.add_argument("--coords", help="longitude coord in decimal format", nargs=4, type=float)
-	require_group.add_argument("--number", help="Specify plane number")
+	require_group.add_argument("--number", help="Specify plane number", nargs="+")
 	require_group.add_argument("--sdr", help="Use sdr source instead", action="store_true")
 
 	args    = parser.parse_args()
 	corner_1 = None
 	corner_2 = None
-
 	flg_lookup = False
 	
 	if args.debug:
 		FLG_DEBUG = True
 
 	if args.number is not None:
-		p = Craft(None, args.number, None, None, None)
-		print(p.owner)
-
+		if len(args.number) > 1:
+			for tail_number in args.number:
+				p = Craft(None, tail_number, None, None, None)
+				print(json.dumps(p, default=lambda x: x.__dict__))
+				if args.file is not None:
+					with open(args.file, 'w') as f:
+						f.write(json.dumps(p, default=lambda x: x.__dict__))
+	
 	elif args.coords:
 		corner_1 = Coordinates(args.coords[0], args.coords[1])
 		corner_2 = Coordinates(args.coords[2], args.coords[3])
@@ -182,20 +179,23 @@ def main():
 
 	if flg_lookup:
 		disp = Display()
-		while True:
-			if args.interactive:
+		if args.interactive:
+			while True:
 				async_result = pool.apply_async(fetch_planes_from_area, (corner_1, corner_2))
 				disp.loading()
 				plane_list = async_result.get()
 				disp.update(plane_list)
-			else:
-				plane_list = fetch_planes_from_area(corner_1, corner_2)
-				print(plane_list)
-				for plane in plane_list:
-					if plane.owner is not None:
-						print(plane.numb)
-						print(plane.owner)
-			time.sleep(0.2)
-
+				time.sleep(0.2)
+		else:
+			plane_list = fetch_planes_from_area(corner_1, corner_2)
+			for plane in plane_list:
+				if plane.owner is not None:
+					print(plane.numb)
+					print(plane.owner)
+			if args.file is not None:
+				print('Printing to file')
+				with open(args.file, 'w') as f:
+					f.write(json.dumps(plane_list, default=lambda x: x.__dict__))
+				
 if __name__ == "__main__":
 	main()
