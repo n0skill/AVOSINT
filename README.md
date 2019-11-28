@@ -7,6 +7,8 @@ A tool to search Aviation-related intelligence from public sources.
 
 #### Implement basic information gathering for the following countries
 
+Goal is to gather data directly from aviation agencies of the countries
+
 - [ ] Australia
 - [ ] Austria
 - [ ] Bahrain
@@ -29,6 +31,10 @@ A tool to search Aviation-related intelligence from public sources.
 - [x] France
 - [x] Iceland
 - [x] USA
+
+
+#### Implement list of known interesting planes/owners
+
 
 #### Implement realtime behaviour lookup
 - [ ] Position (lat, long, altitude)

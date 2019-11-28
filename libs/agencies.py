@@ -131,7 +131,7 @@ def US(tail_n):
 		soup = BeautifulSoup(resp.text, 'html.parser')
 		name = soup.find('span', {'id':'ctl00_content_lbMfrName'}).text
 		city = soup.find('span', {'id':'ctl00_content_lbOwnerCity'}).text
-		addr = soup.find('span', {'id':'ctl00_content_lbOwnerStreet2'}).text
+		addr = soup.find('span', {'id':'ctl00_content_lbOwnerStreet'}).text
 		return Owner(name, addr, city, '', 'USA')
 	else:
 		return None
