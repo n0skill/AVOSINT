@@ -157,3 +157,19 @@ def IS(tail_n):
 					city = j
 			if own is not None:
 				return Owner(name, street, city, '', 'Iceland')
+
+def BE(tail_n):
+	rep = requests.get('https://es.mobilit.fgov.be/aircraft-registry/rest/aircrafts?aircraftStates=REGISTERED&registrationMark=' + tail_n + '&page=0&pageSize=10&sort=REGISTRATIONMARK&sortDirection=ascending')
+	if rep.status_code == 200:
+		j = json.loads(rep.text)
+		if j[0].get('id') != '':
+			rep = requests.get('https://es.mobilit.fgov.be/aircraft-registry/rest/aircrafts/'+str(j[0].get('id')))
+			if rep.status_code == 200:
+				#print(rep.text)
+				j = json.loads(rep.text)
+				name = j.get('stakeHolderRoleList')[0].get('name') 
+				street = j.get('stakeHolderRoleList')[0].get('addresses').get('street')
+				city = j.get('stakeHolderRoleList')[0].get('addresses').get('city')
+				return Owner(name, street, city, '', 'Belgium')
+
+				 

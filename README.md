@@ -9,10 +9,11 @@ A tool to search Aviation-related intelligence from public sources.
 
 Goal is to gather data directly from aviation agencies of the countries
 
+Basic owner information (name, street, city, country)
 - [ ] Australia
 - [ ] Austria
 - [ ] Bahrain
-- [ ] Belgium
+- [x] Belgium
 - [ ] Canada
 - [ ] Chile
 - [ ] Republic of China (Taiwan)
@@ -22,7 +23,7 @@ Goal is to gather data directly from aviation agencies of the countries
 - [ ] Cuba
 - [ ] Czech Republic
 - [ ] Egypt
-- [ ] Germany
+- [ ] Germany (paid)
 - [ ] Sweden
 - [x] Switzerland
 - [ ] ROK

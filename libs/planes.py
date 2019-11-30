@@ -5,20 +5,7 @@ from bs4 import BeautifulSoup
 import json
 
 # Decoders for countries here
-from .agencies import CH, FR, IS, US
-# Aviation agencies sources
-AT = 'https://www.austrocontrol.at/ta/OenflSucheEn?1-7.IFormSubmitListener-form'
-NL = 'http://www.newfoundland.nl/luchtvaartregister/user/en/luchtvaartuig.php?registratie='
-BE = 'http://www.mobilit.fgov.be/bcaa/aircraft/search.jsf'
-
-CA = 'http://wwwapps.tc.gc.ca/saf-sec-sur/2/ccarcs-riacc/RchSimpRes.aspx?cn=||&mn=||&sn=||&on=||&m=|'
-
-
-# Implemented
-URL_DE = ''
-URL_UK = 'http://publicapps.caa.co.uk/modalapplication.aspx?catid=1&pagetype=65&appid=1&mode=detailnosummary&fullregmark='
-
-
+from .agencies import CH, FR, IS, US, BE
 
 class Owner:
     def __init__(self, name, street, city, zip_code, country):
@@ -62,6 +49,8 @@ class Craft:
             self.owner = IS(self.numb)
         elif self.numb.startswith('N'):
             self.owner = US(self.numb)
+        elif self.numb.startswith('OO-'):
+            self.owner = BE(self.numb)
         else:
             self.owner = None
 
