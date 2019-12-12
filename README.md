@@ -11,7 +11,7 @@ Goal is to gather data directly from aviation agencies of the countries
 
 Basic owner information (name, street, city, country)
 - [ ] Australia
-- [ ] Austria
+- [x] Austria
 - [ ] Bahrain
 - [x] Belgium
 - [ ] Canada
