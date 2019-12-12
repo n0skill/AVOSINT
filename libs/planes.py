@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import json
 
 # Decoders for countries here
-from .agencies import CH, FR, IS, US, BE
+from .agencies import CH, FR, IS, US, BE, AT, SW
 
 class Owner:
     def __init__(self, name, street, city, zip_code, country):
@@ -30,8 +30,11 @@ class Craft:
         self.call = call
         self.origin = origin
         self.destination = destination
-        self.altitude = altitude
-        self.get_owner()
+        self.altitude = altitude	
+        try:
+            self.owner = self.get_owner()
+        except Exception as e:
+            self.owner = None
 
 
     def __str__(self):
@@ -42,17 +45,21 @@ class Craft:
 
     def get_owner(self):
         if self.numb.startswith('HB-'):
-            self.owner = CH(self.numb)
+            return CH(self.numb)
         elif self.numb.startswith('F-'):
-            self.owner = FR(self.numb)
+            return FR(self.numb)
         elif self.numb.startswith('TF'):
-            self.owner = IS(self.numb)
+            return IS(self.numb)
         elif self.numb.startswith('N'):
-            self.owner = US(self.numb)
+            return US(self.numb)
         elif self.numb.startswith('OO-'):
-            self.owner = BE(self.numb)
+            return BE(self.numb)
+        elif self.numb.startswith('OE-'):
+            return AT(self.numb)
+        elif self.numb.startswith('SE-'):
+            return SW(self.numb)
         else:
-            self.owner = None
+            raise NotImplementedError(f'Agency for this tail number {self.numb} is not implemented yet')
 
     def get_path(self):
         return []

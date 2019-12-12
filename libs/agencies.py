@@ -29,6 +29,10 @@ class NODHAdapter(HTTPAdapter):
 # Gather data from various agencies depending on country code of tail number
 
 class Owner:
+    def __init__(self):
+        self.name = 'TBD'
+        self.country = 'TBD'
+
     def __init__(self, name, street, city, zip_code, country):
         self.name = name
         self.street = street
@@ -162,14 +166,45 @@ def BE(tail_n):
 	rep = requests.get('https://es.mobilit.fgov.be/aircraft-registry/rest/aircrafts?aircraftStates=REGISTERED&registrationMark=' + tail_n + '&page=0&pageSize=10&sort=REGISTRATIONMARK&sortDirection=ascending')
 	if rep.status_code == 200:
 		j = json.loads(rep.text)
-		if j[0].get('id') != '':
-			rep = requests.get('https://es.mobilit.fgov.be/aircraft-registry/rest/aircrafts/'+str(j[0].get('id')))
-			if rep.status_code == 200:
-				#print(rep.text)
-				j = json.loads(rep.text)
-				name = j.get('stakeHolderRoleList')[0].get('name') 
-				street = j.get('stakeHolderRoleList')[0].get('addresses').get('street')
-				city = j.get('stakeHolderRoleList')[0].get('addresses').get('city')
-				return Owner(name, street, city, '', 'Belgium')
+		if len(j) > 0:
+			if j[0].get('id') != '':
+				rep = requests.get('https://es.mobilit.fgov.be/aircraft-registry/rest/aircrafts/'+str(j[0].get('id')))
+				if rep.status_code == 200:
+					#print(rep.text)
+					j 		= json.loads(rep.text)
+					name 	= j.get('stakeHolderRoleList')[0].get('name') 
+					street 	= j.get('stakeHolderRoleList')[0].get('addresses').get('street')
+					city 	= j.get('stakeHolderRoleList')[0].get('addresses').get('city')
+					return Owner(name, street, city, '', 'Belgium')
 
-				 
+		return None
+
+def SW(tail_n):
+	return Owner()
+
+
+# FIXME
+def AT(tail_n):
+	tail_n = tail_n.strip('OE-')
+	s = requests.session()
+	data = [
+			("txtKennzeichen", tail_n),
+			("radStartgewicht", 1),
+			('txtOrdnungszahl', ''),
+            ('txtHersteller', ''),
+            ('txtBaumuster', ''),
+            ('cmbLfzart', ''),
+            ('txtSeriennummer', ''),
+            ('txtStartgewicht', ''),
+            ('txtHalter', ''),
+            ('p::submit', ''),
+		]
+	headers = {	
+		'Origin': 'https://www.austrocontrol.at/',
+		'Referer': 'https://www.austrocontrol.at/'
+	}
+	response = s.get('https://www.austrocontrol.at/en/aviation_agency/aircraft/aircraft_register/search_online')
+	rep = s.post('https://www.austrocontrol.at/ta/OenflSucheEn?0-1.IFormSubmitListener-form', data=data, headers=headers)
+	if rep.status_code == 200:
+		print(rep.status_code)
+		return None
