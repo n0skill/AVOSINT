@@ -203,8 +203,22 @@ def AT(tail_n):
 		'Origin': 'https://www.austrocontrol.at/',
 		'Referer': 'https://www.austrocontrol.at/'
 	}
-	response = s.get('https://www.austrocontrol.at/en/aviation_agency/aircraft/aircraft_register/search_online')
-	rep = s.post('https://www.austrocontrol.at/ta/OenflSucheEn?0-1.IFormSubmitListener-form', data=data, headers=headers)
+	rep = s.get('https://www.austrocontrol.at/ta/OenflSucheEn')
 	if rep.status_code == 200:
-		print(rep.status_code)
-		return None
+		soup = BeautifulSoup(rep.text, features="html.parser") 
+		form_submit = soup.find_all('form')[0]
+		url = form_submit.get('action')[2:]
+		rep = s.post("https://www.austrocontrol.at/ta/" + url, data=data, headers=headers)
+		if rep.status_code == 200:
+			soup = BeautifulSoup(rep.text, features="html.parser")
+			table = soup.find('table', {'id': 'resultTable'})
+			columns = table.find_all('td')
+			texts = [column.p for column in columns]	
+			name = texts[4].contents[0]
+			address_values = texts[4].contents[1].text.split(',')
+			street = str(address_values[1]) + ' ' + str(address_values[2])
+			city = address_values[0]
+			return Owner(name, street, city, '', 'Austria')
+
+	else:
+		print(vars(rep))
