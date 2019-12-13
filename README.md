@@ -24,7 +24,7 @@ Basic owner information (name, street, city, country)
 - [ ] Czech Republic
 - [ ] Egypt
 - [ ] Germany (paid)
-- [ ] Sweden
+- [x] Sweden
 - [x] Switzerland
 - [ ] ROK
 - [ ] Qatar

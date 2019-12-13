@@ -81,64 +81,63 @@ def CH(tail_n):
 
 
 def FR(tail_n):
-			# WARNING 
-			# French service communicates over TLSV1, which is outdated
-			print('WARNING: The french agency uses TLSV1. Security is not guaranteed')
-			s = requests.session()
-			headers = {
-				'Origin': 'https://immat.aviation-civile.gouv.fr',
-				'Referer': 'https://immat.aviation-civile.gouv.fr/immat/servlet/aeronef_liste.html'
-			}
+	# WARNING 
+	# French service communicates over TLSV1, which is outdated
+	print('WARNING: The french agency uses TLSV1. Security is not guaranteed')
+	s = requests.session()
+	headers = {
+		'Origin': 'https://immat.aviation-civile.gouv.fr',
+		'Referer': 'https://immat.aviation-civile.gouv.fr/immat/servlet/aeronef_liste.html'
+	}
 
-			data = [
-			  ('FORM_DTO_ID', 'DTO_RECHERCHE_AER'),
-			  ('FORM_ACTION', 'SEARCH'),
-			  ('FORM_CHECK', 'true'),
-			  ('FORM_ROW', ''),
-			  ('CTRL_ID', '1010'),
-			  ('SUBFORM_DTC_ID', 'DTC_1'),
-			  ('$DTO_RECHERCHE_AER$PER_ID', ''),
-			  ('$DTO_RECHERCHE_AER$PER_VERSION', ''),
-			  ('$DTO_RECHERCHE_AER$PERSONNE', ''),
-			  ('$DTO_RECHERCHE_AER$MRQ_CD', tail_n),
-			  ('$DTO_RECHERCHE_AER$CNT_LIBELLE', ''),
-			  ('$DTO_RECHERCHE_AER$SI_RADIE', '1'),
-			  ('$DTO_RECHERCHE_AER$SI_RADIEcheckbox', '1'),
-			  ('$DTO_RECHERCHE_AER$SI_INSCRIT', '1'),
-			  ('$DTO_RECHERCHE_AER$SI_INSCRITcheckbox', '1'),
-			  ('$DTO_RECHERCHE_AER$CRE_NUM_SERIE', ''),
-			]
-			s.mount("https://", TLSv1Adapter())
-			response = s.post('https://immat.aviation-civile.gouv.fr/immat/servlet/aeronef_liste.html', headers=headers, data=data)
-			if response.status_code == 200:
-				soup = BeautifulSoup(response.text, 'html.parser')
-				bls = soup.find('a', string=tail_n)
-				if bls is None:
-					print(f'Could not find {tail_n} in agency registers')
-				if bls is not None:
-					response = s.get('https://immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'], headers=headers, data=data)
-					soup = BeautifulSoup(response.text, 'html.parser')
-					bls = soup.find('a', string="Données juridiques")
-					response = s.get('https://immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'], headers=headers, data=data)
-					soup = BeautifulSoup(response.text, 'html.parser')
-					bls = soup.find_all('td', {'class':"tdLigneListe"})
-					if len(bls) > 0:
-						name = bls[0].text
-						addr = bls[1].text
-						city = bls[2].text
-						return Owner(name, addr, city, '', 'France')
-					return None
+	data = [
+	  ('FORM_DTO_ID', 'DTO_RECHERCHE_AER'),
+	  ('FORM_ACTION', 'SEARCH'),
+	  ('FORM_CHECK', 'true'),
+	  ('FORM_ROW', ''),
+	  ('CTRL_ID', '1010'),
+	  ('SUBFORM_DTC_ID', 'DTC_1'),
+	  ('$DTO_RECHERCHE_AER$PER_ID', ''),
+	  ('$DTO_RECHERCHE_AER$PER_VERSION', ''),
+	  ('$DTO_RECHERCHE_AER$PERSONNE', ''),
+	  ('$DTO_RECHERCHE_AER$MRQ_CD', tail_n),
+	  ('$DTO_RECHERCHE_AER$CNT_LIBELLE', ''),
+	  ('$DTO_RECHERCHE_AER$SI_RADIE', '1'),
+	  ('$DTO_RECHERCHE_AER$SI_RADIEcheckbox', '1'),
+	  ('$DTO_RECHERCHE_AER$SI_INSCRIT', '1'),
+	  ('$DTO_RECHERCHE_AER$SI_INSCRITcheckbox', '1'),
+	  ('$DTO_RECHERCHE_AER$CRE_NUM_SERIE', ''),
+	]
+	s.mount("https://", TLSv1Adapter())
+	response = s.post('https://immat.aviation-civile.gouv.fr/immat/servlet/aeronef_liste.html', headers=headers, data=data)
+	if response.status_code == 200:
+		soup = BeautifulSoup(response.text, 'html.parser')
+		bls = soup.find('a', string=tail_n)
+		if bls is None:
+			print(f'Could not find {tail_n} in agency registers')
+		if bls is not None:
+			response = s.get('https://immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'], headers=headers, data=data)
+			soup = BeautifulSoup(response.text, 'html.parser')
+			bls = soup.find('a', string="Données juridiques")
+			response = s.get('https://immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'], headers=headers, data=data)
+			soup = BeautifulSoup(response.text, 'html.parser')
+			bls = soup.find_all('td', {'class':"tdLigneListe"})
+			if len(bls) > 0:
+				name = bls[0].text
+				addr = bls[1].text
+				city = bls[2].text
+				return Owner(name, addr, city, '', 'France')
+			
 
 def US(tail_n):
 	resp = requests.get("https://registry.faa.gov/aircraftinquiry/NNum_Results.aspx?nNumberTxt="+tail_n)
 	if resp.status_code == 200:
 		soup = BeautifulSoup(resp.text, 'html.parser')
-		name = soup.find('span', {'id':'ctl00_content_lbMfrName'}).text
-		city = soup.find('span', {'id':'ctl00_content_lbOwnerCity'}).text
-		addr = soup.find('span', {'id':'ctl00_content_lbOwnerStreet'}).text
+		name = soup.find('span', {'id':'ctl00_content_lbMfrName'}).text.strip()
+		city = soup.find('span', {'id':'ctl00_content_lbOwnerCity'}).text.strip()
+		addr = soup.find('span', {'id':'ctl00_content_lbOwnerStreet'}).text.strip()
 		return Owner(name, addr, city, '', 'USA')
-	else:
-		return None
+	raise Exception('Error while retrieving from US')
 
 def IS(tail_n):
 	name = ''
@@ -180,8 +179,26 @@ def BE(tail_n):
 		return None
 
 def SW(tail_n):
-	return Owner()
-
+	data = {
+		'selection':'regno',
+		'regno': tail_n,
+		'part':'',
+		'owner':'',
+		'item':'',
+		'X-Requested-With':'XMLHttpRequest'
+	}
+	s = requests.session()
+	rep = s.post('https://sle-p.transportstyrelsen.se/extweb/en-gb/sokluftfartyg', data = data)
+	if rep.status_code == 200:
+		soup = BeautifulSoup(rep.content, features="html.parser")
+		results_element = soup.find_all('label', {'class':'owner-headline'})[0]
+		name = results_element.parent.find('a', {'class':'open-owner-page'}).text
+		street = results_element.parent.text.split('\r\n')[1].strip()
+		city = results_element.parent.text.split('\r\n')[2].strip()
+		country= results_element.parent.text.split('\r\n')[3].strip()
+		return Owner(name, street, city, '', country)
+	else:
+		raise Exception('Error retrieving from SW')
 
 # FIXME
 def AT(tail_n):
@@ -222,3 +239,7 @@ def AT(tail_n):
 
 	else:
 		print(vars(rep))
+
+
+def CZ(tail_n):
+	raise NotImplementedError('Czech registry not yet implemented.\nRegistry url is http://portal.caa.cz/letecky-rejstrik')
