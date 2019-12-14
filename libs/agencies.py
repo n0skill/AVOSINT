@@ -81,9 +81,8 @@ def CH(tail_n):
 
 
 def FR(tail_n):
-	# WARNING 
-	# French service communicates over TLSV1, which is outdated
 	print('WARNING: The french agency uses TLSV1. Security is not guaranteed')
+	
 	s = requests.session()
 	headers = {
 		'Origin': 'https://immat.aviation-civile.gouv.fr',
@@ -108,25 +107,40 @@ def FR(tail_n):
 	  ('$DTO_RECHERCHE_AER$SI_INSCRITcheckbox', '1'),
 	  ('$DTO_RECHERCHE_AER$CRE_NUM_SERIE', ''),
 	]
-	s.mount("https://", TLSv1Adapter())
-	response = s.post('https://immat.aviation-civile.gouv.fr/immat/servlet/aeronef_liste.html', headers=headers, data=data)
+	s.mount("https://", TLSv1Adapter()) # Add TSLV1 adapter (outdated)
+	
+	response = s.post(
+		'https://immat.aviation-civile.gouv.fr/immat/servlet/aeronef_liste.html',
+		headers=headers,
+		data=data)
+
 	if response.status_code == 200:
-		soup = BeautifulSoup(response.text, 'html.parser')
-		bls = soup.find('a', string=tail_n)
+		soup 	= BeautifulSoup(response.text, 'html.parser')
+		bls 	= soup.find('a', string=tail_n)
+
 		if bls is None:
 			print(f'Could not find {tail_n} in agency registers')
 		if bls is not None:
-			response = s.get('https://immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'], headers=headers, data=data)
-			soup = BeautifulSoup(response.text, 'html.parser')
-			bls = soup.find('a', string="Données juridiques")
-			response = s.get('https://immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'], headers=headers, data=data)
-			soup = BeautifulSoup(response.text, 'html.parser')
-			bls = soup.find_all('td', {'class':"tdLigneListe"})
-			if len(bls) > 0:
-				name = bls[0].text
-				addr = bls[1].text
-				city = bls[2].text
-				return Owner(name, addr, city, '', 'France')
+			response = s.get(
+				'https://immat.aviation-civile.gouv.fr/immat/servlet/'+bls['href'],
+				headers=headers,
+				data=data)
+
+			soup 	= BeautifulSoup(response.text, 'html.parser')
+			bls		= soup.find('a', string="Données juridiques")
+			r		= s.get('https://immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'],
+				data=data)
+
+			if r.status_code == 200:
+				soup = BeautifulSoup(r.text, 'html.parser')
+				bls  = soup.find_all('td', {'class':"tdLigneListe"})
+				if len(bls) > 0:
+					name = bls[0].text
+					addr = bls[1].text
+					city = bls[2].text
+					return Owner(name, addr, city, '', 'France')
+	# In case no results could be returned
+	raise Exception(f'{tail_n} Error while retrieving from FR')
 			
 
 def US(tail_n):
@@ -140,11 +154,12 @@ def US(tail_n):
 	raise Exception('Error while retrieving from US')
 
 def IS(tail_n):
-	name = ''
-	street = ''
-	city = ''
-	s = requests.session()
-	s.mount("https://", TLSv1Adapter())
+	name 	= ''
+	street 	= ''
+	city 	= ''
+	s 		= requests.session()
+	s.mount("https://", TLSv1Adapter()) # Outdated TSLv1 -> Needs a specific adapter
+	
 	req = s.get('https://www.icetra.is/aviation/aircraft/register?aq='+tail_n)
 	if req.status_code is 200:
 		soup = BeautifulSoup(req.text, 'html.parser')
@@ -163,6 +178,7 @@ def IS(tail_n):
 
 def BE(tail_n):
 	rep = requests.get('https://es.mobilit.fgov.be/aircraft-registry/rest/aircrafts?aircraftStates=REGISTERED&registrationMark=' + tail_n + '&page=0&pageSize=10&sort=REGISTRATIONMARK&sortDirection=ascending')
+
 	if rep.status_code == 200:
 		j = json.loads(rep.text)
 		if len(j) > 0:
@@ -187,7 +203,7 @@ def SW(tail_n):
 		'item':'',
 		'X-Requested-With':'XMLHttpRequest'
 	}
-	s = requests.session()
+	s 	= requests.session()
 	rep = s.post('https://sle-p.transportstyrelsen.se/extweb/en-gb/sokluftfartyg', data = data)
 	if rep.status_code == 200:
 		soup = BeautifulSoup(rep.content, features="html.parser")
@@ -242,4 +258,44 @@ def AT(tail_n):
 
 
 def CZ(tail_n):
-	raise NotImplementedError('Czech registry not yet implemented.\nRegistry url is http://portal.caa.cz/letecky-rejstrik')
+
+	data = {
+	'aparameters': [
+		'',
+		''	,
+		''	,
+		''	,
+		''	,
+		tail_n[3:],
+		''	,
+		''	,
+		''	,
+		''	,
+		''	,
+		'kategorie_letadla:',
+		'typ_letadla:',
+		'rejstrikova_znacka:'+str(tail_n[3:]),
+		'aid_nast:281',
+		'aSubmit:1',
+		]
+	}
+
+	r 		= requests.post('http://portal.caa.cz/web_redir', data = data)
+	soup 	= BeautifulSoup(r.content, features="html.parser")
+	res 	= soup.find('div', {'id': 'infobox_letadlo1'})
+	name 	= res.find('div', {'class': 'value'}).text
+	return Owner(name, '', '', '', '')
+	
+
+def UK(tail_n):
+	raise NotImplementedError('UK registry not yet implemented. Registry url is https://siteapps.caa.co.uk/g-info/')
+	data = {
+		'Registration': tail_n[2:]
+	}
+	print(data)
+	s = requests.session()
+	r = s.get('https://siteapps.caa.co.uk/g-info/')
+	r = s.post('https://ginfoapi.caa.co.uk/api/aircraft/search', data=data)
+	if r.status_code == 200:
+		print(r.content)
+	print(r.content)

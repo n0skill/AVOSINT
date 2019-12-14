@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import json
 
 # Decoders for countries here
-from .agencies import CH, FR, IS, US, BE, AT, SW, CZ
+from .agencies import * 
 
 class Owner:
     def __init__(self, name, street, city, zip_code, country):
@@ -57,6 +57,8 @@ class Craft:
             return SW(self.numb)
         elif self.numb.startswith('OK-'):
             return CZ(self.numb)
+        elif self.numb.startswith('G-'):
+            return UK(self.numb)
         else:
             raise NotImplementedError(f'Agency for tail number {self.numb} is not implemented yet')
 

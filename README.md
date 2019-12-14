@@ -24,11 +24,15 @@ Basic owner information (name, street, city, country)
 - [ ] Czech Republic
 - [ ] Egypt
 - [ ] Germany (paid)
+- [ ] Luxembourg
 - [x] Sweden
 - [x] Switzerland
 - [ ] ROK
 - [ ] Qatar
 - [ ] Singapore
+- [ ] Spain
+It looks like a user name is required. Not sure about who can register.
+- [ ] United Kingdom
 - [x] France
 - [x] Iceland
 - [x] USA
