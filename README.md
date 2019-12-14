@@ -21,7 +21,7 @@ Basic owner information (name, street, city, country)
 - [ ] Hong-Kong
 - [ ] Colombia
 - [ ] Cuba
-- [ ] Czech Republic
+- [x] Czech Republic
 - [ ] Egypt
 - [ ] Germany (paid)
 - [ ] Luxembourg
