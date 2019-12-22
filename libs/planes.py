@@ -59,6 +59,10 @@ class Craft:
             return CZ(self.numb)
         elif self.numb.startswith('G-'):
             return UK(self.numb)
+        elif self.numb.startswith('EI-'):
+            return IE(self.numb)
+        elif self.numb.startswith('M-'):
+            return IM(self.numb)
         else:
             raise NotImplementedError(f'Agency for tail number {self.numb} is not implemented yet')
 

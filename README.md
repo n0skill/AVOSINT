@@ -24,6 +24,7 @@ Basic owner information (name, street, city, country)
 - [x] Czech Republic
 - [ ] Egypt
 - [ ] Germany (paid)
+- [x] Isle of Man
 - [ ] Luxembourg
 - [x] Sweden
 - [x] Switzerland

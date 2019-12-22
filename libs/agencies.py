@@ -3,7 +3,7 @@ import json
 import requests
 import ssl
 from bs4 import BeautifulSoup
-
+import calendar
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
 from requests.packages.urllib3.util.ssl_ import create_urllib3_context
@@ -299,3 +299,73 @@ def UK(tail_n):
 	if r.status_code == 200:
 		print(r.content)
 	print(r.content)
+
+def IE(tail_n):
+	headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0',
+	}
+	r = requests.get('https://www.iaa.ie/commercial-aviation/aircraft-registration-2/latest-register-and-monthly-changes-1', headers=headers)
+#	calendar.monthrange()
+
+	url_doc = 'https://www.iaa.ie/docs/default-source/publications/aircraft-registration/30-november-2019.xlsx'
+#	if r.status_code == 200:
+#		print(r.content)
+
+	raise NotImplementedError('Not implemented yet. Registry url is https://www.iaa.ie/')
+
+def IM(tail_n):
+	r = requests.get('https://ardis.iomaircraftregistry.com/register/search')
+	if r.status_code == 200:
+		soup = BeautifulSoup(r.content, features="html.parser")
+		token = soup.find('input', {'id': '__RequestVerificationToken'})
+		data = {
+			'__RequestVerificationToken' : token['value'],
+			'prs_rm__ptt': 8,
+			'prs_rm__tt' : 8,
+			'prs_rm__v1' : tail_n[2:],
+			'prs_rm__pv1': '',
+			'prs_rm__v2' :'' ,
+			'prs_rm__pv2': '',
+			'prs_sn__ptt': 8,
+			'prs_sn__tt': 8,
+			'prs_sn__v1': '',
+			'prs_sn__pv1': '',
+			'prs_sn__v2':'',
+			'prs_sn__pv2':'',
+			'prs_on__ptt':8,
+			'prs_on__tt':8,
+			'prs_on__v1':'',
+			'prs_on__pv1':'',
+			'prs_on__v2':'',
+			'prs_on__pv2':'',
+			'prs_ma__ptt':8,
+			'prs_ma__tt':8,
+			'prs_ma__v1':'',
+			'prs_ma__pv1':'',
+			'prs_ma__v2':'',
+			'prs_ma__pv2':'',
+			'F__ptt':8,
+			'F__tt':8,
+			'F__v1':'',
+			'F__pv1':'',
+			'F__v2':'',
+			'F__pv2':'',
+			'prs_as__pv': '__any__',
+			'prs_as__v':'__any__',
+			'prs__adidx':'',
+			'prs__reidx':'',
+			'prs_bg__2__value':'Search'
+		}
+		r = requests.get('https://ardis.iomaircraftregistry.com/register/search', data = data)
+		if r.status_code == 200:
+			soup = BeautifulSoup(r.content, features="html.parser")
+			link = soup.find('td', {'id': 'prp__rid__1__cid__2'})
+			if link is not None:
+				href = link.contents[0]['href']
+				r = requests.get('https://ardis.iomaircraftregistry.com'+href)
+				if r.status_code == 200:
+					soup = BeautifulSoup(r.content, features="html.parser")
+					own = soup.find('span', {'id': 'prv__11__value'})
+					name = own.text.split(',')[0]
+					street = own.text.split(',')[1]
+					return Owner(name, street, '', '', '')
+
