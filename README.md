@@ -9,7 +9,7 @@ A tool to search Aviation-related intelligence from public sources.
 
 Goal is to gather data directly from aviation agencies of the countries
 
-Basic owner information (name, street, city, country)
+Basic owner information (at least name)
 - [ ] Australia
 - [x] Austria
 - [ ] Bahrain
@@ -25,6 +25,7 @@ Basic owner information (name, street, city, country)
 - [ ] Egypt
 - [ ] Germany (paid)
 - [x] Isle of Man
+- [x] Italy
 - [ ] Luxembourg
 - [x] Sweden
 - [x] Switzerland
