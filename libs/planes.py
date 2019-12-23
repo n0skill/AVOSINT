@@ -63,8 +63,17 @@ class Craft:
             return IE(self.numb)
         elif self.numb.startswith('M-'):
             return IM(self.numb)
+        elif self.numb.startswith('I-'):
+            return IT(self.numb)
         else:
-            raise NotImplementedError(f'Agency for tail number {self.numb} is not implemented yet')
+            if self.numb != '':
+               # r = requests.get(f'https://commons.wikimedia.org/wiki/Category:{self.numb}_(aircraft)')
+               # if r.status_code == 200:
+               # 	raise NotImplementedError(f'Agency not implemented. Try wikimedia commons: https://commons.wikimedia.org/wiki/Category:{self.numb}_(aircraft)')
+               # else:
+               raise NotImplementedError(f'Agency not implemented for {self.numb}')
+            raise Exception('No tail number found')
+
 
     def get_path(self):
         return []

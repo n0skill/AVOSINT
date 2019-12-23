@@ -77,7 +77,7 @@ def CH(tail_n):
 		own         = Owner(name, street + ' ' + street_n, city ,zipcode, "Switzerland")
 		return own
 	else:
-		return Owner('Unknown', 'Unknown','Unknown','Unknown','Unknown')
+		raise Exception("Error retrieving from CH")
 
 
 def FR(tail_n):
@@ -192,7 +192,7 @@ def BE(tail_n):
 					city 	= j.get('stakeHolderRoleList')[0].get('addresses').get('city')
 					return Owner(name, street, city, '', 'Belgium')
 
-		return None
+		return Exception("Error retrieving from BE")
 
 def SW(tail_n):
 	data = {
@@ -216,7 +216,6 @@ def SW(tail_n):
 	else:
 		raise Exception('Error retrieving from SW')
 
-# FIXME
 def AT(tail_n):
 	tail_n = tail_n.strip('OE-')
 	s = requests.session()
@@ -254,7 +253,7 @@ def AT(tail_n):
 			return Owner(name, street, city, '', 'Austria')
 
 	else:
-		print(vars(rep))
+		raise Exception("Error retrieving from AT registry")
 
 
 def CZ(tail_n):
@@ -301,23 +300,17 @@ def UK(tail_n):
 	print(r.content)
 
 def IE(tail_n):
-	headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0',
-	}
-	r = requests.get('https://www.iaa.ie/commercial-aviation/aircraft-registration-2/latest-register-and-monthly-changes-1', headers=headers)
-#	calendar.monthrange()
-
+	headers	= {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0'}
+	r 		= requests.get('https://www.iaa.ie/commercial-aviation/aircraft-registration-2/latest-register-and-monthly-changes-1', headers=headers)
 	url_doc = 'https://www.iaa.ie/docs/default-source/publications/aircraft-registration/30-november-2019.xlsx'
-#	if r.status_code == 200:
-#		print(r.content)
-
-	raise NotImplementedError('Not implemented yet. Registry url is https://www.iaa.ie/')
+	raise NotImplementedError('Not implemented yet (xls document). Registry url is https://www.iaa.ie/')
 
 def IM(tail_n):
 	r = requests.get('https://ardis.iomaircraftregistry.com/register/search')
 	if r.status_code == 200:
-		soup = BeautifulSoup(r.content, features="html.parser")
-		token = soup.find('input', {'id': '__RequestVerificationToken'})
-		data = {
+		soup 	= BeautifulSoup(r.content, features="html.parser")
+		token 	= soup.find('input', {'id': '__RequestVerificationToken'})
+		data 	= {
 			'__RequestVerificationToken' : token['value'],
 			'prs_rm__ptt': 8,
 			'prs_rm__tt' : 8,
@@ -369,3 +362,26 @@ def IM(tail_n):
 					street = own.text.split(',')[1]
 					return Owner(name, street, '', '', '')
 
+def DE():
+	raise NotImplementedError()
+
+def IT(tail_n):
+	headers	= {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0'}
+	s = requests.Session()
+	r = s.get('http://gavs.it/')
+	soup = BeautifulSoup(r.content, features="html.parser")
+	csrf = soup.find('input', {'name':'csrf_test_name'})
+	data = {
+		'csrf_test_name': csrf['value'],
+		'registration': tail_n[2:]
+	}
+	r = s.post('https://gavs.it/rci/search_registration', data=data, headers=headers)
+	if r.status_code == 200:
+		record_url = r.headers['Refresh'].split(';')[1][4:]
+		r = s.get(record_url)
+		if r.status_code == 200:
+			soup = BeautifulSoup(r.text, features="html.parser")
+			tab_owners = soup.find('div', {'id':'htab2'})
+			tab_owner = tab_owners.find_all('dl', {'class':'dl-horizontal'})[1]
+			return Owner(tab_owner.text.strip(), '', '', '', '')
+	raise Exception("Could not get info from IT register")
