@@ -23,20 +23,19 @@ Basic owner information (at least name)
 - [ ] Cuba
 - [x] Czech Republic
 - [ ] Egypt
+- [x] France
 - [ ] Germany (paid)
+- [x] Iceland
 - [x] Isle of Man
 - [x] Italy
 - [ ] Luxembourg
+- [ ] Qatar
+- [ ] ROK
+- [ ] Singapore
+- [ ] Spain It looks like a user name is required. Not sure about who can register.
 - [x] Sweden
 - [x] Switzerland
-- [ ] ROK
-- [ ] Qatar
-- [ ] Singapore
-- [ ] Spain
-It looks like a user name is required. Not sure about who can register.
 - [ ] United Kingdom
-- [x] France
-- [x] Iceland
 - [x] USA
 
 
