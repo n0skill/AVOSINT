@@ -65,6 +65,8 @@ class Craft:
             return IM(self.numb)
         elif self.numb.startswith('I-'):
             return IT(self.numb)
+        elif self.numb.startswith('C-'):
+            return CA(self.numb)
         else:
             if self.numb != '':
                # r = requests.get(f'https://commons.wikimedia.org/wiki/Category:{self.numb}_(aircraft)')

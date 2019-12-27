@@ -18,21 +18,15 @@ class TLSv1Adapter(HTTPAdapter):
                                        ssl_version=ssl.PROTOCOL_TLSv1)
 
 class NODHAdapter(HTTPAdapter):
-    def init_poolmanager(self, connections, maxsize, block=False):
-    	self.poolmanager = PoolManager(num_pools=connections,
-						   context = create_urllib3_context(ciphers='DEFAULT:!DH'),
-						   maxsize=maxsize,
-						   block=block,
-						   ssl_version=ssl.PROTOCOL_TLSv1)
+	def init_poolmanager(self, *args, **kwargs):
+		context = create_urllib3_context(ciphers='ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+HIGH:!DH')
+		kwargs['ssl_context'] = context
+		return super(NODHAdapter, self).init_poolmanager(*args, **kwargs)
 
 
 # Gather data from various agencies depending on country code of tail number
 
 class Owner:
-    def __init__(self):
-        self.name = 'TBD'
-        self.country = 'TBD'
-
     def __init__(self, name, street, city, zip_code, country):
         self.name = name
         self.street = street
@@ -357,10 +351,28 @@ def IM(tail_n):
 				r = requests.get('https://ardis.iomaircraftregistry.com'+href)
 				if r.status_code == 200:
 					soup = BeautifulSoup(r.content, features="html.parser")
-					own = soup.find('span', {'id': 'prv__11__value'})
+					print(r.text)
+					own = soup.find('span', {'id': 'prv__12__value'})
 					name = own.text.split(',')[0]
-					street = own.text.split(',')[1]
-					return Owner(name, street, '', '', '')
+					if len(own.text.split(',')) > 1:
+						street = own.text.split(',')[1]
+						return Owner(name, street, '', '', '')
+					return Owner(name, '', '', '', '')
+
+def CA(tail_n):
+	raise NotImplementedError('Canadian register not implemented yet')
+	s = requests.Session()	
+	s.mount('https://', NODHAdapter())
+	# TODO
+	#r = s.get(f'https://wwwapps.tc.gc.ca/Saf-Sec-Sur/2/CCARCS-RIACC/ADet.aspx?id=505622&rfr=RchAvcRes.aspx?m=|{tail_n}|')
+	#if r.status_code == 200:
+	#	soup = BeautifulSoup(r.text, features="html.parser")
+	#	name = soup.find('div', {'id':'dvOwnerName'}).text.replace('Name:', '').strip()
+	#	addr = soup.find('div', {'id':'divOwnerAddress'}).text.replace('Address:', '').strip()
+	#	city = soup.find('div', {'id':'divOwnerCity'}).find('div', {'class':'span-4'}).text.replace('City:', '').strip()
+	#	addr = soup.find('div', {'id':'divOwnerAddress'}).text.replace('Address:', '').strip()
+	#	return Owner(name, addr, city, '','Canada')	
+		
 
 def DE():
 	raise NotImplementedError()
