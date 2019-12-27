@@ -27,6 +27,10 @@ class NODHAdapter(HTTPAdapter):
 # Gather data from various agencies depending on country code of tail number
 
 class Owner:
+    def __init__(self):
+        self.name = 'TBD'
+        self.country = 'TBD'
+
     def __init__(self, name, street, city, zip_code, country):
         self.name = name
         self.street = street
@@ -360,19 +364,63 @@ def IM(tail_n):
 					return Owner(name, '', '', '', '')
 
 def CA(tail_n):
-	raise NotImplementedError('Canadian register not implemented yet')
-	s = requests.Session()	
+	data = {
+	'__EVENTTARGET': '',
+	'__EVENTARGUMENT': '',
+	'ctl00$ContentPlaceHolder1$btnSearchTop':'Search',
+	'ctl00$ContentPlaceHolder1$txtMark':tail_n[2:],
+	'ctl00$ContentPlaceHolder1$ddlMark':'0',
+	'ctl00$ContentPlaceHolder1$txtCommonName': '',
+	'ctl00$ContentPlaceHolder1$ddlCommonName':'0',
+	'ctl00$ContentPlaceHolder1$txtModelName': '',
+	'ctl00$ContentPlaceHolder1$ddlModelName':'0',
+	'ctl00$ContentPlaceHolder1$txtSerialNumber': '',
+	'ctl00$ContentPlaceHolder1$ddlSerialNumber':'0',
+	'ctl00$ContentPlaceHolder1$txtWeightFrom': '',
+	'ctl00$ContentPlaceHolder1$txtWeightTo': '',
+	'ctl00$ContentPlaceHolder1$ddlImportYear':'%%',
+	'ctl00$ContentPlaceHolder1$ddlAircraftCategory':'%%',
+	'ctl00$ContentPlaceHolder1$ddlNumberOfEngines':'%%',
+	'ctl00$ContentPlaceHolder1$ddlEngineCategory':'%%',
+	'ctl00$ContentPlaceHolder1$txtIndustry': '',
+	'ctl00$ContentPlaceHolder1$ddlIndustry':'0',
+	'ctl00$ContentPlaceHolder1$ddlAssemblyYear':'%%',
+	'ctl00$ContentPlaceHolder1$ddlAssemblyCountry':'%%',
+	'ctl00$ContentPlaceHolder1$txtOwnerName': '',
+	'ctl00$ContentPlaceHolder1$ddlOwnerName':'0',
+	'ctl00$ContentPlaceHolder1$txtTradeName': '',
+	'ctl00$ContentPlaceHolder1$ddlTradeName':'0',
+	'ctl00$ContentPlaceHolder1$txtCity': '',
+	'ctl00$ContentPlaceHolder1$ddlCity':'0',
+	'ctl00$ContentPlaceHolder1$ddlRegion':'%%',
+	'ctl00$ContentPlaceHolder1$ddlProvince':'%%',
+	'ctl00$ContentPlaceHolder1$txtPostalCode': '',
+	'ctl00$ContentPlaceHolder1$ddlPostalCode':'0',
+	'ctl00$ContentPlaceHolder1$ddlMultipleOwner':'A',
+	'ctl00$ContentPlaceHolder1$ddlRegionalOffice':'%%',
+	'ctl00$ContentPlaceHolder1$ddlRegistrationType':'%%',
+	'ctl00$ContentPlaceHolder1$ddlRegistrationEligibility': '%%',
+	}
+	
+	s = requests.session()
 	s.mount('https://', NODHAdapter())
-	# TODO
-	#r = s.get(f'https://wwwapps.tc.gc.ca/Saf-Sec-Sur/2/CCARCS-RIACC/ADet.aspx?id=505622&rfr=RchAvcRes.aspx?m=|{tail_n}|')
-	#if r.status_code == 200:
-	#	soup = BeautifulSoup(r.text, features="html.parser")
-	#	name = soup.find('div', {'id':'dvOwnerName'}).text.replace('Name:', '').strip()
-	#	addr = soup.find('div', {'id':'divOwnerAddress'}).text.replace('Address:', '').strip()
-	#	city = soup.find('div', {'id':'divOwnerCity'}).find('div', {'class':'span-4'}).text.replace('City:', '').strip()
-	#	addr = soup.find('div', {'id':'divOwnerAddress'}).text.replace('Address:', '').strip()
-	#	return Owner(name, addr, city, '','Canada')	
-		
+	r = s.get('https://wwwapps.tc.gc.ca/Saf-Sec-Sur/2/CCARCS-RIACC/RchAvc.aspx')
+	if r.status_code == 200:
+		print('OK')
+		soup 							= BeautifulSoup(r.text, features='html.parser')
+		input_viewstate_gen 			= soup.find('input', {'id':'__VIEWSTATEGENERATOR'})
+		input_viewstate 				= soup.find('input', {'id':'__VIEWSTATE'})
+		input_validation 				= soup.find('input', {'id':'__EVENTVALIDATION'})
+		data['__EVENTVALIDATION'] 		= input_validation['value']
+		data['__VIEWSTATEGENERATOR'] 	= input_viewstate_gen['value']
+		data['__VIEWSTATE'] 			= input_viewstate['value']
+		headers	= {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0'}
+		r = s.post('https://wwwapps.tc.gc.ca/Saf-Sec-Sur/2/CCARCS-RIACC/RchAvc.aspx', data=data, headers=headers)
+		soup = BeautifulSoup(r.text, features="html.parser")
+		name = soup.find('div', {'id':'dvOwnerName'}).text.replace('Name:', '').strip()
+		city = soup.find('div', {'id':'divOwnerCity'}).find('div', {'class':'span-4'}).text.replace('City:', '').strip()
+		addr = soup.find('div', {'id':'divOwnerAddress'}).text.replace('Address:', '').strip()
+		return Owner(name, addr, city, '','Canada')
 
 def DE():
 	raise NotImplementedError()
