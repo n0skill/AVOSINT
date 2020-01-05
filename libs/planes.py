@@ -69,6 +69,10 @@ class Craft:
             return CA(self.numb)
         elif self.numb.startswith('YR-'):
             return RO(self.numb)
+        elif self.numb.startswith('VH-'):
+            return AU(self.numb)
+        elif self.numb.startswith('9A-'):
+            return HR(self.numb)
         else:
             if self.numb != '':
                # r = requests.get(f'https://commons.wikimedia.org/wiki/Category:{self.numb}_(aircraft)')

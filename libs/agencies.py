@@ -255,7 +255,6 @@ def AT(tail_n):
 
 
 def CZ(tail_n):
-
 	data = {
 	'aparameters': [
 		'',
@@ -405,7 +404,6 @@ def CA(tail_n):
 	s.mount('https://', NODHAdapter())
 	r = s.get('https://wwwapps.tc.gc.ca/Saf-Sec-Sur/2/CCARCS-RIACC/RchAvc.aspx')
 	if r.status_code == 200:
-		print('OK')
 		soup 							= BeautifulSoup(r.text, features='html.parser')
 		input_viewstate_gen 			= soup.find('input', {'id':'__VIEWSTATEGENERATOR'})
 		input_viewstate 				= soup.find('input', {'id':'__VIEWSTATE'})
@@ -447,3 +445,17 @@ def IT(tail_n):
 
 def RO(tail_n):
 	raise NotImplementedError('Romanian register is the following pdf document http://www.caa.ro/media/docs/OPERATORI_AERIENI_ROMANI_28.11.2019_rom-eng.pdf. Documents parsing not implemented yet')
+
+def HR(tail_n):
+	raise NotImplementedError('Croatian register is a pdf document. The document is available at https://www.ccaa.hr/english/popis-registriranih-zrakoplova_101/')
+
+def AU(tail_n):
+	tail_letters = tail_n[3:]
+	r = requests.get(f'https://www.casa.gov.au/aircraft-register?search_api_views_fulltext=&vh={tail_letters}')
+	if r.status_code == 200:
+		soup = BeautifulSoup(r.text, features="html.parser")
+		owner = soup.find('div', {'class':'field-name-field-ar-registration-holder'}).text.replace("Registration holder:", '').strip()
+		name 	= owner.split('\n')[0].strip()
+		street 	= owner.split('\n')[1].strip()
+		return Owner(name, street, '', '', 'Australia')
+	raise Exception("Could not get info from AU register")
