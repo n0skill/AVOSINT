@@ -10,7 +10,7 @@ A tool to search Aviation-related intelligence from public sources.
 Goal is to gather data directly from aviation agencies of the countries
 
 Basic owner information (at least name)
-- [ ] Australia
+- [x] Australia
 - [x] Austria
 - [ ] Bahrain
 - [x] Belgium
