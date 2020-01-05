@@ -301,7 +301,7 @@ def IE(tail_n):
 	headers	= {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0'}
 	r 		= requests.get('https://www.iaa.ie/commercial-aviation/aircraft-registration-2/latest-register-and-monthly-changes-1', headers=headers)
 	url_doc = 'https://www.iaa.ie/docs/default-source/publications/aircraft-registration/30-november-2019.xlsx'
-	raise NotImplementedError('Not implemented yet (xls document). Registry url is https://www.iaa.ie/')
+	raise NotImplementedError('Not implemented yet (xls document). Registry url is https://www.iaa.ie/ - Latest known document is https://www.iaa.ie/docs/default-source/publications/aircraft-registration/30-november-2019.xlsx?sfvrsn=7a8c01f3_4')
 
 def IM(tail_n):
 	r = requests.get('https://ardis.iomaircraftregistry.com/register/search')
