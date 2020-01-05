@@ -355,7 +355,6 @@ def IM(tail_n):
 				r = requests.get('https://ardis.iomaircraftregistry.com'+href)
 				if r.status_code == 200:
 					soup = BeautifulSoup(r.content, features="html.parser")
-					print(r.text)
 					own = soup.find('span', {'id': 'prv__12__value'})
 					name = own.text.split(',')[0]
 					if len(own.text.split(',')) > 1:
@@ -445,3 +444,6 @@ def IT(tail_n):
 			tab_owner = tab_owners.find_all('dl', {'class':'dl-horizontal'})[1]
 			return Owner(tab_owner.text.strip(), '', '', '', '')
 	raise Exception("Could not get info from IT register")
+
+def RO(tail_n):
+	raise NotImplementedError('Romanian register is the following pdf document http://www.caa.ro/media/docs/OPERATORI_AERIENI_ROMANI_28.11.2019_rom-eng.pdf. Documents parsing not implemented yet')
