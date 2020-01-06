@@ -459,3 +459,6 @@ def AU(tail_n):
 		street 	= owner.split('\n')[1].strip()
 		return Owner(name, street, '', '', 'Australia')
 	raise Exception("Could not get info from AU register")
+
+def SG(tail_n):
+	raise NotImplementedError('Singapore register is a pdf document. The document is available at https://www.caas.gov.sg/docs/default-source/pdf/singapore-registered-aircraft-engine-nos---oct-2019.pdf')

@@ -73,12 +73,10 @@ class Craft:
             return AU(self.numb)
         elif self.numb.startswith('9A-'):
             return HR(self.numb)
+        elif self.numb.startswith('9V-'):
+            return SG(self.numb)
         else:
             if self.numb != '':
-               # r = requests.get(f'https://commons.wikimedia.org/wiki/Category:{self.numb}_(aircraft)')
-               # if r.status_code == 200:
-               # 	raise NotImplementedError(f'Agency not implemented. Try wikimedia commons: https://commons.wikimedia.org/wiki/Category:{self.numb}_(aircraft)')
-               # else:
                raise NotImplementedError(f'Agency not implemented for {self.numb}')
             raise Exception('No tail number found')
 
