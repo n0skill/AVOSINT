@@ -75,6 +75,8 @@ class Craft:
             return HR(self.numb)
         elif self.numb.startswith('9V-'):
             return SG(self.numb)
+        elif self.numb.startswith('ZK-'):
+            return NZ(self.numb)
         else:
             if self.numb != '':
                raise NotImplementedError(f'Agency not implemented for {self.numb}')

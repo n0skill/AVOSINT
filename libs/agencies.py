@@ -450,8 +450,7 @@ def HR(tail_n):
 	raise NotImplementedError('Croatian register is a pdf document. The document is available at https://www.ccaa.hr/english/popis-registriranih-zrakoplova_101/')
 
 def AU(tail_n):
-	tail_letters = tail_n[3:]
-	r = requests.get(f'https://www.casa.gov.au/aircraft-register?search_api_views_fulltext=&vh={tail_letters}')
+	r = requests.get('https://www.casa.gov.au/aircraft-register?search_api_views_fulltext=&vh='+tail_n[3:])
 	if r.status_code == 200:
 		soup = BeautifulSoup(r.text, features="html.parser")
 		owner = soup.find('div', {'class':'field-name-field-ar-registration-holder'}).text.replace("Registration holder:", '').strip()
@@ -462,3 +461,14 @@ def AU(tail_n):
 
 def SG(tail_n):
 	raise NotImplementedError('Singapore register is a pdf document. The document is available at https://www.caas.gov.sg/docs/default-source/pdf/singapore-registered-aircraft-engine-nos---oct-2019.pdf')
+
+def NZ(tail_n):
+	r = requests.get('https://www.aviation.govt.nz/aircraft/aircraft-registration/aircraft-register/ShowDetails/'+tail_n[3:])
+	if r.status_code == 200:
+		soup = BeautifulSoup(r.text, features="html.parser")
+		owner_info = soup.find('div', {'class': 'col-md-9'})
+		print(owner_info.text.strip().split('\n'))
+		name = owner_info.text.strip().split('\n')[1].strip()
+		street = owner_info.text.strip().split('\n')[2].strip()
+		return Owner(name, street, '', '', 'New Zealand')
+	raise Exception("Could not get info from NZ register")
