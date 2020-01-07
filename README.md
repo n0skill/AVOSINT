@@ -29,6 +29,7 @@ Basic owner information (at least name)
 - [x] Isle of Man
 - [x] Italy
 - [ ] Luxembourg
+- [x] New Zealand
 - [ ] Qatar
 - [ ] ROK
 - [ ] Singapore
