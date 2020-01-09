@@ -8,6 +8,8 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
 from requests.packages.urllib3.util.ssl_ import create_urllib3_context
 
+debug = False
+
 class TLSv1Adapter(HTTPAdapter):
     """"Transport adapter" that allows us to use TLSv1."""
 
@@ -79,7 +81,8 @@ def CH(tail_n):
 
 
 def FR(tail_n):
-	print('WARNING: The french agency uses TLSV1. Security is not guaranteed')
+	if debug:
+		print('WARNING: The french agency uses TLSV1. Security is not guaranteed')
 	
 	s = requests.session()
 	headers = {
@@ -419,20 +422,21 @@ def CA(tail_n):
 		addr = soup.find('div', {'id':'divOwnerAddress'}).text.replace('Address:', '').strip()
 		return Owner(name, addr, city, '','Canada')
 
-def DE():
-	raise NotImplementedError()
+def DE(tail_n):
+	raise NotImplementedError('German register not implemented yet')
 
 def IT(tail_n):
 	headers	= {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0'}
-	s = requests.Session()
-	r = s.get('http://gavs.it/')
-	soup = BeautifulSoup(r.content, features="html.parser")
-	csrf = soup.find('input', {'name':'csrf_test_name'})
-	data = {
+	s 		= requests.Session()
+	r 		= s.get('http://gavs.it/')
+	soup 	= BeautifulSoup(r.content, features="html.parser")
+	csrf 	= soup.find('input', {'name':'csrf_test_name'})
+	data 	= {
 		'csrf_test_name': csrf['value'],
 		'registration': tail_n[2:]
 	}
-	r = s.post('https://gavs.it/rci/search_registration', data=data, headers=headers)
+
+	r 		= s.post('https://gavs.it/rci/search_registration', data=data, headers=headers)
 	if r.status_code == 200:
 		record_url = r.headers['Refresh'].split(';')[1][4:]
 		r = s.get(record_url)
@@ -472,3 +476,16 @@ def NZ(tail_n):
 		street = owner_info.text.strip().split('\n')[2].strip()
 		return Owner(name, street, '', '', 'New Zealand')
 	raise Exception("Could not get info from NZ register")
+
+def BR(tail_n):
+	r = requests.get('https://sistemas.anac.gov.br/aeronaves/cons_rab_resposta.asp?textMarca=' + tail_n)
+	if r.status_code == 200:
+		soup = BeautifulSoup(r.text, features="html.parser")
+		headings = soup.find_all('th', {'scope':'row'})
+		for heading in headings:
+			if('Proprietário' in heading.text):
+				name = heading.parent.td.text.strip()
+				return Owner(name, '', '', '', 'Brazil')	
+	raise Exception("Could not get info from BR register. " + r.url + r.status_code )
+
+

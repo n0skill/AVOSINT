@@ -14,6 +14,7 @@ Basic owner information (at least name)
 - [x] Austria
 - [ ] Bahrain
 - [x] Belgium
+- [x] Brazil
 - [x] Canada
 - [ ] Chile
 - [ ] Republic of China (Taiwan)

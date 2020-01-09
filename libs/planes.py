@@ -77,10 +77,15 @@ class Craft:
             return SG(self.numb)
         elif self.numb.startswith('ZK-'):
             return NZ(self.numb)
+        elif self.numb.startswith('PP-') or self.numb.startswith('PR-') or self.numb.startswith('PS-') or self.numb.startswith('PT-') or self.numb.startswith('PU-'):
+            return BR(self.numb)
+        elif self.numb.startswith('D-'):
+            return DE(self.numb)
         else:
             if self.numb != '':
                raise NotImplementedError(f'Agency not implemented for {self.numb}')
             raise Exception('No tail number found')
+			
 
 
     def get_path(self):
