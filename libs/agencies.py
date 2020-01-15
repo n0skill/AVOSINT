@@ -442,13 +442,13 @@ def IT(tail_n):
 
 	r 		= s.post('https://gavs.it/rci/search_registration', data=data, headers=headers)
 	if r.status_code == 200:
-		record_url = r.headers['Refresh'].split(';')[1][4:]
-		r = s.get(record_url)
+		record_url	= r.headers['Refresh'].split(';')[1][4:]
+		r 			= s.get(record_url)
 		if r.status_code == 200:
-			soup = BeautifulSoup(r.text, features="html.parser")
-			tab_owners = soup.find('div', {'id':'htab2'})
-			tab_owner = tab_owners.find_all('dl', {'class':'dl-horizontal'})[1]
-			name = tab_owner.text.strip().replace('da  a', '')
+			soup 		= BeautifulSoup(r.text, features="html.parser")
+			tab_owners 	= soup.find('div', {'id':'htab2'})
+			tab_owner 	= tab_owners.find_all('dl', {'class':'dl-horizontal'})[1]
+			name 		= tab_owner.text.strip().replace('da  a', '')
 			return Owner(name, '', '', '', '')
 	raise Exception("Could not get info from IT register")
 
@@ -461,8 +461,8 @@ def HR(tail_n):
 def AU(tail_n):
 	r = requests.get('https://www.casa.gov.au/aircraft-register?search_api_views_fulltext=&vh='+tail_n[3:])
 	if r.status_code == 200:
-		soup = BeautifulSoup(r.text, features="html.parser")
-		owner = soup.find('div', {'class':'field-name-field-ar-registration-holder'}).text.replace("Registration holder:", '').strip()
+		soup 	= BeautifulSoup(r.text, features="html.parser")
+		owner	= soup.find('div', {'class':'field-name-field-ar-registration-holder'}).text.replace("Registration holder:", '').strip()
 		name 	= owner.split('\n')[0].strip()
 		street 	= owner.split('\n')[1].strip()
 		return Owner(name, street, '', '', 'Australia')
@@ -474,19 +474,18 @@ def SG(tail_n):
 def NZ(tail_n):
 	r = requests.get('https://www.aviation.govt.nz/aircraft/aircraft-registration/aircraft-register/ShowDetails/'+tail_n[3:])
 	if r.status_code == 200:
-		soup = BeautifulSoup(r.text, features="html.parser")
-		owner_info = soup.find('div', {'class': 'col-md-9'})
-		print(owner_info.text.strip().split('\n'))
-		name = owner_info.text.strip().split('\n')[1].strip()
-		street = owner_info.text.strip().split('\n')[2].strip()
+		soup		= BeautifulSoup(r.text, features="html.parser")
+		owner_info 	= soup.find('div', {'class': 'col-md-9'})
+		name 		= owner_info.text.strip().split('\n')[1].strip()
+		street 		= owner_info.text.strip().split('\n')[2].strip()
 		return Owner(name, street, '', '', 'New Zealand')
 	raise Exception("Could not get info from NZ register")
 
 def BR(tail_n):
 	r = requests.get('https://sistemas.anac.gov.br/aeronaves/cons_rab_resposta.asp?textMarca=' + tail_n)
 	if r.status_code == 200:
-		soup = BeautifulSoup(r.text, features="html.parser")
-		headings = soup.find_all('th', {'scope':'row'})
+		soup 		= BeautifulSoup(r.text, features="html.parser")
+		headings 	= soup.find_all('th', {'scope':'row'})
 		for heading in headings:
 			if('Proprietário' in heading.text):
 				name = heading.parent.td.text.strip()
@@ -498,13 +497,12 @@ def UA(tail_n):
 	if r.status_code == 200:
 		with open('/tmp/register.xls', 'wb') as f:
 			f.write(r.content)
-	book = xlrd.open_workbook('/tmp/register.xls')
-	sheet_names = book.sheet_names()
-	xl_sheet = book.sheet_by_name(sheet_names[0])
-	for i in range(0, xl_sheet.nrows):
-		if xl_sheet.row(i)[2].value == tail_n:
-			name = xl_sheet.row(i)[9].value
-			print(name)
-			return Owner(name, '', '', '', 'Ukraine')
+		book 		= xlrd.open_workbook('/tmp/register.xls')
+		sheet_names	= book.sheet_names()
+		xl_sheet 	= book.sheet_by_name(sheet_names[0])
+		for i in range(0, xl_sheet.nrows):
+			if xl_sheet.row(i)[2].value == tail_n:
+				name = xl_sheet.row(i)[9].value
+				return Owner(name, '', '', '', 'Ukraine')
 	raise Exception("Could not get info from UA register")	
 

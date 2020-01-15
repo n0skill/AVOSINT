@@ -17,29 +17,29 @@ Basic owner information (at least name)
 - [x] Brazil
 - [x] Canada
 - [ ] Chile
-- [ ] Republic of China (Taiwan)
-- [ ] People's Republic of China
-- [ ] Hong-Kong
+- [ ] China (People's Republic of)
+- [ ] China (Republic of, Taiwan)
 - [ ] Colombia
 - [ ] Cuba
 - [x] Czech Republic
 - [ ] Egypt
 - [x] France
 - [ ] Germany (paid)
+- [ ] Hong-Kong
 - [x] Iceland
 - [x] Isle of Man
 - [x] Italy
+- [ ] Korea (Republic of)
 - [ ] Luxembourg
 - [x] New Zealand
 - [ ] Qatar
-- [ ] ROK
 - [ ] Singapore
 - [ ] Spain It looks like a user name is required. Not sure about who can register.
 - [x] Sweden
 - [x] Switzerland
-- [x] Ukraine
 - [ ] United Kingdom
 - [x] USA
+- [x] Ukraine
 
 
 #### Implement list of known interesting planes/owners
