@@ -7,6 +7,10 @@ import calendar
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
 from requests.packages.urllib3.util.ssl_ import create_urllib3_context
+from openpyxl import load_workbook
+import xlrd
+
+
 
 debug = False
 
@@ -488,4 +492,18 @@ def BR(tail_n):
 				return Owner(name, '', '', '', 'Brazil')	
 	raise Exception("Could not get info from BR register. " + r.url + r.status_code )
 
+def UA(tail_n):
+	r = requests.get('http://avia.gov.ua/register_of_aircraft.xls')
+	if r.status_code == 200:
+		with open('/tmp/register.xls', 'wb') as f:
+			f.write(r.content)
+	book = xlrd.open_workbook('/tmp/register.xls')
+	sheet_names = book.sheet_names()
+	xl_sheet = book.sheet_by_name(sheet_names[0])
+	for i in range(0, xl_sheet.nrows):
+		if xl_sheet.row(i)[2].value == tail_n:
+			name = xl_sheet.row(i)[9].value
+			print(name)
+			return Owner(name, '', '', '', 'Ukraine')
+	raise Exception("Could not get info from UA register")	
 

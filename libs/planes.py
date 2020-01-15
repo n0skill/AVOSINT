@@ -81,6 +81,8 @@ class Craft:
             return BR(self.numb)
         elif self.numb.startswith('D-'):
             return DE(self.numb)
+        elif self.numb.startswith('UR-'):
+            return UA(self.numb)
         else:
             if self.numb != '':
                raise NotImplementedError(f'Agency not implemented for {self.numb}')
