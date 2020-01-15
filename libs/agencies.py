@@ -87,7 +87,6 @@ def CH(tail_n):
 def FR(tail_n):
 	if debug:
 		print('WARNING: The french agency uses TLSV1. Security is not guaranteed')
-	
 	s = requests.session()
 	headers = {
 		'Origin': 'https://immat.aviation-civile.gouv.fr',
@@ -307,6 +306,7 @@ def IE(tail_n):
 	headers	= {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0'}
 	r 		= requests.get('https://www.iaa.ie/commercial-aviation/aircraft-registration-2/latest-register-and-monthly-changes-1', headers=headers)
 	url_doc = 'https://www.iaa.ie/docs/default-source/publications/aircraft-registration/30-november-2019.xlsx'
+	
 	raise NotImplementedError('Not implemented yet (xls document). Registry url is https://www.iaa.ie/ - Latest known document is https://www.iaa.ie/docs/default-source/publications/aircraft-registration/30-november-2019.xlsx?sfvrsn=7a8c01f3_4')
 
 def IM(tail_n):
@@ -448,7 +448,8 @@ def IT(tail_n):
 			soup = BeautifulSoup(r.text, features="html.parser")
 			tab_owners = soup.find('div', {'id':'htab2'})
 			tab_owner = tab_owners.find_all('dl', {'class':'dl-horizontal'})[1]
-			return Owner(tab_owner.text.strip(), '', '', '', '')
+			name = tab_owner.text.strip().replace('da  a', '')
+			return Owner(name, '', '', '', '')
 	raise Exception("Could not get info from IT register")
 
 def RO(tail_n):
