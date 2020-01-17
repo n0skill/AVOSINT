@@ -56,14 +56,14 @@ def CH(tail_n):
 	Get information on aircraft from tail number
 	"""
 
-	url = 'https://app02.bazl.admin.ch/web/bazl-backend/lfr'	
-	headers = {
-                'Pragma': 'no-cache',
-                'Origin': 'https://app02.bazl.admin.ch/web/bazl/fr/',
-                'Content-Type': 'application/json',
-                'Referer': 'https://app02.bazl.admin.ch/web/bazl/fr/'
-            }
-	data = '{"page_result_limit":10,"current_page_number":1,"sort_list":"registration","language":"fr","queryProperties":{"registration":"'+tail_n[3:] + '","aircraftStatus":["Registered","Reserved","Reservation Expired","Registration in Progress"]}}}'
+	url 	= 'https://app02.bazl.admin.ch/web/bazl-backend/lfr'	
+	headers	= {
+				'Pragma': 'no-cache',
+				'Origin': 'https://app02.bazl.admin.ch/web/bazl/fr/',
+				'Content-Type': 'application/json',
+				'Referer': 'https://app02.bazl.admin.ch/web/bazl/fr/'
+			}
+	data 	= '{"page_result_limit":10,"current_page_number":1,"sort_list":"registration","language":"fr","queryProperties":{"registration":"'+tail_n[3:] + '","aircraftStatus":["Registered","Reserved","Reservation Expired","Registration in Progress"]}}}'
     
 	response = requests.post(url, headers=headers, data=data)
     
@@ -85,8 +85,6 @@ def CH(tail_n):
 
 
 def FR(tail_n):
-	if debug:
-		print('WARNING: The french agency uses TLSV1. Security is not guaranteed')
 	s = requests.session()
 	headers = {
 		'Origin': 'https://immat.aviation-civile.gouv.fr',
@@ -304,10 +302,20 @@ def UK(tail_n):
 
 def IE(tail_n):
 	headers	= {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0'}
-	r 		= requests.get('https://www.iaa.ie/commercial-aviation/aircraft-registration-2/latest-register-and-monthly-changes-1', headers=headers)
+	#r 		= requests.get('https://www.iaa.ie/commercial-aviation/aircraft-registration-2/latest-register-and-monthly-changes-1', headers=headers)
 	url_doc = 'https://www.iaa.ie/docs/default-source/publications/aircraft-registration/30-november-2019.xlsx'
-	
-	raise NotImplementedError('Not implemented yet (xls document). Registry url is https://www.iaa.ie/ - Latest known document is https://www.iaa.ie/docs/default-source/publications/aircraft-registration/30-november-2019.xlsx?sfvrsn=7a8c01f3_4')
+	r 		= requests.get(url_doc, headers=headers)
+	if r.status_code == 200:
+		with open('/tmp/book.xlsx', 'wb') as f:
+			f.write(r.content)
+		book = load_workbook('/tmp/book.xlsx')
+		for sheet in book:
+			plane = [row for row in sheet.values if row[0] == tail_n]
+			if len(plane) > 0:
+				name = plane[0][12]
+				addr = plane[0][13]
+				return Owner(name, addr, '', '', 'Ireland')
+	raise Exception('Error retrieving from Ireland register. Tail number may be wrong')	
 
 def IM(tail_n):
 	r = requests.get('https://ardis.iomaircraftregistry.com/register/search')

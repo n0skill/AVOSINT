@@ -27,6 +27,7 @@ Basic owner information (at least name)
 - [ ] Germany (paid)
 - [ ] Hong-Kong
 - [x] Iceland
+- [x] Ireland
 - [x] Isle of Man
 - [x] Italy
 - [ ] Korea (Republic of)
