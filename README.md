@@ -38,6 +38,7 @@ Basic owner information (at least name)
 - [ ] Spain It looks like a user name is required. Not sure about who can register.
 - [x] Sweden
 - [x] Switzerland
+- [x] Thailand
 - [ ] United Kingdom
 - [x] USA
 - [x] Ukraine

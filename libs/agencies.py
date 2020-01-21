@@ -219,9 +219,9 @@ def SW(tail_n):
 		raise Exception('Error retrieving from SW')
 
 def AT(tail_n):
-	tail_n = tail_n.strip('OE-')
-	s = requests.session()
-	data = [
+	tail_n	= tail_n.strip('OE-')
+	s 		= requests.session()
+	data 	= [
 			("txtKennzeichen", tail_n),
 			("radStartgewicht", 1),
 			('txtOrdnungszahl', ''),
@@ -237,21 +237,24 @@ def AT(tail_n):
 		'Origin': 'https://www.austrocontrol.at/',
 		'Referer': 'https://www.austrocontrol.at/'
 	}
+
+
 	rep = s.get('https://www.austrocontrol.at/ta/OenflSucheEn')
 	if rep.status_code == 200:
-		soup = BeautifulSoup(rep.text, features="html.parser") 
-		form_submit = soup.find_all('form')[0]
-		url = form_submit.get('action')[2:]
-		rep = s.post("https://www.austrocontrol.at/ta/" + url, data=data, headers=headers)
+		soup 		= BeautifulSoup(rep.text, features="html.parser") 
+		form_submit	= soup.find_all('form')[0]
+		url 		= form_submit.get('action')[2:]
+		rep 		= s.post("https://www.austrocontrol.at/ta/" + url, data=data, headers=headers)
+
 		if rep.status_code == 200:
-			soup = BeautifulSoup(rep.text, features="html.parser")
-			table = soup.find('table', {'id': 'resultTable'})
-			columns = table.find_all('td')
-			texts = [column.p for column in columns]	
-			name = texts[4].contents[0]
-			address_values = texts[4].contents[1].text.split(',')
-			street = str(address_values[1]) + ' ' + str(address_values[2])
-			city = address_values[0]
+			soup 	= BeautifulSoup(rep.text, features="html.parser")
+			table 	= soup.find('table', {'id': 'resultTable'})
+			columns	= table.find_all('td')
+			texts 	= [column.p for column in columns]	
+			name 	= texts[4].contents[0]
+			address	= texts[4].contents[1].text.split(',')
+			street 	= str(address[1]) + ' ' + str(address[2])
+			city 	= address[0]
 			return Owner(name, street, city, '', 'Austria')
 
 	else:
@@ -513,4 +516,20 @@ def UA(tail_n):
 				name = xl_sheet.row(i)[9].value
 				return Owner(name, '', '', '', 'Ukraine')
 	raise Exception("Could not get info from UA register")	
+
+def TH(tail_n):
+	# Register dates from 2019. TODO: find more recent one
+	r = requests.get('https://www.caat.or.th/wp-content/uploads/2019/03/Aircraft-List_18-Mar-2019-Un-controlled-EN.xlsx')
+	if r.status_code == 200:
+		with open('/tmp/book.xlsx', 'wb') as f:
+			f.write(r.content)
+		book = load_workbook('/tmp/book.xlsx')
+		for sheet in book:
+			infos = [row for row in sheet.values if row[1] == tail_n]
+			if len(infos) > 0:
+				name = infos[0][2]
+				return Owner(name, '', '', '', 'Thailand')
+			else:
+				raise Exception('Number not found in thai register')
+	raise Exception("Could not get info from thai register")	
 
