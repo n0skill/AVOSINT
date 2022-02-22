@@ -45,7 +45,8 @@ class Owner:
         self.country = country
 
     def __repr__(self):
-        return "%s %s %s %s %s" % (self.name, self.street, self.city, self.zip_code, self.country)
+        return "Name: %s \n Street: %s\n City: %s\n ZIP: %s\n Country: %s" % \
+            (self.name, self.street, self.city, self.zip_code, self.country)
 
     def __str__(self):
         return self.__repr__()
@@ -56,7 +57,7 @@ def CH(tail_n):
 	Get information on aircraft from tail number
 	"""
 
-	url 	= 'https://app02.bazl.admin.ch/web/bazl-backend/lfr'	
+	url 	= 'https://app02.bazl.admin.ch/web/bazl-backend/lfr'
 	headers	= {
 				'Pragma': 'no-cache',
 				'Origin': 'https://app02.bazl.admin.ch/web/bazl/fr/',
@@ -64,9 +65,9 @@ def CH(tail_n):
 				'Referer': 'https://app02.bazl.admin.ch/web/bazl/fr/'
 			}
 	data 	= '{"page_result_limit":10,"current_page_number":1,"sort_list":"registration","language":"fr","queryProperties":{"registration":"'+tail_n[3:] + '","aircraftStatus":["Registered","Reserved","Reservation Expired","Registration in Progress"]}}}'
-    
+
 	response = requests.post(url, headers=headers, data=data)
-    
+
 	if response.status_code == 200:
 		jsonobj     = json.loads(response.text)
 		infoarray   = jsonobj[0]
@@ -110,7 +111,7 @@ def FR(tail_n):
 	  ('$DTO_RECHERCHE_AER$CRE_NUM_SERIE', ''),
 	]
 	s.mount("https://", TLSv1Adapter()) # Add TSLV1 adapter (outdated)
-	
+
 	response = s.post(
 		'https://immat.aviation-civile.gouv.fr/immat/servlet/aeronef_liste.html',
 		headers=headers,
@@ -143,7 +144,7 @@ def FR(tail_n):
 					return Owner(name, addr, city, '', 'France')
 	# In case no results could be returned
 	raise Exception(f'{tail_n} Error while retrieving from FR')
-			
+
 
 def US(tail_n):
 	resp = requests.get("https://registry.faa.gov/aircraftinquiry/NNum_Results.aspx?nNumberTxt="+tail_n)
@@ -161,7 +162,7 @@ def IS(tail_n):
 	city 	= ''
 	s 		= requests.session()
 	s.mount("https://", TLSv1Adapter()) # Outdated TSLv1 -> Needs a specific adapter
-	
+
 	req = s.get('https://www.icetra.is/aviation/aircraft/register?aq='+tail_n)
 	if req.status_code is 200:
 		soup = BeautifulSoup(req.text, 'html.parser')
@@ -189,7 +190,7 @@ def BE(tail_n):
 				if rep.status_code == 200:
 					#print(rep.text)
 					j 		= json.loads(rep.text)
-					name 	= j.get('stakeHolderRoleList')[0].get('name') 
+					name 	= j.get('stakeHolderRoleList')[0].get('name')
 					street 	= j.get('stakeHolderRoleList')[0].get('addresses').get('street')
 					city 	= j.get('stakeHolderRoleList')[0].get('addresses').get('city')
 					return Owner(name, street, city, '', 'Belgium')
@@ -233,7 +234,7 @@ def AT(tail_n):
             ('txtHalter', ''),
             ('p::submit', ''),
 		]
-	headers = {	
+	headers = {
 		'Origin': 'https://www.austrocontrol.at/',
 		'Referer': 'https://www.austrocontrol.at/'
 	}
@@ -241,7 +242,7 @@ def AT(tail_n):
 
 	rep = s.get('https://www.austrocontrol.at/ta/OenflSucheEn')
 	if rep.status_code == 200:
-		soup 		= BeautifulSoup(rep.text, features="html.parser") 
+		soup 		= BeautifulSoup(rep.text, features="html.parser")
 		form_submit	= soup.find_all('form')[0]
 		url 		= form_submit.get('action')[2:]
 		rep 		= s.post("https://www.austrocontrol.at/ta/" + url, data=data, headers=headers)
@@ -250,7 +251,7 @@ def AT(tail_n):
 			soup 	= BeautifulSoup(rep.text, features="html.parser")
 			table 	= soup.find('table', {'id': 'resultTable'})
 			columns	= table.find_all('td')
-			texts 	= [column.p for column in columns]	
+			texts 	= [column.p for column in columns]
 			name 	= texts[4].contents[0]
 			address	= texts[4].contents[1].text.split(',')
 			street 	= str(address[1]) + ' ' + str(address[2])
@@ -288,7 +289,7 @@ def CZ(tail_n):
 	res 	= soup.find('div', {'id': 'infobox_letadlo1'})
 	name 	= res.find('div', {'class': 'value'}).text
 	return Owner(name, '', '', '', '')
-	
+
 
 def UK(tail_n):
 	raise NotImplementedError('UK registry not yet implemented. Registry url is https://siteapps.caa.co.uk/g-info/')
@@ -318,7 +319,7 @@ def IE(tail_n):
 				name = plane[0][12]
 				addr = plane[0][13]
 				return Owner(name, addr, '', '', 'Ireland')
-	raise Exception('Error retrieving from Ireland register. Tail number may be wrong')	
+	raise Exception('Error retrieving from Ireland register. Tail number may be wrong')
 
 def IM(tail_n):
 	r = requests.get('https://ardis.iomaircraftregistry.com/register/search')
@@ -417,7 +418,7 @@ def CA(tail_n):
 	'ctl00$ContentPlaceHolder1$ddlRegistrationType':'%%',
 	'ctl00$ContentPlaceHolder1$ddlRegistrationEligibility': '%%',
 	}
-	
+
 	s = requests.session()
 	s.mount('https://', NODHAdapter())
 	r = s.get('https://wwwapps.tc.gc.ca/Saf-Sec-Sur/2/CCARCS-RIACC/RchAvc.aspx')
@@ -500,7 +501,7 @@ def BR(tail_n):
 		for heading in headings:
 			if('Proprietário' in heading.text):
 				name = heading.parent.td.text.strip()
-				return Owner(name, '', '', '', 'Brazil')	
+				return Owner(name, '', '', '', 'Brazil')
 	raise Exception("Could not get info from BR register. " + r.url + r.status_code )
 
 def UA(tail_n):
@@ -515,7 +516,7 @@ def UA(tail_n):
 			if xl_sheet.row(i)[2].value == tail_n:
 				name = xl_sheet.row(i)[9].value
 				return Owner(name, '', '', '', 'Ukraine')
-	raise Exception("Could not get info from UA register")	
+	raise Exception("Could not get info from UA register")
 
 def TH(tail_n):
 	# Register dates from 2019. TODO: find more recent one
@@ -531,5 +532,4 @@ def TH(tail_n):
 				return Owner(name, '', '', '', 'Thailand')
 			else:
 				raise Exception('Number not found in thai register')
-	raise Exception("Could not get info from thai register")	
-
+	raise Exception("Could not get info from thai register")
