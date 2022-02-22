@@ -540,10 +540,11 @@ def IT(tail_n):
     }
 
     r = s.post(
-        'https://gavs.it/rci/search_registration', data=data, headers=headers)
+        'https://gavs.it/rci/search_registration', 
+        data=data, 
+        headers=headers)
     if r.status_code == 200:
-        record_url = r.headers['Refresh'].split(';')[
-            1][4:]
+        record_url = r.headers['Refresh'].split(';')[1][4:]
         r = s.get(
             record_url)
         if r.status_code == 200:
@@ -552,10 +553,11 @@ def IT(tail_n):
             tab_owners = soup.find(
                 'div', {'id': 'htab2'})
             tab_owner = tab_owners.find_all(
-                'dl', {'class': 'dl-horizontal'})[1]
-            name = tab_owner.text.strip().replace('da  a', '')
-            return Owner(name, '', '', '', '')
-            raise Exception(
+                'dl', {'class': 'dl-horizontal'})[0]
+            owner_name = tab_owner.find_all(
+                    'dd')[-1].text
+            return Owner(owner_name, '', '', '', '')
+        raise Exception(
                 "Could not get info from IT register")
 
 def RO(tail_n):
