@@ -177,7 +177,7 @@ def main():
     parser  = argparse.ArgumentParser()
 
     parser.add_argument("--action", help="Action to perform ('ICAO', 'tail', 'convert'", type=str)
-    parser.add_argument("--tail-number", help="Tail number to retrieve OSINT for")
+    parser.add_argument('--tail-numbers', nargs='+', help='Tail numbers to lookup', required=True)
     parser.add_argument("--icao", help="ICAO code to retrieve OSINT for")
     parser.add_argument("--proxy", help="Use proxy address", type=str)
     parser.add_argument("--interactive", action="store_true")
@@ -200,7 +200,8 @@ def main():
         if args.action == "ICAO":
             intel_from_ICAO(args.ICAO)
         elif args.action == "tail":
-            intel_from_tail_n(args.tail_number)
+            for tail_number in args.tail_numbers:
+                intel_from_tail_n(tail_number)
         elif args.action == "convert":
             convert_US_ICAO_to_tail()
         else:

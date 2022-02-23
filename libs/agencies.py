@@ -78,6 +78,8 @@ def CH(tail_n):
 
     if response.status_code == 200:
         jsonobj = json.loads(response.text)
+        if len(jsonobj) == 0:
+            raise Exception("[!][CH][{}] Error when retrieving from registry".format(tail_n))
         infoarray = jsonobj[0]
         own_ops = infoarray.get('ownerOperators')
         leng = len(own_ops)
@@ -87,9 +89,9 @@ def CH(tail_n):
         street_n = addr.get('streetNo')
         zipcode = addr.get('zipCode')
         city = addr.get('city')
-        own = Owner(name, street + ' ' + street_n,
+        owner = Owner(name, street + ' ' + street_n,
                     city, zipcode, "Switzerland")
-        return own
+        return owner
     else:
         raise Exception("Error retrieving from CH")
 
@@ -594,18 +596,20 @@ def HR(tail_n):
         'Croatian register is a pdf document. The document is available at https://www.ccaa.hr/english/popis-registriranih-zrakoplova_101/')
 
 def AU(tail_n):
+    """
+    Australia Registry
+
+    """
     r = requests.get(
-        'https://www.casa.gov.au/aircraft-register?search_api_views_fulltext=&vh='+tail_n[3:])
+        'https://www.casa.gov.au/search-centre/aircraft-register/'+tail_n[3:])
     if r.status_code == 200:
         soup = BeautifulSoup(
-            r.text, features="html.parser")
-        owner = soup.find('div', {
-            'class': 'field-name-field-ar-registration-holder'}).text.replace("Registration holder:", '').strip()
-        name = owner.split(
-            '\n')[0].strip()
-        street = owner.split(
-            '\n')[1].strip()
-        return Owner(name, street, '', '', 'Australia')
+            r.content, features="html.parser")
+        
+        name = soup.find('div', {'class':'field--name-field-registration-holder'}).text.strip('Registration holder:\n')
+        addr = soup.find('div', {'class':'field--name-field-reg-hold-address-1'}).text.strip('Address 1:\n')
+        city = soup.find('div', {'class':'field--name-field-tx-reg-hold-suburb'}).text.strip('Suburb / City:\n')
+        return Owner(name, addr, city, '', 'Australia')
     raise Exception(
             "Could not get info from AU register")
 
