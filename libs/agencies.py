@@ -156,18 +156,43 @@ def FR(tail_n):
 
 
 def US(tail_n):
+    name = ''
+    addr = ''
+    city = ''
+
     resp = requests.get(
-        "https://registry.faa.gov/aircraftinquiry/NNum_Results.aspx?nNumberTxt="+tail_n)
+        "https://registry.faa.gov/AircraftInquiry/Search/NNumberResult?nNumberTxt="+tail_n)
     if resp.status_code == 200:
-        soup = BeautifulSoup(resp.text, 'html.parser')
-        name = soup.find(
-            'span', {'id': 'ctl00_content_lbMfrName'}).text.strip()
-        city = soup.find(
-            'span', {'id': 'ctl00_content_lbOwnerCity'}).text.strip()
-        addr = soup.find(
-            'span', {'id': 'ctl00_content_lbOwnerStreet'}).text.strip()
-        return Owner(name, addr, city, '', 'USA')
-        raise Exception('Error while retrieving from US')
+        soup = BeautifulSoup(resp.content, 'html.parser')
+
+        # Get table regarding owner information
+        tables = soup.find_all(
+                'table', {'class', 'devkit-table'})
+        for table in tables:
+            caption = table.find('caption', {'class', 'devkit-table-title'})
+
+            # This is the table we are interested in
+            if caption.text == 'Registered Owner':
+                print(table)
+                rows = table.find_all('tr')
+                for row in rows:
+                    cols = row.find_all('td')
+                    for col in cols:
+                        if col['data-label'] == 'Name':
+                            name = col.text
+                        elif col['data-label'] == 'Street':
+                            addr = addr + col.text
+                        elif col['data-label'] == 'City':
+                            city = col.text
+                        elif col['data-label'] == 'State':
+                            city = city + ', ' + col.text
+                        elif col['data-label'] == 'Zip Code':
+                            zip_code = col.text
+        return Owner(name, addr, city, zip_code, 'USA')
+    else:
+        print("[!][{}] HTTP status code from {}"\
+                .format(resp.status_code, resp.url))
+    raise Exception('Error while retrieving from US')
 
 
 def IS(tail_n):
