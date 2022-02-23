@@ -3,54 +3,16 @@
 
 A tool to search Aviation-related intelligence from public sources.
 
-## TODO
+## Usage
 
-#### Implement basic information gathering for the following countries
+```
+./avosint.py [--action ACTION] [--tail-number TAIL-NUMBER] [--icao ICAO]
+```
 
-Goal is to gather data directly from aviation agencies of the countries
+With ACTION being either 'ICAO', 'tail', 'convert'.
 
-Basic owner information (at least name)
-- [x] Australia
-- [x] Austria
-- [ ] Bahrain
-- [x] Belgium
-- [x] Brazil
-- [x] Canada
-- [ ] Chile
-- [ ] China (People's Republic of)
-- [ ] China (Republic of, Taiwan)
-- [ ] Colombia
-- [ ] Cuba
-- [x] Czech Republic
-- [ ] Egypt
-- [x] France
-- [ ] Germany (paid)
-- [ ] Hong-Kong
-- [x] Iceland
-- [x] Ireland
-- [x] Isle of Man
-- [x] Italy
-- [ ] Korea (Republic of)
-- [ ] Luxembourg
-- [x] New Zealand
-- [ ] Qatar
-- [ ] Singapore
-- [ ] Spain It looks like a user name is required. Not sure about who can register.
-- [x] Sweden
-- [x] Switzerland
-- [x] Thailand
-- [ ] United Kingdom
-- [x] USA
-- [x] Ukraine
+ICAO - Gather infos from ICAO transponder hex code.
+tail - Gather info from tail number. Option `--tail-number` is required.
+convert - Convert USA hex to ICAO. Option `--icao` is required.
 
 
-#### Implement list of known interesting planes/owners
-
-
-#### Implement realtime behaviour lookup
-- [ ] Position (lat, long, altitude)
-- [ ] Heading
-- [ ] Vertical Speed
-- [ ] Pattern
-
-#### Automatic test of agencies response to my requests
