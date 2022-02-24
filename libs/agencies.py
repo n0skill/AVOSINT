@@ -18,10 +18,11 @@ class TLSv1Adapter(HTTPAdapter):
     """"Transport adapter" that allows us to use TLSv1."""
 
     def init_poolmanager(self, connections, maxsize, block=False):
-        self.poolmanager = PoolManager(num_pools=connections,
-                                       maxsize=maxsize,
-                                       block=block,
-                                       ssl_version=ssl.PROTOCOL_TLSv1)
+        self.poolmanager = PoolManager(
+                num_pools=connections,
+                maxsize=maxsize,
+                block=block,
+                ssl_version=ssl.PROTOCOL_TLSv1)
 
 
 class NODHAdapter(HTTPAdapter):
@@ -36,15 +37,15 @@ class NODHAdapter(HTTPAdapter):
 
 class Owner:
     def __init__(self):
-        self.name = 'TBD'
-        self.country = 'TBD'
+        self.name   = 'TBD'
+        self.country= 'TBD'
 
     def __init__(self, name, street, city, zip_code, country):
-        self.name = name
-        self.street = street
-        self.city = city
-        self.zip_code = zip_code
-        self.country = country
+        self.name       = name
+        self.street     = street
+        self.city       = city
+        self.zip_code   = zip_code
+        self.country    = country
 
     def __repr__(self):
         return "Name: %s \n Street: %s\n City: %s\n ZIP: %s\n Country: %s" % \
@@ -79,7 +80,8 @@ def CH(tail_n):
     if response.status_code == 200:
         jsonobj = json.loads(response.text)
         if len(jsonobj) == 0:
-            raise Exception("[!][CH][{}] Error when retrieving from registry".format(tail_n))
+            print("[!][CH][{}] Error when retrieving from registry".format(tail_n))
+            return
         infoarray = jsonobj[0]
         own_ops = infoarray.get('ownerOperators')
         leng = len(own_ops)
@@ -93,7 +95,7 @@ def CH(tail_n):
                     city, zipcode, "Switzerland")
         return owner
     else:
-        raise Exception("Error retrieving from CH")
+        print("[!] Error retrieving from CH")
 
 
 def FR(tail_n):
@@ -129,11 +131,11 @@ def FR(tail_n):
         data=data)
 
     if response.status_code == 200:
-        soup = BeautifulSoup(response.text, 'html.parser')
-        bls = soup.find('a', string=tail_n)
+        soup    = BeautifulSoup(response.text, 'html.parser')
+        bls     = soup.find('a', string=tail_n)
+
         if bls is None:
-            print('Could not find {tail_n} in agency registers')
-            print(response.content)
+            print('[!][FR] Could not find supplied tail number in agency registers')
         else:
             response = s.get(
                 'https://immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'], 
@@ -143,19 +145,16 @@ def FR(tail_n):
             r       = s.get('https://immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'])
             if r.status_code == 200:
                 soup = BeautifulSoup(r.text, 'html.parser')
-                bls = soup.find_all('td', {'class': "tdLigneListe"})
+                bls  = soup.find_all('td', {'class': "tdLigneListe"})
                 if len(bls) > 0:
                     name = bls[0].text
                     addr = bls[1].text
                     city = bls[2].text
                     return Owner(name, addr, city, '', 'France')
                 else:
-                    raise Exception(f'Error while retrieving info for {tail_n}')
-                # In case no results could be returned
+                    print('[!][FR] Error while retrieving info for {}'.format(tail_n))
             else:
-                raise Exception(
-                    f'{tail_n} Error while retrieving from FR')
-
+                print('[!][FR] Error while retrieving info for {}'.format(tail_n))
 
 def US(tail_n):
     name = ''
@@ -194,7 +193,7 @@ def US(tail_n):
     else:
         print("[!][{}] HTTP status code from {}"\
                 .format(resp.status_code, resp.url))
-    raise Exception('Error while retrieving from US')
+    print('[!] Error while retrieving from US')
 
 
 def IS(tail_n):
@@ -275,59 +274,21 @@ def SW(tail_n):
 
 
 def AT(tail_n):
-    tail_n = tail_n.strip(
-        'OE-')
-    s = requests.session()
-    data = [
-        ("txtKennzeichen", tail_n),
-        ("radStartgewicht", 1),
-        ('txtOrdnungszahl', ''),
-        ('txtHersteller', ''),
-        ('txtBaumuster', ''),
-        ('cmbLfzart', ''),
-        ('txtSeriennummer', ''),
-        ('txtStartgewicht', ''),
-        ('txtHalter', ''),
-        ('p::submit', ''),
-    ]
-    headers = {
-        'Origin': 'https://www.austrocontrol.at/',
-        'Referer': 'https://www.austrocontrol.at/'
-    }
+    tail_n = tail_n.lstrip('OE-')
+    rep = requests.get(
+            'https://www.austrocontrol.at/'\
+                    'lfa-publish-service/v2/oenfl/'\
+                    'luftfahrzeuge?kennzeichen='+tail_n
+            )
+    print(rep.url)
 
-    rep = s.get(
-        'https://www.austrocontrol.at/ta/OenflSucheEn')
     if rep.status_code == 200:
-        soup = BeautifulSoup(
-            rep.text, features="html.parser")
-        form_submit = soup.find_all('form')[
-            0]
-        url = form_submit.get(
-            'action')[2:]
-        rep = s.post(
-            "https://www.austrocontrol.at/ta/" + url, data=data, headers=headers)
-
-        if rep.status_code == 200:
-            soup = BeautifulSoup(
-                rep.text, features="html.parser")
-            table = soup.find(
-                'table', {'id': 'resultTable'})
-            columns = table.find_all(
-                'td')
-            texts = [
-                column.p for column in columns]
-            name = texts[
-                4].contents[0]
-            address = texts[4].contents[1].text.split(
-                ',')
-            street = str(
-                address[1]) + ' ' + str(address[2])
-            city = address[
-                0]
-            return Owner(name, street, city, '', 'Austria')
-
-        else:
-            raise Exception("Error retrieving from AT registry")
+        j = json.loads(rep.content)
+        owner_infos = [x for x in j if x['kennzeichen'] == tail_n]
+        name, loc_info, country = owner_infos[0]['halter'].split('\r\n')
+        city, street  = loc_info.split(', ')
+        npa, city = city.split(' ')
+        return Owner(name, street, city, npa, 'Austria')
 
 def CZ(tail_n):
     data = {
