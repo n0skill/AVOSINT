@@ -114,8 +114,9 @@ def intel_from_tail_n(tail_number):
     2) Last changes of ownership
     3) Last known position
     """
-    print("[*] Getting intel for tail_number {}".format(tail_number))
+    print("[*] Getting intel for tail number {}".format(tail_number))
 
+    tail_number = tail_number.upper()
     # Step 1 - Gather ownership information
 
     if tail_number.startswith('HB-'):
