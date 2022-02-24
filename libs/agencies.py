@@ -8,7 +8,6 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
 from requests.packages.urllib3.util.ssl_ import create_urllib3_context
 from openpyxl import load_workbook
-import xlrd
 
 
 debug = False
@@ -68,7 +67,8 @@ class Registry:
 CH = Registry('BAZL', 'bazl.admin.ch', 'https://app02.bazl.admin.ch/web/bazl-backend/lfr', '')
 
 def NL(tail_n):
-    u
+    return
+
 def CH(tail_n):
     """
         Get information on aircraft from tail number
@@ -136,11 +136,10 @@ def FR(tail_n):
         ('$DTO_RECHERCHE_AER$SI_INSCRIT', '1'),
         ('$DTO_RECHERCHE_AER$SI_INSCRITcheckbox', '1'),
         ('$DTO_RECHERCHE_AER$CRE_NUM_SERIE', ''),
-    ]
+        ]
     #s.mount("https://", TLSv1Adapter()) # Add TSLV1 adapter (outdated)
 
-    response = s.post(
-        'https://immat.aviation-civile.gouv.fr/immat/servlet/aeronef_liste.html',
+    response = s.post('https://immat.aviation-civile.gouv.fr/immat/servlet/aeronef_liste.html',
         headers=headers,
         data=data)
 
@@ -494,6 +493,21 @@ def AU(tail_n):
             "Could not get info from AU register")
 
 def SG(tail_n):
+    r = requests.get(
+            'https://www.caas.gov.sg/'\
+                    'docs/default-source/'\
+                    'docs---srg/fs/approval-listings/'\
+                    'singapore-registered-aircraft-engine-nos---feb-2022.xlsx'
+                    )
+    with open('/tmp/SG_register.xlsx', 'wb') as f:
+        f.write(r.content)
+    wb = load_workbook('/tmp/SG_register.xlsx')
+    ws = wb['Aircraft Register']
+    for line in ws:
+        if line[1].value == tail_n:
+            return Owner(line[7].value, '', '', '', '')
+        
+
     raise NotImplementedError('Singapore register is a pdf document. The document is available at https://www.caas.gov.sg/docs/default-source/pdf/singapore-registered-aircraft-engine-nos---oct-2019.pdf')
 
 def NZ(tail_n):
