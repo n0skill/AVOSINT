@@ -12,6 +12,9 @@ from openpyxl import load_workbook
 
 debug = False
 
+from urllib3.exceptions import InsecureRequestWarning
+# Suppress only the single warning from urllib3 needed.
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 class TLSv1Adapter(HTTPAdapter):
     """"Transport adapter" that allows us to use TLSv1."""
@@ -52,19 +55,56 @@ class Owner:
     def __str__(self):
         return self.__repr__()
 
+class DataSource:
+    def __init__(self, url, src_type, is_secure, http_data='', headers=''):
+        self.url = url
+        self.src_type = src_type
+        self.is_secure = is_secure
+        self.data = http_data
+        self.headers = headers
+
+    def gather(self, tail_n):
+        print('[*] Gathering info from url', self.url)
+        if self.data != '':
+            self.data = self.data.replace('{{TAILN}}', tail_n)
+            r = requests.post(self.url, data=self.data, headers=self.headers)
+        else:
+            r = requests.get(self.url)
+
+        if r.status_code == 200:
+            if self.src_type == 'json':
+                j = json.loads(r.content)
+                return j
+            elif self.src_type == 'xlsx':
+                return []
+        else:
+            print("[!] Error {} when retrieving from {}".format(r.status_code, self.url))
+
+
+
 class Registry:
-    def __init__(self, name, url, data_source_url, tail_search_regex):
+    def __init__(self, 
+            name, 
+            url,
+            data_source_url, 
+            data_source_type,
+            post_data='',
+            headers='',
+            is_secure=True,
+            tail_start=0):
         self.name = name
         self.url = url
-        self.data_source = data_source_url
-        self.regex = tail_search_regex
+        self.data_source = DataSource(data_source_url, data_source_type, is_secure, post_data, headers) 
+        self.results = []
+        self.tail_start = tail_start
 
     def request_infos(self, tail_n):
         # Format tail number according to regex
-        cleaned_tail_n = tail_n.re(self.regex)
-        r = requests.get(data_source_url)
+        tail_n = tail_n[self.tail_start:]
+        res = self.data_source.gather(tail_n)
+        return res
 
-CH = Registry('BAZL', 'bazl.admin.ch', 'https://app02.bazl.admin.ch/web/bazl-backend/lfr', '')
+
 
 def NL(tail_n):
     return
@@ -73,43 +113,47 @@ def CH(tail_n):
     """
         Get information on aircraft from tail number
     """
-    url = 'https://app02.bazl.admin.ch/web/bazl-backend/lfr'
-    headers = {
+    SwissRegister = Registry(
+        'BAZL', 
+        'bazl.admin.ch', 
+        'https://app02.bazl.admin.ch/web/bazl-backend/lfr',
+        'json',
+
+        '{"page_result_limit":10,'\
+        '"current_page_number":1,'\
+        '"sort_list":"registration",'\
+        '"language":"fr",'\
+        '"queryProperties":{"registration":"{{TAILN}}",'\
+        '"aircraftStatus":'\
+        '["Registered","Reserved","Reservation Expired","Registration in Progress"]'\
+        '}}',
+
+        {
         'Pragma': 'no-cache',
         'Origin': 'https://app02.bazl.admin.ch/web/bazl/fr/',
         'Content-Type': 'application/json',
         'Referer': 'https://app02.bazl.admin.ch/web/bazl/fr/'
-    }
-    data = '{"page_result_limit":10,'\
-        '"current_page_number":1,'\
-        '"sort_list":"registration",'\
-        '"language":"fr",'\
-        '"queryProperties":{"registration":"'+tail_n[3:] + '",'\
-        '"aircraftStatus":'\
-        '["Registered","Reserved","Reservation Expired","Registration in Progress"]'\
-        '}}}'
-
-    response = requests.post(url, headers=headers, data=data)
-
-    if response.status_code == 200:
-        jsonobj = json.loads(response.text)
-        if len(jsonobj) == 0:
-            print("[!][CH][{}] Error when retrieving from registry".format(tail_n))
-            return
-        infoarray = jsonobj[0]
-        own_ops = infoarray.get('ownerOperators')
-        leng = len(own_ops)
-        name = own_ops[leng-1].get('ownerOperator')
-        addr = own_ops[leng-1].get('address')
-        street = addr.get('street')
-        street_n = addr.get('streetNo')
-        zipcode = addr.get('zipCode')
-        city = addr.get('city')
-        owner = Owner(name, street + ' ' + street_n,
-                    city, zipcode, "Switzerland")
-        return owner
-    else:
-        print("[!] Error retrieving from CH")
+        },
+        tail_start=3
+    )
+    jsonobj = SwissRegister.request_infos(tail_n)
+    
+    if len(jsonobj) == 0:
+        print("[!][CH][{}] Error when retrieving from registry".format(tail_n))
+        return
+    
+    infoarray = jsonobj[0]
+    own_ops = infoarray.get('ownerOperators')
+    leng = len(own_ops)
+    name = own_ops[leng-1].get('ownerOperator')
+    addr = own_ops[leng-1].get('address')
+    street = addr.get('street')
+    street_n = addr.get('streetNo')
+    zipcode = addr.get('zipCode')
+    city = addr.get('city')
+    owner = Owner(name, street + ' ' + street_n,
+                city, zipcode, "Switzerland")
+    return owner
 
 
 def FR(tail_n):
@@ -560,3 +604,16 @@ def TH(tail_n):
                 else:
                     raise Exception('Number not found in thai register')
             raise Exception("Could not get info from thai register")
+
+def RS(tail_n):
+    items = []
+    for i in range(0, 2000, 100):
+        r = requests.get('https://apps.cad.gov.rs/ords/dcvws/regvaz/site/listAircraft?p_reg_id=0&p_type_ac=0&p_manufacturer=0&p_man_code=0&p_sn=0&p_user=0&order_by=p_reg_id.asc&offset='+str(i), verify=False)
+        if r.status_code == 200:
+            j = json.loads(r.content)
+            items.extend(j['items'])
+
+    for item in items:
+        if item['registarska_oznaka'] == tail_n:
+            own = item['korisnik']
+            return Owner(own, '', '', '', 'Serbia')

@@ -147,6 +147,8 @@ def intel_from_tail_n(tail_number):
          owner_infos = CA(tail_number)
     elif tail_number.startswith('YR-'):
          owner_infos = RO(tail_number)
+    elif tail_number.startswith('YU-'):
+         owner_infos = RS(tail_number)
     elif tail_number.startswith('VH-'):
          owner_infos = AU(tail_number)
     elif tail_number.startswith('9A-'):
