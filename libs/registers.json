@@ -1,0 +1,36 @@
+{
+	"CH": {
+		"name": "BAZL",
+		"website": "bazl.admin.ch",
+		"data_url": "https://app02.bazl.admin.ch/web/bazl-backend/lfr",
+		"data_type": "json",
+		"request_type": "POST",
+		"headers": {
+			"Pragma": "no-cache",
+			"Origin": "https://app02.bazl.admin.ch/web/bazl/fr/",
+			"Content-Type": "application/json",
+			"Referer": "https://app02.bazl.admin.ch/web/bazl/fr/"
+        	},
+		"data": "{\"page_result_limit\":10,\n\"current_page_number\":1,\n\"sort_list\":\"registration\",\n\"language\":\"fr\",\n\"queryProperties\":{\"registration\":\"{{TAILN}}\",\n\"aircraftStatus\":[\"Registered\",\"Reserved\",\"Reservation Expired\",\"Registration in Progress\"]\n }}",
+		"tail_index_for_search": 3
+	},
+	"DK": {
+		"name": "Denmark Registry",
+		"website": "http://www.oy-reg.dk/register/",
+		"data_url": "http://www.oy-reg.dk/register/?reg=",
+		"data_type": "html",
+		"request_type": "GET",
+		"tail_index_for_search": 3,
+		"infos": ["pictures"]
+	},
+	"TH": {
+		"name": "Thailand register",
+		"website": "http://www.oy-reg.dk/register/",
+		"data_url": "http://www.oy-reg.dk/register/?reg=",
+		"data_type": "xlsx",
+		"request_type": "GET",
+		"tail_index_for_search": 3,
+		"infos": ["pictures"]
+		
+	}
+}

@@ -20,7 +20,7 @@ import time
 
 from libs.planes import *
 from libs.display import *
-from libs.agencies import *
+from libs.registers import *
 
 # Data sources
 flightradar = 'http://data.flightradar24.com/zones/fcgi/feed.js?bounds='
@@ -165,12 +165,14 @@ def intel_from_tail_n(tail_number):
          owner_infos = UA(tail_number)
     elif tail_number.startswith('HS-') or tail_number.startswith('U-'):
          owner_infos = TH(tail_number)
+    elif tail_number.startswith('OY-'):
+         owner_infos = DK(tail_number)
     else:
         if tail_number != '':
             raise Exception('[!] Tail number unknown or country not implemented')
 
     # Display information
-    print("[*] Owner infos from registry\n", owner_infos)
+    print("[*] Infos from registry\n", owner_infos)
 
 def main():
     # 1 - Check OSINT from ICAO
