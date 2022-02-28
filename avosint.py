@@ -169,6 +169,8 @@ def intel_from_tail_n(tail_number):
          owner_infos = DK(tail_number)
     elif tail_number.startswith('YL-'):
          owner_infos = LV(tail_number)
+    elif tail_number.startswith('E7-'):
+         owner_infos = BA(tail_number)
     else:
         if tail_number != '':
             raise Exception('[!] Tail number unknown or country not implemented')

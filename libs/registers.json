@@ -45,5 +45,13 @@
 		"data_type": "xlsx",
 		"request_type": "GET",
 		"tail_index_for_search": 0
+	},
+	"BA": {
+		"name": "Bosinan CAA",
+		"website": "http://bhdca.gov.ba",
+		"data_url": "http://bhdca.gov.ba/english/dokumenti/airworthiness/BiH%20Aircraft%20Register_eng.pdf",
+		"data_type": "pdf",
+		"request_type": "GET",
+		"tail_index_for_search": 0
 	}
 }

@@ -10,6 +10,8 @@ from requests.packages.urllib3.util.ssl_ import create_urllib3_context
 from openpyxl import load_workbook
 
 
+from parsr_client import ParsrClient as client
+
 debug = False
 
 from urllib3.exceptions import InsecureRequestWarning
@@ -68,6 +70,14 @@ class DataSource:
             self.headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1.1 Safari/605.1.15'}
 
     def gather(self, tail_n):
+        """
+        Gathers data from the configured DataSource for a register
+        Returns a parsable object:
+        - workbook for xlsx sources
+        - json object for json sources
+        - json object for pdf sources (using parsr)
+        - raw request response content when content type could not be determined
+        """
         print('[*] Gathering info from url', self.url)
         if self.data != '' and self.data is not None:
             print('[*] Replacing {{TAILN}} from data with acutal tail number', self.url)
@@ -88,11 +98,24 @@ class DataSource:
                 return j
             elif self.src_type == 'xlsx':
                 with open('/tmp/book.xlsx', 'wb') as f:
-                    f.write(
-                        r.content)
+                    f.write(r.content)
                     book = load_workbook(
                         '/tmp/book.xlsx')
                 return book
+            elif self.src_type == 'pdf':
+                parsr = client('localhost:3001')
+                with open('/tmp/avosint.pdf', 'wb') as f:
+                        f.write(r.content)
+                job = parsr.send_document(
+                    file='./tmp/avosint.pdf',
+                    config_path='./parsr.conf',
+                    document_name='Sample File2',
+                    wait_till_finished=True,
+                    save_request_id=True,
+                )
+                j = parsr.get_json(job)
+                return j
+
             else:
                 return r.content
         else:
@@ -111,6 +134,22 @@ class DataSource:
                         book = load_workbook(
                             '/tmp/book.xlsx')
                         return book
+                elif self.src_type == 'pdf':
+                    parsr = client('localhost:3001')
+                    with open('/tmp/avosint.pdf', 'wb') as f:
+                            f.write(r.content)
+
+                    job = parsr.send_document(
+                        file_path='/tmp/avosint.pdf',
+                        config_path='./parsr.conf',
+                        document_name='Sample File2',
+                        wait_till_finished=True,
+                        save_request_id=True,
+                        silent=False
+                    )
+                    j = parsr.get_json()
+                    return j
+
                 else:
                     return r.content
                 return r.content
@@ -693,3 +732,21 @@ def LV(tail_n):
     for row in infos_sheet.values:
         if tail_n in row:
             return row
+
+def BA(tail_n):
+    register = register_from_config("BA")
+    infos = register.request_infos(tail_n)
+    for page in infos['pages']:
+        for element in page['elements']:
+            if element['type'] == 'table':
+                for line in element['content']:
+                    tail_n_from_file = line['content'][1]['content'][0]['content']
+                    if tail_n == tail_n_from_file:
+                        print("FOUND OWNER")
+                        # Owner info
+                        owner_name = ' '.join(
+                                [
+                                    line['content'][5]['content'][i]['content'] for i in range(0, len(line['content'][5]['content']))
+                                    ])
+
+                        return Owner(owner_name, '', '', '', '') 
