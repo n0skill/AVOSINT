@@ -53,5 +53,21 @@
 		"data_type": "pdf",
 		"request_type": "GET",
 		"tail_index_for_search": 0
-	}
+	},
+	"HR": {
+		"name": "HRVATSKI REGISTAR CIVILNIH ZRAKOPLOVA",
+		"website": "ccaa.hr",
+		"data_url": "https://www.ccaa.hr/file/144803bdf4c520b5de211e8ae74a33d14f10",
+		"request_type": "GET",
+		"data_type": "pdf",
+		"tail_index_for_search": 3
+	}, 
+	"CY": {
+		"name": "Department of Civil Aviation",
+		"website": "mcw.gov.cy",
+		"data_url": "http://www.mcw.gov.cy/mcw/dca/dca.nsf/All/E23B9BBB43F36720C2258714002C62FD/$file/AIRCRAFT%20REGISTER%20%2030%20JUN%202021%20public%20REVISED.pdf",
+		"request_type": "GET",
+		"data_type": "pdf",
+		"tail_index_for_search": 0
+	} 
 }

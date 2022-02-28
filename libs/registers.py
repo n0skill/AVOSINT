@@ -107,13 +107,14 @@ class DataSource:
                 with open('/tmp/avosint.pdf', 'wb') as f:
                         f.write(r.content)
                 job = parsr.send_document(
-                    file='./tmp/avosint.pdf',
+                    file_path='/tmp/avosint.pdf',
                     config_path='./parsr.conf',
                     document_name='Sample File2',
                     wait_till_finished=True,
                     save_request_id=True,
+                    silent=False
                 )
-                j = parsr.get_json(job)
+                j = parsr.get_json()
                 return j
 
             else:
@@ -742,11 +743,34 @@ def BA(tail_n):
                 for line in element['content']:
                     tail_n_from_file = line['content'][1]['content'][0]['content']
                     if tail_n == tail_n_from_file:
-                        print("FOUND OWNER")
+                        owner_line = line['content'][5]['content']
                         # Owner info
                         owner_name = ' '.join(
-                                [
-                                    line['content'][5]['content'][i]['content'] for i in range(0, len(line['content'][5]['content']))
-                                    ])
-
+                            [owner_line[i]['content'] for i in range(0, len(owner_line))]
+                        )
                         return Owner(owner_name, '', '', '', '') 
+
+def HR(tail_n):
+    register = register_from_config("HR")
+    infos = register.request_infos(tail_n)
+    for page in infos['pages']:
+        for element in page['elements']:
+            if element['type'] == 'table':
+                for line in element['content']:
+                    print(line)
+
+
+def CY(tail_n):
+    register = register_from_config("CY")
+    infos = register.request_infos(tail_n)
+    for page in infos['pages']:
+        for element in page['elements']:
+            if element['type'] == 'table':
+                for line in element['content']:
+                    if len(line['content']) >= 1:
+                        if len(line['content'][1]['content']) >= 1:
+                            reg = line['content'][1]['content'][0]['content']
+                            if reg == tail_n:
+                                own_cell = line['content'][7]['content']
+                                own = ' '.join([own_cell[i]['content'] for i in range(0,len(own_cell))])
+                                return Owner(own, '', '', '', '')
