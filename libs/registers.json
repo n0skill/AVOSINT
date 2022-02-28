@@ -32,5 +32,18 @@
 		"tail_index_for_search": 3,
 		"infos": ["pictures"]
 		
+	},
+	"UK": {
+		"name": "UK CAA",
+		"website": "caa.co.uk",
+		"data_url": ""
+	},
+	"LV": {
+		"name": "Latvian CAA",
+		"website": "https://www.caa.gov.lv/",
+		"data_url": "https://www.caa.gov.lv/lv/media/1546/download/",
+		"data_type": "xlsx",
+		"request_type": "GET",
+		"tail_index_for_search": 0
 	}
 }

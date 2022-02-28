@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import json
 
 # Decoders for countries here
-from .agencies import * 
+from .registers import * 
 
 class Owner:
     def __init__(self, name, street, city, zip_code, country):

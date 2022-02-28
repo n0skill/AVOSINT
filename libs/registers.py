@@ -64,11 +64,15 @@ class DataSource:
         self.data = http_data
         self.headers = headers
 
+        if self.headers == '':
+            self.headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1.1 Safari/605.1.15'}
+
     def gather(self, tail_n):
         print('[*] Gathering info from url', self.url)
         if self.data != '' and self.data is not None:
+            print('[*] Replacing {{TAILN}} from data with acutal tail number', self.url)
             self.data = self.data.replace('{{TAILN}}', tail_n)
-
+        
         if self.data is None:
             if self.request_type=="GET":
                 r = requests.get(self.url+tail_n,headers=self.headers)
@@ -83,11 +87,34 @@ class DataSource:
                 j = json.loads(r.content)
                 return j
             elif self.src_type == 'xlsx':
-                return []
+                with open('/tmp/book.xlsx', 'wb') as f:
+                    f.write(
+                        r.content)
+                    book = load_workbook(
+                        '/tmp/book.xlsx')
+                return book
             else:
                 return r.content
         else:
             print("[!] Error {} when retrieving from {}".format(r.status_code, self.url))
+            print("[!] DataSource error while gathering information. Try to gather using session")
+            s = requests.session()
+            r = s.get(self.url)
+            if r.status_code == 200:
+                print("[*] Got data ! Download it")
+                if self.src_type == 'json':
+                    j = json.loads(r.content)
+                elif self.src_type == 'xlsx':
+                    with open('/tmp/book.xlsx', 'wb') as f:
+                        f.write(
+                            r.content)
+                        book = load_workbook(
+                            '/tmp/book.xlsx')
+                        return book
+                else:
+                    return r.content
+                return r.content
+            print(r)
 
 
 
@@ -397,6 +424,7 @@ def CZ(tail_n):
 def UK(tail_n):
     raise NotImplementedError(
         'UK registry not yet implemented. Registry url is https://siteapps.caa.co.uk/g-info/')
+    
     data = {
         'Registration': tail_n[2:]
     }
@@ -651,10 +679,17 @@ def RS(tail_n):
 def DK(tail_n):
     register = register_from_config("DK")
     infos = register.request_infos(tail_n)
-
     soup = BeautifulSoup(infos, 'html.parser')
     tr = soup.find('tr', {'class':'ulige'})
     td_link = tr.find('a')
 
     # No owner infos fallback by sending link
     return 'http://www-oy-reg.dk'+td_link['href']
+
+def LV(tail_n):
+    register = register_from_config("LV")
+    book = register.request_infos(tail_n)
+    infos_sheet = book["Sheet1"]
+    for row in infos_sheet.values:
+        if tail_n in row:
+            return row
