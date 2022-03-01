@@ -29,9 +29,9 @@ flight_data_src = 'http://data-live.flightradar24.com/clickhandler/?version=1.5&
 
 
 # News source
-AP = 'Associated Press'
-AFP = 'Agence France Presse'
-AP_KEY = 'API KEY HERE'
+AP      = 'Associated Press'
+AFP     = 'Agence France Presse'
+AP_KEY  = 'API KEY HERE'
 
 # Hard-coded areas
 
@@ -50,6 +50,44 @@ user_agent = {'User-agent': 'Mozilla/5.0'}
 
 # GLOBAL VARIABLES
 FLG_DEBUG = False
+
+
+dict_tail_to_register_function = {
+    "HB-": CH,
+    "F-": FR,
+    "TF-": IS,
+    'N-': US,
+    'OO-': BE,
+    'OE-': AT,
+    'SE-': SW,
+    'OK-': CZ,
+    'G-': UK,
+    'EI-': IE,
+    'M-': IM,
+    'I-': IT,
+    'C-': CA,
+    'YR-': RO,
+    'YU-': RS,
+    'VH-': AU,
+    '9A-': HR,
+    '9V-': SG,
+    'ZK-': NZ,
+    'PP-': BR,
+    'PS-': BR,
+    'PR-': BR,
+    'PT-': BR,
+    'PU-': BR,
+    'D-': DE,
+    'UR-': UA,
+    'HS-': TH,
+    'U-': TH,
+    'OY-': DK,
+    'YL-': LV,
+    'E7-': BA,
+    '9A-': HR,
+    '5B-': CY,
+    '8Q-': MV,
+    }
 
 # Text colors using ANSI escaping. Surely theres a better way to do this
 class bcolors:
@@ -118,67 +156,8 @@ def intel_from_tail_n(tail_number):
 
     tail_number = tail_number.upper()
     # Step 1 - Gather ownership information
-
-    if tail_number.startswith('HB-'):
-        owner_infos = CH(tail_number)
-    elif tail_number.startswith('F-'):
-        owner_infos = FR(tail_number)
-    elif tail_number.startswith('TF'):
-        owner_infos = IS(tail_number)
-    elif tail_number.startswith('N'):
-        owner_infos = US(tail_number)
-    elif tail_number.startswith('OO-'):
-        owner_infos = BE(tail_number)
-    elif tail_number.startswith('OE-'):
-        owner_infos = AT(tail_number)
-    elif tail_number.startswith('SE-'):
-        owner_infos = SW(tail_number)
-    elif tail_number.startswith('OK-'):
-        owner_infos = CZ(tail_number)
-    elif tail_number.startswith('G-'):
-        owner_infos = UK(tail_number)
-    elif tail_number.startswith('EI-'):
-         owner_infos = IE(tail_number)
-    elif tail_number.startswith('M-'):
-         owner_infos = IM(tail_number)
-    elif tail_number.startswith('I-'):
-         owner_infos = IT(tail_number)
-    elif tail_number.startswith('C-'):
-         owner_infos = CA(tail_number)
-    elif tail_number.startswith('YR-'):
-         owner_infos = RO(tail_number)
-    elif tail_number.startswith('YU-'):
-         owner_infos = RS(tail_number)
-    elif tail_number.startswith('VH-'):
-         owner_infos = AU(tail_number)
-    elif tail_number.startswith('9A-'):
-         owner_infos = HR(tail_number)
-    elif tail_number.startswith('9V-'):
-         owner_infos = SG(tail_number)
-    elif tail_number.startswith('ZK-'):
-         owner_infos = NZ(tail_number)
-    elif tail_number.startswith('PP-') or tail_number.startswith('PR-') or tail_number.startswith('PS-') or tail_number.startswith('PT-') or tail_number.startswith('PU-'):
-         owner_infos = BR(tail_number)
-    elif tail_number.startswith('D-'):
-         owner_infos = DE(tail_number)
-    elif tail_number.startswith('UR-'):
-         owner_infos = UA(tail_number)
-    elif tail_number.startswith('HS-') or tail_number.startswith('U-'):
-         owner_infos = TH(tail_number)
-    elif tail_number.startswith('OY-'):
-         owner_infos = DK(tail_number)
-    elif tail_number.startswith('YL-'):
-         owner_infos = LV(tail_number)
-    elif tail_number.startswith('E7-'):
-         owner_infos = BA(tail_number)
-    elif tail_number.startswith('9A-'):
-         owner_infos = HR(tail_number)
-    elif tail_number.startswith('5B-'):
-         owner_infos = CY(tail_number)
-    else:
-        if tail_number != '':
-            raise Exception('[!] Tail number unknown or country not implemented')
-
+    tail_prefix = tail_number.split('-')[0]+'-'
+    owner_infos = dict_tail_to_register_function[tail_prefix](tail_number)
     # Display information
     print("[*] Infos from registry\n", owner_infos)
 

@@ -69,5 +69,21 @@
 		"request_type": "GET",
 		"data_type": "pdf",
 		"tail_index_for_search": 0
-	} 
+	}, 
+	"MV": {
+		"name": "",
+		"website": "http://www.aviainfo.gov.mv/",
+		"data_url": "http://www.aviainfo.gov.mv/downloads/airworthiness/registers/civil_aircraft_register.pdf",
+		"request_type": "GET",
+		"data_type": "pdf",
+		"tail_index_for_search": 0
+	},
+	"CA": {
+		"name": "Canadian CAA",
+		"website": "https://gc.ca",
+		"data_url": "http://wwwapps.tc.gc.ca/saf-sec-sur/2/ccarcs-riacc/RchSimpRes.aspx?cn=%7c%7c&mn=%7c%7c&sn=%7c%7c&on=%7c%7c&m=%7c{{TAILN}}%7c&rfr=RchSimp.aspx",
+		"request_type": "GET",
+		"data_type": "html",
+		"tail_index_for_search": 2
+	}
 }

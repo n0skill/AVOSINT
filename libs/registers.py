@@ -531,26 +531,19 @@ def CA(tail_n):
     r = requests.get('https://wwwapps.tc.gc.ca/'\
             'saf-sec-sur/2/ccarcs-riacc/RchSimpRes.aspx'\
             '?cn=%7c%7c&mn=%7c%7c&sn=%7c%7c&on=%7c%7c&m=%7c'+tail_n+'%7c&rfr=RchSimp.aspx')
-    
     if r.status_code == 200:
         soup = BeautifulSoup(
             r.content, features='html.parser')
-            
-        div_owner   = soup.find('div', {'id':'dvOwnerName'})
-        if div_owner is not None:
-            name        = div_owner.find_all('div')[1].text.strip()
-            
-            div_addr    = soup.find('div', {'id':'divOwnerAddress'})
-            addr        = div_addr.find_all('div')[1].text.strip()
-
-            div_city    = soup.find('div', {'id':'divOwnerCity'})
-            city        = div_city.find_all('div')[1].text.strip()
-            return Owner(name, addr, city, '', 'Canada')
-        else:
-            print('[!] Error retrieving from CA register. Ensure tail number exists and try again')
+    div_owner   = soup.find('div', {'id':'dvOwnerName'})
+    if div_owner is not None:
+        name        = div_owner.find_all('div')[1].text.strip()
+        div_addr    = soup.find('div', {'id':'divOwnerAddress'})
+        addr        = div_addr.find_all('div')[1].text.strip()
+        div_city    = soup.find('div', {'id':'divOwnerCity'})
+        city        = div_city.find_all('div')[1].text.strip()
+        return Owner(name, addr, city, '', 'Canada')
     else:
-        print('[!] Error retrieving from CA register')
-        print('[!] HTTP error: ', r.status_code)
+        print('[!] Error retrieving from CA register. Ensure tail number exists and try again')
 
 def DE(tail_n):
     raise NotImplementedError(
@@ -772,5 +765,23 @@ def CY(tail_n):
                             reg = line['content'][1]['content'][0]['content']
                             if reg == tail_n:
                                 own_cell = line['content'][7]['content']
-                                own = ' '.join([own_cell[i]['content'] for i in range(0,len(own_cell))])
+                                own = ' '.join([own_cell[i]['content'] \
+                                        for i in range(0,len(own_cell))])
                                 return Owner(own, '', '', '', '')
+def MV(tail_n):
+    register = register_from_config("MV")
+    infos = register.request_infos(tail_n)
+    for page in infos['pages']:
+        for element in page['elements']:
+            if element['type'] == 'table':
+                for line in element['content']:
+                    if len(line['content']) > 2:
+                        if len(line['content'][3]['content']) > 0 \
+                                and line['content'][3]['type'] != 'spanned-table-cell':
+                            if line['content'][3]['content'][0]['content'] == tail_n:
+                                print("THIS IS THE LIINE")
+                                print('REGISTER', line['content'][3]['content'][0])
+                                owner = line['content'][17]['content']
+                                own = ' '.join(owner[i]['content'] for i in range(0, len(owner)))
+                                return own
+                                
