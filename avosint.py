@@ -17,10 +17,11 @@ import argparse
 from bs4 import BeautifulSoup
 from threading import Thread
 import time
+import docker
 
-from libs.planes import *
-from libs.display import *
-from libs.registers import *
+
+from registers import *
+from tail_to_register import *
 
 # Data sources
 flightradar = 'http://data.flightradar24.com/zones/fcgi/feed.js?bounds='
@@ -33,11 +34,14 @@ AP      = 'Associated Press'
 AFP     = 'Agence France Presse'
 AP_KEY  = 'API KEY HERE'
 
-# Hard-coded areas
 
-CH_AREA = [Coordinates(45,4.5), Coordinates(48.5 , 10)]
-IS_AREA = [Coordinates(62.76,-32.18), Coordinates(66.92, -3.5)]
-US_AREA = [Coordinates(0,0), Coordinates(0,0)]
+# Files 
+
+
+# Hard-coded areas
+#CH_AREA = [Coordinates(45,4.5), Coordinates(48.5 , 10)]
+#IS_AREA = [Coordinates(62.76,-32.18), Coordinates(66.92, -3.5)]
+#US_AREA = [Coordinates(0,0), Coordinates(0,0)]
 
 
 # Determines if you should use a proxy or not.
@@ -51,44 +55,6 @@ user_agent = {'User-agent': 'Mozilla/5.0'}
 # GLOBAL VARIABLES
 FLG_DEBUG = False
 
-
-dict_tail_to_register_function = {
-    "HB-": CH,
-    "F-": FR,
-    "TF-": IS,
-    'N-': US,
-    'OO-': BE,
-    'OE-': AT,
-    'SE-': SW,
-    'OK-': CZ,
-    'G-': UK,
-    'EI-': IE,
-    'M-': IM,
-    'I-': IT,
-    'C-': CA,
-    'YR-': RO,
-    'YU-': RS,
-    'VH-': AU,
-    '9A-': HR,
-    '9V-': SG,
-    'ZK-': NZ,
-    'PP-': BR,
-    'PS-': BR,
-    'PR-': BR,
-    'PT-': BR,
-    'PU-': BR,
-    'D-': DE,
-    'UR-': UA,
-    'HS-': TH,
-    'U-': TH,
-    'OY-': DK,
-    'YL-': LV,
-    'E7-': BA,
-    '9A-': HR,
-    '5B-': CY,
-    '8Q-': MV,
-    }
-
 # Text colors using ANSI escaping. Surely theres a better way to do this
 class bcolors:
     ERRO = '\033[31m'
@@ -97,8 +63,8 @@ class bcolors:
     STOP = '\033[0m'
 
 
-def test_connection_f24():
-    req = requests.get('')
+def check_config():
+    return True
 
 def getjson(jsonurl):
     req = requests.get(jsonurl, headers=user_agent, proxies=proxies)
@@ -152,12 +118,21 @@ def intel_from_tail_n(tail_number):
     2) Last changes of ownership
     3) Last known position
     """
+    
     print("[*] Getting intel for tail number {}".format(tail_number))
+    # Step 1 - Gather ownership information
 
     tail_number = tail_number.upper()
-    # Step 1 - Gather ownership information
     tail_prefix = tail_number.split('-')[0]+'-'
-    owner_infos = dict_tail_to_register_function[tail_prefix](tail_number)
+
+    owner_infos = tail_to_register_function[tail_prefix](tail_number)
+    
+    # Last changes of ownership
+
+    # Last known position
+
+    # Detailled info (pictures etc)
+
     # Display information
     print("[*] Infos from registry\n", owner_infos)
 
@@ -168,9 +143,12 @@ def main():
 
     parser  = argparse.ArgumentParser()
 
-    parser.add_argument("--action", help="Action to perform ('ICAO', 'tail', 'convert'", type=str)
+    parser.add_argument("--action", help="Action to perform ('ICAO', 'tail', 'convert'", type=str, required=True)
     parser.add_argument('--tail-numbers', nargs='+', help='Tail numbers to lookup', required=True)
-    parser.add_argument("--icao", help="ICAO code to retrieve OSINT for")
+    
+    # Optional arguments
+    parser.add_argument("--icao", help="ICAO code to retrieve OSINT for", required=False)
+    parser.add_argument("--config", help="Config file", type=str)
     parser.add_argument("--proxy", help="Use proxy address", type=str)
     parser.add_argument("--interactive", action="store_true")
     parser.add_argument("--debug", action="store_true")
@@ -189,6 +167,11 @@ def main():
         print("[*] No action was specified. Quit.")
         return
     else:
+        print("[*] Checking config")
+        check_config()
+        print("[*] Launching parsr docker image")
+
+        
         if args.action == "ICAO":
             intel_from_ICAO(args.ICAO)
         elif args.action == "tail":
@@ -196,6 +179,9 @@ def main():
                 intel_from_tail_n(tail_number)
         elif args.action == "convert":
             convert_US_ICAO_to_tail()
+        elif args.action == "monitor":
+            print("[*] Monitor area mode")
+            #         motitor()
         else:
             print("[!] Unknown action. Quit.")
             return
