@@ -257,7 +257,6 @@ def CH(tail_n):
         Get information on aircraft from tail number
     """
     SwissRegister = register_from_config("CH")
-
     jsonobj = SwissRegister.request_infos(tail_n)
     if len(jsonobj) == 0:
         print("[!][CH][{}] Error when retrieving from registry".format(tail_n))
@@ -469,39 +468,20 @@ def AT(tail_n):
         return Owner(name, street, city, npa, 'Austria'), Aircraft(tail_n)
 
 def CZ(tail_n):
-    data = {
-        'aparameters': [
-            '',
-            '',
-            '',
-            '',
-            '',
-            tail_n[
-                3:],
-            '',
-            '',
-            '',
-            '',
-            '',
-            'kategorie_letadla:',
-            'typ_letadla:',
-            'rejstrikova_znacka:' +
-            str(
-                tail_n[3:]),
-            'aid_nast:281',
-            'aSubmit:1',
-        ]
-    }
-
-    r = requests.post(
-        'http://portal.caa.cz/web_redir', data=data)
-    soup = BeautifulSoup(
-        r.content, features="html.parser")
-    res = soup.find(
-        'div', {'id': 'infobox_letadlo1'})
-    name = res.find(
-        'div', {'class': 'value'}).text
-    return Owner(name, '', '', '', ''), Aircraft(tail_n)
+    SwissRegister = register_from_config("CZ")
+    jsonobj = SwissRegister.request_infos(tail_n)
+    for obj in jsonobj['rows']:
+        if obj['registration_number'] == tail_n[3:]:
+            r = requests.get('https://lr.caa.cz/api/avreg/{}'.format(obj['id']))
+            if r.status_code == 200:
+                j = json.loads(r.content)
+                if len(j['owners']) > 0:
+                    name = j['owners'][0]['display_name']
+                serial_n = j['serial_number']
+                manufacturer = j['manufacturer']
+                return Owner(name), Aircraft(tail_n, msn=serial_n, manufacturer=manufacturer)
+    
+    return Owner('', '', '', '', ''), Aircraft(tail_n)
 
 def UK(tail_n):
     raise NotImplementedError(
