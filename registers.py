@@ -13,8 +13,7 @@ from requests.packages.urllib3.util.ssl_ import create_urllib3_context
 from openpyxl import load_workbook
 from parsr_client import ParsrClient as client
 from pprint import pprint
-
-import aircraft
+from aircraft import Aircraft
 
 debug = False
 
@@ -275,7 +274,7 @@ def CH(tail_n):
     city = addr.get('city')
     owner = Owner(name, street + ' ' + street_n,
                 city, zipcode, "Switzerland")
-    return owner
+    return owner, Aircraft(tail_n)
 
 
 def FR(tail_n):
@@ -329,7 +328,7 @@ def FR(tail_n):
                     name = bls[0].text
                     addr = bls[1].text
                     city = bls[2].text
-                    return Owner(name, addr, city, '', 'France')
+                    return Owner(name, addr, city, '', 'France'), Aircraft(tail_n)
                 else:
                     print('[!][FR] Error while retrieving info for {}'.format(tail_n))
             else:
@@ -368,7 +367,7 @@ def US(tail_n):
                             city = city + ', ' + col.text
                         elif col['data-label'] == 'Zip Code':
                             zip_code = col.text
-        return Owner(name, addr, city, zip_code, 'USA')
+        return Owner(name, addr, city, zip_code, 'USA'), Aircraft(tail_n)
     else:
         print("[!][{}] HTTP status code from {}"\
                 .format(resp.status_code, resp.url))
@@ -396,7 +395,7 @@ def IS(tail_n):
                 elif i == 3:
                     city = j
         if own is not None:
-            return Owner(name, street, city, '', 'Iceland')
+            return Owner(name, street, city, '', 'Iceland'), Aircraft(tail_n)
 
 
 def BE(tail_n):
@@ -417,7 +416,7 @@ def BE(tail_n):
                         0].get('addresses').get('street')
                     city = j.get('stakeHolderRoleList')[
                         0].get('addresses').get('city')
-                    return Owner(name, street, city, '', 'Belgium')
+                    return Owner(name, street, city, '', 'Belgium'), Aircraft(tail_n)
                 else:
                     return Exception("Error retrieving from BE")
 
@@ -447,7 +446,7 @@ def SW(tail_n):
             2].strip()
         country = results_element.parent.text.split('\r\n')[
             3].strip()
-        return Owner(name, street, city, '', country)
+        return Owner(name, street, city, '', country), Aircraft(tail_n)
     else:
         raise Exception('Error retrieving from SW')
 
@@ -467,7 +466,7 @@ def AT(tail_n):
         name, loc_info, country = owner_infos[0]['halter'].split('\r\n')
         city, street  = loc_info.split(', ')
         npa, city = city.split(' ')
-        return Owner(name, street, city, npa, 'Austria')
+        return Owner(name, street, city, npa, 'Austria'), Aircraft(tail_n)
 
 def CZ(tail_n):
     data = {
@@ -502,7 +501,7 @@ def CZ(tail_n):
         'div', {'id': 'infobox_letadlo1'})
     name = res.find(
         'div', {'class': 'value'}).text
-    return Owner(name, '', '', '', '')
+    return Owner(name, '', '', '', ''), Aircraft(tail_n)
 
 def UK(tail_n):
     raise NotImplementedError(
@@ -542,7 +541,7 @@ def IE(tail_n):
                         0][12]
                     addr = plane[
                         0][13]
-                    return Owner(name, addr, '', '', 'Ireland')
+                    return Owner(name, addr, '', '', 'Ireland'), Aircraft(tail_n)
                     raise Exception(
                         'Error retrieving from Ireland register. Tail number may be wrong')
 
@@ -567,7 +566,7 @@ def IM(tail_n):
                 name, infos = own.text.split(',')
                 if len(infos) > 1:
                     street = infos
-                    return Owner(name, street, '', '', '')
+                    return Owner(name, street, '', '', ''), Aircraft(tail_n)
 
 def CA(tail_n):
     tail_n = tail_n.lstrip('C-')
@@ -584,7 +583,7 @@ def CA(tail_n):
         addr        = div_addr.find_all('div')[1].text.strip()
         div_city    = soup.find('div', {'id':'divOwnerCity'})
         city        = div_city.find_all('div')[1].text.strip()
-        return Owner(name, addr, city, '', 'Canada')
+        return Owner(name, addr, city, '', 'Canada'), Aircraft(tail_n)
     else:
         print('[!] Error retrieving from CA register. Ensure tail number exists and try again')
 
@@ -624,7 +623,7 @@ def IT(tail_n):
                 'dl', {'class': 'dl-horizontal'})[0]
             owner_name = tab_owner.find_all(
                     'dd')[-1].text
-            return Owner(owner_name, '', '', '', '')
+            return Owner(owner_name, '', '', '', ''), Aircraft(tail_n)
         raise Exception(
                 "Could not get info from IT register")
 
@@ -656,7 +655,7 @@ def AU(tail_n):
         city = soup.find('div', 
                 {'class':'field--name-field-tx-reg-hold-suburb'}
                 ).text.strip('Suburb / City:\n')
-        return Owner(name, addr, city, '', 'Australia')
+        return Owner(name, addr, city, '', 'Australia'), Aircraft(tail_n)
     raise Exception(
             "Could not get info from AU register")
 
@@ -690,7 +689,7 @@ def NZ(tail_n):
         owner_info 	= soup.find('div', {'class': 'col-md-9'})
         name 		= owner_info.text.strip().split('\n')[1].strip()
         street 		= owner_info.text.strip().split('\n')[2].strip()
-        return Owner(name, street, '', '', 'New Zealand')
+        return Owner(name, street, '', '', 'New Zealand'), Aircraft(tail_n)
     raise Exception("Could not get info from NZ register")
 
 def BR(tail_n):
@@ -702,7 +701,7 @@ def BR(tail_n):
         for heading in headings:
             if 'Proprietário' in heading.text:
                 name = heading.parent.td.text.strip()
-                return Owner(name, '', '', '', 'Brazil')
+                return Owner(name, '', '', '', 'Brazil'), Aircraft(tail_n)
             raise Exception("Could not get info from BR register. " + r.url + r.status_code )
 
 def UA(tail_n):
@@ -838,6 +837,19 @@ def CAY(tail_n):
 def GG(tail_n):
     register = register_from_config("GG")
     infos = register.request_infos(tail_n)
+    for page in infos['pages']:
+        for e in page['elements']:
+            if e['type'] == 'table':
+                for content in e['content'][1:]:
+                    line_to_get = None
+                    for i, line in enumerate(content['content'][0]['content']):
+                        if line['content'] == tail_n:
+                            line_to_get = i
+                    own = ' '.join(
+                            content['content'][3]['content'][line_to_get+i]['content'] \
+                                    for i in range(1, 8))
+                    return Owner(own, '', '', '', 'Guernsey'), Aircraft(tail_n)
+                    tail_column = content['content'][0]['content']
     return ""
 
 
@@ -858,8 +870,7 @@ def MT(tail_n):
                             name = owner_infos[0]
                             addr = owner_infos[1]
                             city = owner_infos[2]
-                            return Owner(name, addr, city, '', country='Malta')
-
+                            return Owner(name, addr, city, '', country='Malta'), Aircraft(tail_n)
     return Owner('', country="Malta")
 
 def MD(tail_n):
