@@ -475,18 +475,17 @@ def CZ(tail_n):
             r = requests.get('https://lr.caa.cz/api/avreg/{}'.format(obj['id']))
             if r.status_code == 200:
                 j = json.loads(r.content)
+                name = None
                 if len(j['owners']) > 0:
                     name = j['owners'][0]['display_name']
                 serial_n = j['serial_number']
                 manufacturer = j['manufacturer']
                 return Owner(name), Aircraft(tail_n, msn=serial_n, manufacturer=manufacturer)
-    
-    return Owner('', '', '', '', ''), Aircraft(tail_n)
+            else:
+                print("[!] Error while searching")
+                raise Exception("Error while searching") 
 
 def UK(tail_n):
-    raise NotImplementedError(
-        'UK registry not yet implemented. Registry url is https://siteapps.caa.co.uk/g-info/')
-    
     data = {
         'Registration': tail_n[2:]
     }
@@ -499,6 +498,8 @@ def UK(tail_n):
         'https://ginfoapi.caa.co.uk/api/aircraft/search', data=data)
     if r.status_code == 200:
         print(r.content)
+
+    return Owner(name=""), Aircraft(tail_n)
 
 def IE(tail_n):
     headers = {

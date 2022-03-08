@@ -124,7 +124,6 @@ def intel_from_tail_n(tail_number):
 
     tail_number = tail_number.upper()
     tail_prefix = tail_number.split('-')[0]+'-'
-
     owner_infos, aircraft_infos = tail_to_register_function[tail_prefix](tail_number)
     
     # Last changes of ownership
