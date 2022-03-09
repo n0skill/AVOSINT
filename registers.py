@@ -869,4 +869,25 @@ def MD(tail_n):
                             if retrieved_tail[0]['content'] == tail_n:
                                 owner_name = owner[0]['content']
                                 return Owner(owner_name, country='Moldova')
+def BZ(tail_n):
+    print("BZ")
+    register = register_from_config("BZ")
+    infos = register.request_infos(tail_n)
+    for page in infos['pages']:
+        for content in page['elements']:
+            if content['type'] == 'table':
+                for item in content['content']:
+                    tail = item['content'][0]['content'][0]['content']
+                    if tail == tail_n:
+                        # Owner infos
+                        own = item['content'][3]['content'][0]['content']
+                        addr = ' '.join(item['content'][4]['content'][i]['content'] for i in range(0, len(item['content'][4]['content'])))
+                        addr, city = addr.split(',')
+
+                        # Aircraft infos
+                        manufacturer = item['content'][1]['content'][0]['content']
+                        return Owner(own, addr, city=city), Aircraft(tail_n, manufacturer=manufacturer)
+
+
+
 

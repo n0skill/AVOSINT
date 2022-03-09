@@ -124,7 +124,13 @@ def intel_from_tail_n(tail_number):
 
     tail_number = tail_number.upper()
     tail_prefix = tail_number.split('-')[0]+'-'
-    owner_infos, aircraft_infos = tail_to_register_function[tail_prefix](tail_number)
+    try:
+        owner_infos, aircraft_infos = tail_to_register_function[tail_prefix](tail_number)
+        # Display information
+        print("[*] Owner infos\n", owner_infos)
+        print("[*] Aircraft infos\n", aircraft_infos)
+    except Exception:
+        print("[!] Exception while retrieving infos from register")
     
     # Last changes of ownership
 
@@ -132,9 +138,9 @@ def intel_from_tail_n(tail_number):
 
     # Detailled info (pictures etc)
 
-    # Display information
-    print("[*] Owner infos\n", owner_infos)
-    print("[*] Aircraft infos\n", aircraft_infos)
+def display(owner, aircraft):
+    """
+    """
 
 def main():
     # 1 - Check OSINT from ICAO
@@ -143,15 +149,23 @@ def main():
 
     parser  = argparse.ArgumentParser()
 
-    parser.add_argument("--action", help="Action to perform ('ICAO', 'tail', 'convert'", type=str, required=True)
-    parser.add_argument('--tail-numbers', nargs='+', help='Tail numbers to lookup', required=True)
-    
+    parser.add_argument("--action", 
+            help="Action to perform ('ICAO', 'tail', 'convert'",
+            type=str, required=True)
+    parser.add_argument('--tail-numbers', nargs='+',
+            help='Tail numbers to lookup', required=True)
     # Optional arguments
-    parser.add_argument("--icao", help="ICAO code to retrieve OSINT for", required=False)
-    parser.add_argument("--config", help="Config file", type=str)
-    parser.add_argument("--proxy", help="Use proxy address", type=str)
-    parser.add_argument("--interactive", action="store_true")
-    parser.add_argument("--debug", action="store_true")
+    parser.add_argument("--icao",
+            help="ICAO code to retrieve OSINT for", required=False)
+    parser.add_argument("--config", 
+            help="Config file", type=str)
+    parser.add_argument("--proxy", 
+            help="Use proxy address", type=str)
+    parser.add_argument("--interactive", 
+            action="store_true")
+    parser.add_argument("--debug",
+            action="store_true")
+
     require_group = parser.add_mutually_exclusive_group(required=False)
     require_group.add_argument("--country", help="country code", type=str)
     require_group.add_argument(
@@ -159,10 +173,8 @@ def main():
             help="longitude coord in decimal format",
             nargs=4,
             type=float)
-    args    = parser.parse_args()
-    corner_1 = None
-    corner_2 = None
 
+    args    = parser.parse_args()
     if not args.action:
         print("[*] No action was specified. Quit.")
         return
@@ -171,20 +183,29 @@ def main():
         check_config()
         print("[*] Launching parsr docker image")
 
-        
-        if args.action == "ICAO":
-            intel_from_ICAO(args.ICAO)
-        elif args.action == "tail":
-            for tail_number in args.tail_numbers:
-                intel_from_tail_n(tail_number)
-        elif args.action == "convert":
-            convert_US_ICAO_to_tail()
-        elif args.action == "monitor":
-            print("[*] Monitor area mode")
-            #         motitor()
-        else:
-            print("[!] Unknown action. Quit.")
-            return
+        action = args.action
+        tail_numbers = args.tail_numbers
+
+        while action != 'quit':
+            if action == "ICAO":
+                intel_from_ICAO(args.ICAO)
+            elif action == "tail":
+                for tail_number in args.tail_numbers:
+                    intel_from_tail_n(tail_number)
+            elif action == "convert":
+                convert_US_ICAO_to_tail()
+            elif action == "monitor":
+                print("[*] Monitor area mode")
+                monitor()
+            else:
+                print("[!] Unknown action. Quit.")
+                return
+
+            # Display current infos
+            
+
+            action = input('New Action:')
+            
 
 if __name__ == "__main__":
-        main()
+    main()

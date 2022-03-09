@@ -127,6 +127,15 @@
 		"data_type": "json",
 		"tail_index_for_search": 0,
 		"infos": [""]
+	},
+	"BZ": {
+		"name": "BELIZE DEPARTMENT OF CIVIL AVIATION",
+		"website": "https://www.civilaviation.gov.bz/",
+		"data_url": "https://www.civilaviation.gov.bz/images/downloads/BDCA-Aircraft-Register.pdf",
+		"request_type": "GET",
+		"data_type": "pdf",
+		"tail_index_for_search": 0,
+		"infos": [""]
 	}
 
 }
