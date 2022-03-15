@@ -8,7 +8,8 @@
 # TODO
 # Implement ADS-B
 # Implement news source, location API, and search based on location name
-
+import os
+import sys
 import requests
 import random as rand
 import json
@@ -17,8 +18,7 @@ import argparse
 from bs4 import BeautifulSoup
 from threading import Thread
 import time
-import docker
-
+import socket
 
 from registers import *
 from tail_to_register import *
@@ -33,6 +33,11 @@ flight_data_src = 'http://data-live.flightradar24.com/clickhandler/?version=1.5&
 AP      = 'Associated Press'
 AFP     = 'Agence France Presse'
 AP_KEY  = 'API KEY HERE'
+
+
+# Docker
+DOCKER_HOST = '127.0.0.1'
+DOCKER_PORT = 3001
 
 
 # Files 
@@ -58,29 +63,34 @@ FLG_DEBUG = False
 # Text colors using ANSI escaping. Surely theres a better way to do this
 class bcolors:
     ERRO = '\033[31m'
-    WARN = '\033[91m'
+    WARN = '\033[93m'
     OKAY = '\033[32m'
     STOP = '\033[0m'
 
+def printok(str):
+    return print(bcolors.OKAY+'[OK]'+bcolors.STOP+' {}'.format(str))
+
+def printko(str):
+    return print(bcolors.ERRO+'[KO]'+bcolors.STOP+' {}'.format(str))
+
+def printwarn(str):
+    return print(bcolors.WARN+'[WRN]'+bcolors.STOP+' {}'.format(str))
 
 def check_config():
-    return True
+    print("[*] Checking config")
 
-def getjson(jsonurl):
-    req = requests.get(jsonurl, headers=user_agent, proxies=proxies)
-    if FLG_DEBUG:
-        print(req.url)
-    if req.status_code == 200:
-        try:
-            json = req.json()
-        except:
-            print('Error while decoding json')
-        return json
+    # Tests connectivity to the docker container
+    timeout_seconds=1
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(timeout_seconds)
+    result = sock.connect_ex((DOCKER_HOST, DOCKER_PORT))
+    sock.close()
+    if result == 0:
+        printok("Parsr docker container is reachable")
+        return True
     else:
-        print(bcolors.ERRO)
-        print('ERROR '+str(req.status_code) + ' ' + jsonurl)
-        print(bcolors.STOP)
-        raise ConnectionError
+        printwarn("Could not contact docker container. PDF registery lookup will not work.")
+        return False
 
 
 # This method gets plane from an area and puts them in a list
@@ -110,6 +120,7 @@ def getInterestingPlaces():
 
 def intel_from_ICAO():
     print("TODO GET ICAO INFO")
+    return None
 
 def intel_from_tail_n(tail_number):
     """
@@ -125,35 +136,38 @@ def intel_from_tail_n(tail_number):
     tail_number = tail_number.upper()
     tail_prefix = tail_number.split('-')[0]+'-'
     try:
+        if tail_prefix not in tail_to_register_function:
+            print("[!] Register for tail prefix {} not yet implemented ".format(tail_prefix))
+            raise NotImplementedError
+
         owner_infos, aircraft_infos = tail_to_register_function[tail_prefix](tail_number)
         # Display information
-        print("[*] Owner infos\n", owner_infos)
-        print("[*] Aircraft infos\n", aircraft_infos)
-    except Exception:
+        #print("[*] Owner infos\n", owner_infos)
+        #print("[*] Aircraft infos\n", aircraft_infos)
+        return owner_infos, aircraft_infos
+
+    except NotImplementedError as e:
+        raise e
+    except Exception as e:
         print("[!] Exception while retrieving infos from register")
-    
+        print("[!] Exception: {}".format(e))
+        raise Exception("NoIntelError")
     # Last changes of ownership
 
     # Last known position
 
     # Detailled info (pictures etc)
 
-def display(owner, aircraft):
-    """
-    """
-
 def main():
     # 1 - Check OSINT from ICAO
     # 2 - Check OSINT from tail number
     # 3 - Tool to convert icao to tail number
-
     parser  = argparse.ArgumentParser()
-
     parser.add_argument("--action", 
-            help="Action to perform ('ICAO', 'tail', 'convert'",
+            help="Action to perform ('ICAO', 'tail', 'convert')",
             type=str, required=True)
-    parser.add_argument('--tail-numbers', nargs='+',
-            help='Tail numbers to lookup', required=True)
+    parser.add_argument('--tail-number',
+            help='Tail number to lookup')
     # Optional arguments
     parser.add_argument("--icao",
             help="ICAO code to retrieve OSINT for", required=False)
@@ -175,36 +189,79 @@ def main():
             type=float)
 
     args    = parser.parse_args()
+
+    # For storing intel recieved
+    owner_infos         = None
+    aicraft_infos       = None
+    incident_reports    = None
+
     if not args.action:
         print("[*] No action was specified. Quit.")
         return
+
     else:
-        print("[*] Checking config")
-        check_config()
-        print("[*] Launching parsr docker image")
-
+        if check_config() == False:
+            printwarn("Not all check passed. Usage may be degraded")
+        else:
+            printok("All checks passed")
+        time.sleep(5)
         action = args.action
-        tail_numbers = args.tail_numbers
-
+        tail_number = args.tail_number
         while action != 'quit':
-            if action == "ICAO":
-                intel_from_ICAO(args.ICAO)
-            elif action == "tail":
-                for tail_number in args.tail_numbers:
-                    intel_from_tail_n(tail_number)
-            elif action == "convert":
-                convert_US_ICAO_to_tail()
-            elif action == "monitor":
-                print("[*] Monitor area mode")
-                monitor()
-            else:
-                print("[!] Unknown action. Quit.")
-                return
+            try:
+                if action == "ICAO":
+                    intel_from_ICAO(args.ICAO)
+                elif action == "tail":
+                    if tail_number == None:
+                        tail_number = input("Enter tail number to lookup: ")
+                    owner_infos, aircraft_infos = intel_from_tail_n(tail_number)
+                    status = 'Done'
+                elif action == "convert":
+                    convert_US_ICAO_to_tail()
+                    status = 'Done'
+                elif action == "monitor":
+                    os.system('clear')
+                    print("[*] Monitor aircraft mode")
+                    if tail_number is None:
+                        tail_number = input("Enter tail number: ")
+                    monitor(tail_number)
+                    status = 'Done'
 
-            # Display current infos
-            
+                # Exits context (deselection of tail_numer or ICAO etc)
+                elif action == 'exit':
+                    tail_number = None
+                    owner_infos = None
+                    aircraft_info = None
+                    status = 'Waiting for action'
+                else:
+                    print("[!] Unknown action. Try again")
+                    action = input("Enter valid action (ICAO, tail, convert, monitor, quit)")
+                # Print recieved intel
+                os.system('clear')
+                print("==========================================")
+                print("Current Status: "+bcolors.OKAY+"[{}]".format(status)+bcolors.STOP)
+                print("Last action: {}".format(action))
+                print("Current tail: {}".format(tail_number))
+                print("==========================================")
+                print("✈️ Aircraft infos:")
+                print(aircraft_infos)
+                print("🧍 Owner infos")
+                print(owner_infos)
+                action = input('New Action ({}):'.format(tail_number))
+            except Exception as e:
+                tail_number = None
+                owner_infos = None
+                aircraft_info = None
 
-            action = input('New Action:')
+                os.system('clear')
+                status = e.__class__.__name__
+                print("==========================================")
+                print("Current Status: "+bcolors.WARN+'[{}]'.format(status)+bcolors.STOP)
+                print("==========================================")
+                print("Last action: {}".format(action))
+                print("Current tail: {}".format(tail_number))
+                action = input('New Action:')
+
             
 
 if __name__ == "__main__":

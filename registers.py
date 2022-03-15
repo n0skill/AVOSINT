@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
 from requests.packages.urllib3.util.ssl_ import create_urllib3_context
+from urllib3.exceptions import NewConnectionError
 from openpyxl import load_workbook
 from parsr_client import ParsrClient as client
 from pprint import pprint
@@ -102,7 +103,6 @@ class DataSource:
         
         try:
             r = None
-
             # JSON
             if self.src_type == 'json':
                 if self.request_type=="GET":
@@ -143,6 +143,7 @@ class DataSource:
                 from google_auth_oauthlib.flow import InstalledAppFlow
                 from googleapiclient.discovery import build
                 from googleapiclient.errors import HttpError
+                
                 # If modifying these scopes, delete the file token.json.
                 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
                 # The ID and range of a sample spreadsheet.
@@ -163,15 +164,14 @@ class DataSource:
                 for row in values:
                     # Print columns A and E, which correspond to indices 0 and 4.
                     print('%s, %s' % (row[0], row[4]))
-
-
-
                 return 0
 
+        except NewConnectionError as e:
+            print("[!] Failed to establish new connection. Try again ?")
         except Exception as e:
             print("[!!!] Exception occurred", e)
             print("[*] Try again with session")
-            s = request.session()
+            s = requests.session()
             r = s.get(self.url, headers=self.headers)
             if self.src_type == 'pdf':
                 parsr = client('localhost:3001')
@@ -653,7 +653,6 @@ def SG(tail_n):
     for line in ws:
         if line[1].value == tail_n:
             return Owner(line[7].value, '', '', '', '')
-        
 
     raise NotImplementedError('Singapore register is a pdf document.'\
             'The document is available at '\
