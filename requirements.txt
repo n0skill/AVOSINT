@@ -1,0 +1,4 @@
+requests
+parsr-client
+bs4
+openpyxl

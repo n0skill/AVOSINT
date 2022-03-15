@@ -101,104 +101,103 @@ class DataSource:
             self.data = self.data.replace('{{TAILN}}', tail_n)
         
         try:
-            if self.data is None:
+            r = None
+
+            # JSON
+            if self.src_type == 'json':
                 if self.request_type=="GET":
                     r = requests.get(self.url+tail_n,headers=self.headers)
-            else:
-                if self.request_type == 'POST':
+                if self.request_type=="POST":
                     r = requests.post(self.url, data=self.data, headers=self.headers)
-                elif self.request_type == 'GET':
-                    r = requests.get(self.url, data=self.data, headers=self.headers)
-        except Exception as e:
-            print("[!!!] Exception occured", e)
-            # TODO: Try using alternative methods to gather data here
-
-        if r.status_code == 200:
-            if self.src_type == 'json':
-                j = json.loads(r.content)
+                if r.status_code == 200:
+                    j = json.loads(r.content)
                 return j
+
+            # Online xls 
             elif self.src_type == 'xlsx':
                 with open('/tmp/book.xlsx', 'wb') as f:
                     f.write(r.content)
                     book = load_workbook(
                         '/tmp/book.xlsx')
                 return book
+
+            # PDF file
             elif self.src_type == 'pdf':
                 parsr = client('localhost:3001')
-                with open('/tmp/avosint.pdf', 'wb') as f:
+                r = requests.get(self.url)
+                if r.status_code == 200:
+                    with open('/tmp/avosint.pdf', 'wb') as f:
                         f.write(r.content)
-                job = parsr.send_document(
-                    file_path='/tmp/avosint.pdf',
-                    config_path='./parsr.conf',
-                    document_name='Sample File2',
-                    wait_till_finished=True,
-                    save_request_id=True,
-                    silent=False
-                )
-                j = parsr.get_json()
-                return j
+                    job = parsr.send_document(
+                        file_path='/tmp/avosint.pdf',
+                        config_path='./parsr.conf',
+                        document_name='Sample File2',
+                        wait_till_finished=True,
+                        save_request_id=True,
+                        silent=False)
+                    j = parsr.get_json()
+                    return j
 
-            else:
-                return r.content
+            # Google spreadsheet
+            elif self.src_type == 'google_sheets':
+                from google_auth_oauthlib.flow import InstalledAppFlow
+                from googleapiclient.discovery import build
+                from googleapiclient.errors import HttpError
+                # If modifying these scopes, delete the file token.json.
+                SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
+                # The ID and range of a sample spreadsheet.
+                SAMPLE_SPREADSHEET_ID = '1Kgu0uoXLGhoCHUyMgDsdqtW_XH3fvIglkVx5EdJhRnU'
+                SAMPLE_RANGE_NAME = 'Class Data!A2:E'
+                 # Call the Sheets API
+                service = build('sheets', 'v4', credentials=creds)
+                sheet = service.spreadsheets()
+                result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                                            range=SAMPLE_RANGE_NAME).execute()
+                values = result.get('values', [])
+
+                if not values:
+                    print('No data found.')
+                    return
+
+                print('Name, Major:')
+                for row in values:
+                    # Print columns A and E, which correspond to indices 0 and 4.
+                    print('%s, %s' % (row[0], row[4]))
+
+
+
+                return 0
+
+        except Exception as e:
+            print("[!!!] Exception occurred", e)
+            print("[*] Try again with session")
+            s = request.session()
+            r = s.get(self.url, headers=self.headers)
+            if self.src_type == 'pdf':
+                parsr = client('localhost:3001')
+                r = requests.get(self.url)
+                if r.status_code == 200:
+                    with open('/tmp/avosint.pdf', 'wb') as f:
+                            f.write(r.content)
+                    job = parsr.send_document(
+                        file_path='/tmp/avosint.pdf',
+                        config_path='./parsr.conf',
+                        document_name='Sample File2',
+                        wait_till_finished=True,
+                        save_request_id=True,
+                        silent=False)
+                    j = parsr.get_json()
+                    print(j)
+                    return j
+                
+            print(r)
+
+
+
         else:
             print("[!] Error {} when retrieving from\n[!] URL: {}".format(r.status_code, self.url))
             print("[!] DataSource error while gathering information.")
             print("[!] Try to gather using session.")
-            try:
-                s = requests.session()
-                r = s.get(self.url)
-                if r.status_code == 200:
-                    print("[*] Got data ! Download it")
-                    if self.src_type == 'json':
-                        j = json.loads(r.content)
-                    elif self.src_type == 'xlsx':
-                        with open('/tmp/book.xlsx', 'wb') as f:
-                            f.write(r.content)
-                            book = load_workbook(
-                                '/tmp/book.xlsx')
-                            return book
-                    elif self.src_type == 'pdf':
-                        parsr = client('localhost:3001')
-                        with open('/tmp/avosint.pdf', 'wb') as f:
-                                f.write(r.content)
-                        job = parsr.send_document(
-                            file_path='/tmp/avosint.pdf',
-                            config_path='./parsr.conf',
-                            document_name='Sample File2',
-                            wait_till_finished=True,
-                            save_request_id=True,
-                            silent=False
-                        )
-                        j = parsr.get_json()
-                        return j
-
-                    else:
-                        return r.content
-                    return r.content
-            except Exception as e:
-                print("[!!!] Exception. Try using generic headers and session", e)
-                headers = {
-                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36'
-                        }
-                hostname = urllib.parse.urlparse(self.url).hostname
-                r = s.get('http://'+hostname, headers=headers)
-                r = s.get(self.url, headers=headers)
-                if r.status_code == 200:
-                    if self.src_type=='pdf':
-                        with open('/tmp/avosint.pdf', 'wb') as f:
-                                f.write(r.content)
-                        parsr = client('localhost:3001')
-                        job = parsr.send_document(
-                            file_path='/tmp/avosint.pdf',
-                            config_path='./parsr.conf',
-                            document_name='Sample File2',
-                            wait_till_finished=True,
-                            save_request_id=True,
-                            silent=False
-                        )
-                        j = parsr.get_json()
-                        return j
-
 
 class Registry:
     def __init__(self, 
@@ -870,10 +869,10 @@ def MD(tail_n):
                                 owner_name = owner[0]['content']
                                 return Owner(owner_name, country='Moldova')
 def BZ(tail_n):
-    print("BZ")
     register = register_from_config("BZ")
     infos = register.request_infos(tail_n)
     for page in infos['pages']:
+        print(page)
         for content in page['elements']:
             if content['type'] == 'table':
                 for item in content['content']:
@@ -881,13 +880,20 @@ def BZ(tail_n):
                     if tail == tail_n:
                         # Owner infos
                         own = item['content'][3]['content'][0]['content']
-                        addr = ' '.join(item['content'][4]['content'][i]['content'] for i in range(0, len(item['content'][4]['content'])))
+                        addr = ' '.join(
+                                item['content'][4]['content']\
+                                [i]['content']\
+                                for i in range(0, len(item['content'][4]['content'])))
                         addr, city = addr.split(',')
 
                         # Aircraft infos
                         manufacturer = item['content'][1]['content'][0]['content']
-                        return Owner(own, addr, city=city), Aircraft(tail_n, manufacturer=manufacturer)
+                        print(own)
+                        return Owner(own, addr, city=city), \
+                                Aircraft(tail_n, manufacturer=manufacturer)
 
 
-
-
+def VE(tail_n):
+    register = register_from_config("VE")
+    infos = register.request_infos(tail_n)
+    print(infos)

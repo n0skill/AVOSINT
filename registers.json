@@ -136,6 +136,15 @@
 		"data_type": "pdf",
 		"tail_index_for_search": 0,
 		"infos": [""]
+	},
+	"VE": {
+		"name": "Bellingcat's venezuelian aircraft ",
+		"website": "1Kgu0uoXLGhoCHUyMgDsdqtW_XH3fvIglkVx5EdJhRnU",
+		"data_url": "h1Kgu0uoXLGhoCHUyMgDsdqtW_XH3fvIglkVx5EdJhRn",
+		"request_type": "GET",
+		"data_type": "google_sheets",
+		"tail_index_for_search": 0,
+		"infos": [""]
 	}
 
 }
