@@ -117,6 +117,7 @@ class DataSource:
 
             # Online xls 
             elif self.src_type == 'xlsx':
+                r = requests.get(self.url)
                 with open('/tmp/book.xlsx', 'wb') as f:
                     f.write(r.content)
                     book = load_workbook(
@@ -641,24 +642,14 @@ def AU(tail_n):
             "Could not get info from AU register")
 
 def SG(tail_n):
-    r = requests.get(
-            'https://www.caas.gov.sg/'\
-                    'docs/default-source/'\
-                    'docs---srg/fs/approval-listings/'\
-                    'singapore-registered-aircraft-engine-nos---feb-2022.xlsx'
-                    )
-    with open('/tmp/SG_register.xlsx', 'wb') as f:
-        f.write(r.content)
-    wb = load_workbook('/tmp/SG_register.xlsx')
-    ws = wb['Aircraft Register']
-    for line in ws:
-        if line[1].value == tail_n:
-            return Owner(line[7].value, '', '', '', '')
-
-    raise NotImplementedError('Singapore register is a pdf document.'\
-            'The document is available at '\
-            'https://www.caas.gov.sg/docs/default-source/pdf/'\
-            'singapore-registered-aircraft-engine-nos---oct-2019.pdf')
+    register    = register_from_config("SG")
+    book        = register.request_infos(tail_n)
+    infos_sheet = book["Aircraft Register"]
+    for row in infos_sheet.values:
+        if tail_n in row:
+            return Owner(row[4], '', '', '', ''),\
+                    Aircraft(tail_n, manufacturer=row[5], msn=row[2])
+    return None, None
 
 def NZ(tail_n):
     r = requests.get('https://www.aviation.govt.nz/aircraft/'\
@@ -897,3 +888,5 @@ def VE(tail_n):
     register = register_from_config("VE")
     infos = register.request_infos(tail_n)
     print(infos)
+    time.sleep(10)
+    return infos

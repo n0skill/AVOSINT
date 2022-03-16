@@ -147,12 +147,12 @@ def intel_from_tail_n(tail_number):
     try:
         if tail_prefix not in tail_to_register_function:
             raise NotImplementedError
-        owner_infos, aircraft_infos = tail_to_register_function[tail_prefix](tail_number)
+        owner_infos, aircraft_infos = \
+                tail_to_register_function[tail_prefix](tail_number)
         return owner_infos, aircraft_infos
     except Exception as e:
         print("[!] Exception while retrieving infos from register")
         print("[!] Exception: {}".format(e))
-        raise NoIntelException
     # Last changes of ownership
 
     # Last known position
@@ -215,16 +215,19 @@ def main():
                 elif action == "tail":
                     if tail_number == None:
                         tail_number = input("Enter tail number to lookup: ")
-                    owner_infos, aircraft_infos = intel_from_tail_n(tail_number)
+                    owner_infos, aircraft_infos = \
+                            intel_from_tail_n(tail_number)
 
                     print("[*] Searching for incident reports ....")
-                    incident_reports = search_incidents(tail_number, args.verbose)
+                    incident_reports = \
+                            search_incidents(tail_number, args.verbose)
                     status = 'Done'
                 elif action == "convert":
                     convert_US_ICAO_to_tail()
                     status = 'Done'
                 elif action == "monitor":
-                    os.system('clear')
+                    if not args.verbose:
+                        os.system('clear')
                     print("[*] Monitor aircraft mode")
                     if tail_number is None:
                         tail_number = input("Enter tail number: ")
@@ -233,16 +236,17 @@ def main():
 
                 # Exits context (deselection of tail_numer or ICAO etc)
                 elif action == 'exit':
-                    tail_number = None
-                    owner_infos = None
-                    aircraft_info = None
-                    status = 'Waiting for action'
+                    tail_number     = None
+                    owner_infos     = None
+                    aircraft_info   = None
+                    status          = 'Waiting for action'
                 else:
                     print("[!] Unknown action. Try again")
                     action = input("Enter valid action [ICAO, tail, convert, monitor, exit, quit]")
 
                 # Print retrieved intel
-                os.system('clear')
+                if not args.verbose:
+                    os.system('clear')
                 print("==========================================")
                 print("Current Status: "+bcolors.OKAY+"[{}]".format(status)+bcolors.STOP)
                 print("Last action: {}".format(action))
@@ -263,7 +267,8 @@ def main():
                 owner_infos = None
                 aircraft_info = None
 
-                os.system('clear')
+                if not args.verbose:
+                    os.system('clear')
                 status = e.__class__.__name__
                 print("==========================================")
                 print("Current Status: "+bcolors.WARN+'[{}]'.format(status)+bcolors.STOP)

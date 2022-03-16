@@ -25,8 +25,8 @@
 	},
 	"TH": {
 		"name": "Thailand register",
-		"website": "http://www.oy-reg.dk/register/",
-		"data_url": "http://www.oy-reg.dk/register/?reg=",
+		"website": "TODO",
+		"data_url": "TODO",
 		"data_type": "xlsx",
 		"request_type": "GET",
 		"tail_index_for_search": 3,
@@ -143,6 +143,15 @@
 		"data_url": "h1Kgu0uoXLGhoCHUyMgDsdqtW_XH3fvIglkVx5EdJhRn",
 		"request_type": "GET",
 		"data_type": "google_sheets",
+		"tail_index_for_search": 0,
+		"infos": [""]
+	},
+	"SG": {
+		"name": "Singapore Civil Aircraft Authority",
+		"website": "https://www.caas.gov.sg/",
+		"data_url": "https://www.caas.gov.sg/docs/default-source/docs---srg/fs/approval-listings/singapore-registered-aircraft-engine-nos---feb-2022.xlsx",
+		"request_type": "GET",
+		"data_type": "xlsx",
 		"tail_index_for_search": 0,
 		"infos": [""]
 	}
