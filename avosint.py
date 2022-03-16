@@ -146,8 +146,7 @@ def intel_from_tail_n(tail_number):
 
     if tail_prefix not in tail_to_register_function:
         raise NotImplementedError
-    owner_infos, aircraft_infos = \
-            tail_to_register_function[tail_prefix](tail_number)
+    owner_infos, aircraft_infos = tail_to_register_function[tail_prefix](tail_number)
     return owner_infos, aircraft_infos
 
     # Last changes of ownership

@@ -40,5 +40,6 @@ tail_to_register_function = {
 	"9H-": MT,
     "ER-": MD,
     "V3-": BZ,
-    "YV-": VE
+    "YV-": VE,
+    "S7-": SC
 }

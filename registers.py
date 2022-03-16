@@ -97,7 +97,9 @@ class DataSource:
         - json object for json sources
         - json object for pdf sources (using parsr)
         - raw request response content when content type could not be determined
+        - BeautifulSoup soup for html sources
         """
+
         print('[*] Gathering info from url', self.url)
         if self.data != '' and self.data is not None:
             print('[*] Replacing {{TAILN}} from data with acutal tail number', self.url)
@@ -105,7 +107,9 @@ class DataSource:
         
         try:
             r = None
-            # JSON
+            if self.src_type == 'html':
+                r = requests.get(self.url)
+                return BeautifulSoup(r.content, 'html.parser')
             if self.src_type == 'json':
                 if self.request_type=="GET":
                     r = requests.get(self.url+tail_n,headers=self.headers)
@@ -890,3 +894,23 @@ def VE(tail_n):
     print(infos)
     time.sleep(10)
     return infos
+
+
+def SC(tail_n):
+    register = register_from_config("SC")
+    infos = register.request_infos(tail_n)
+    ul = infos.find('ul', {'class':'jdb-tab-contents'})
+    li = ul.find('li')
+    tables = li.find_all('table')
+    for table in tables:
+        rows = table.find_all('tr')
+        for row in rows:
+            spans = row.find_all('span')
+            for span in spans:
+                if tail_n in span.text:
+                    owner_name = spans[2].text
+                    # Only domesic owners are registered in this CAA
+                    country = 'Seychelles' 
+                    return Owner(owner_name, country=country), Aircraft(tail_n)
+    return None, None
+    

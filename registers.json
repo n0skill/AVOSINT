@@ -154,6 +154,15 @@
 		"data_type": "xlsx",
 		"tail_index_for_search": 0,
 		"infos": [""]
+	},
+	"SC": {
+		"name": "Seychelles CAA",
+		"website": "https://www.scaa.sc/",
+		"data_url": "https://www.scaa.sc/index.php/regulatory/e-registers/aircraft-civil-register",
+		"request_type": "GET",
+		"data_type": "html",
+		"tail_index_for_search": 0,
+		"infos": [""]
 	}
 
 }
