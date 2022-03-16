@@ -133,18 +133,19 @@ def intel_from_tail_n(tail_number):
     
     print("[*] Getting intel for tail number {}".format(tail_number))
     # Step 1 - Gather ownership information
-
+    
     tail_number = tail_number.upper()
-    tail_prefix = tail_number.split('-')[0]+'-'
+    if '-' in tail_number:
+        tail_prefix = tail_number.split('-')[0]+'-'
+    else:
+        tail_prefix = tail_number[0]
+
     try:
         if tail_prefix not in tail_to_register_function:
             print("[!] Register for tail prefix {} not yet implemented ".format(tail_prefix))
             raise NotImplementedError
 
         owner_infos, aircraft_infos = tail_to_register_function[tail_prefix](tail_number)
-        # Display information
-        #print("[*] Owner infos\n", owner_infos)
-        #print("[*] Aircraft infos\n", aircraft_infos)
         return owner_infos, aircraft_infos
 
     except NotImplementedError as e:

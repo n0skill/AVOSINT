@@ -334,7 +334,6 @@ def US(tail_n):
     name = ''
     addr = ''
     city = ''
-
     resp = requests.get(
         "https://registry.faa.gov/AircraftInquiry/Search/NNumberResult?nNumberTxt="+tail_n)
     if resp.status_code == 200:
@@ -348,7 +347,6 @@ def US(tail_n):
 
             # This is the table we are interested in
             if caption.text == 'Registered Owner':
-                print(table)
                 rows = table.find_all('tr')
                 for row in rows:
                     cols = row.find_all('td')
@@ -363,11 +361,12 @@ def US(tail_n):
                             city = city + ', ' + col.text
                         elif col['data-label'] == 'Zip Code':
                             zip_code = col.text
-        return Owner(name, addr, city, zip_code, 'USA'), Aircraft(tail_n)
+                return Owner(name, addr, city, zip_code, 'USA'), Aircraft(tail_n)
     else:
         print("[!][{}] HTTP status code from {}"\
                 .format(resp.status_code, resp.url))
     print('[!] Error while retrieving from US')
+    return None, None
 
 
 def IS(tail_n):

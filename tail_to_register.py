@@ -4,7 +4,7 @@ tail_to_register_function = {
 	"HB-": CH,
 	"F-" : FR,
 	"TF-": IS,
-	"N-" : US,
+	"N" : US,
 	"OO-": BE,
 	"OE-": AT,
 	"SE-": SW,
