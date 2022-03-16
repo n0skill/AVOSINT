@@ -275,6 +275,7 @@ def CH(tail_n):
     city = addr.get('city')
     owner = Owner(name, street + ' ' + street_n,
                 city, zipcode, "Switzerland")
+
     return owner, Aircraft(tail_n)
 
 
@@ -879,7 +880,6 @@ def BZ(tail_n):
 
                         # Aircraft infos
                         manufacturer = item['content'][1]['content'][0]['content']
-                        print(own)
                         return Owner(own, addr, city=city), \
                                 Aircraft(tail_n, manufacturer=manufacturer)
 

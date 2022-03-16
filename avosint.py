@@ -144,15 +144,12 @@ def intel_from_tail_n(tail_number):
     else:
         tail_prefix = tail_number[0]
 
-    try:
-        if tail_prefix not in tail_to_register_function:
-            raise NotImplementedError
-        owner_infos, aircraft_infos = \
-                tail_to_register_function[tail_prefix](tail_number)
-        return owner_infos, aircraft_infos
-    except Exception as e:
-        print("[!] Exception while retrieving infos from register")
-        print("[!] Exception: {}".format(e))
+    if tail_prefix not in tail_to_register_function:
+        raise NotImplementedError
+    owner_infos, aircraft_infos = \
+            tail_to_register_function[tail_prefix](tail_number)
+    return owner_infos, aircraft_infos
+
     # Last changes of ownership
 
     # Last known position
@@ -215,8 +212,7 @@ def main():
                 elif action == "tail":
                     if tail_number == None:
                         tail_number = input("Enter tail number to lookup: ")
-                    owner_infos, aircraft_infos = \
-                            intel_from_tail_n(tail_number)
+                    owner_infos, aircraft_infos = intel_from_tail_n(tail_number)
 
                     print("[*] Searching for incident reports ....")
                     incident_reports = \
