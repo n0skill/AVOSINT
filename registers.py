@@ -63,13 +63,11 @@ class Owner:
 
     def __repr__(self):
         return u"""
-            Owner Informations:
-            ==================
-            Name: %s
-            Street: %s
-            City: %s
-            ZIP: %s
-            Country: %s
+        Name: %s
+        Street: %s
+        City: %s
+        ZIP: %s
+        Country: %s
             """ % (self.name, self.street, self.city, self.zip_code, self.country)
 
     def __str__(self):

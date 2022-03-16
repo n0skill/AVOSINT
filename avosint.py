@@ -22,6 +22,7 @@ import socket
 
 from registers import *
 from tail_to_register import *
+from investigation_authorities import *
 
 # Data sources
 flightradar = 'http://data.flightradar24.com/zones/fcgi/feed.js?bounds='
@@ -177,7 +178,7 @@ def main():
             help="Use proxy address", type=str)
     parser.add_argument("--interactive", 
             action="store_true")
-    parser.add_argument("--debug",
+    parser.add_argument("--verbose",
             action="store_true")
 
     require_group = parser.add_mutually_exclusive_group(required=False)
@@ -215,6 +216,9 @@ def main():
                     if tail_number == None:
                         tail_number = input("Enter tail number to lookup: ")
                     owner_infos, aircraft_infos = intel_from_tail_n(tail_number)
+
+                    print("[*] Searching for incident reports ....")
+                    incident_reports = search_incidents(tail_number, args.verbose)
                     status = 'Done'
                 elif action == "convert":
                     convert_US_ICAO_to_tail()
@@ -235,8 +239,9 @@ def main():
                     status = 'Waiting for action'
                 else:
                     print("[!] Unknown action. Try again")
-                    action = input("Enter valid action (ICAO, tail, convert, monitor, quit)")
-                # Print recieved intel
+                    action = input("Enter valid action [ICAO, tail, convert, monitor, exit, quit]")
+
+                # Print retrieved intel
                 os.system('clear')
                 print("==========================================")
                 print("Current Status: "+bcolors.OKAY+"[{}]".format(status)+bcolors.STOP)
@@ -247,7 +252,12 @@ def main():
                 print(aircraft_infos)
                 print("🧍 Owner infos")
                 print(owner_infos)
-                action = input('New Action ({}):'.format(tail_number))
+
+                if incident_reports is not None:
+                    print("💥 Incident reports")
+                    print("\t"+incident_reports)
+
+                action = input('New Action [ICAO, tail, convert, monitor, exit, quit] ({}):'.format(tail_number))
             except Exception as e:
                 tail_number = None
                 owner_infos = None
