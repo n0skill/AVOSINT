@@ -40,6 +40,10 @@ class NODHAdapter(HTTPAdapter):
         kwargs['ssl_context'] = context
         return super(NODHAdapter, self).init_poolmanager(*args, **kwargs)
 
+class NoIntelException(Exception):
+    """ Raised when no info has been found """
+    pass
+
 #################################################
 # Registers.py
 # Goal: Gather data from various agencies 
@@ -257,7 +261,7 @@ def CH(tail_n):
     jsonobj = SwissRegister.request_infos(tail_n)
     if len(jsonobj) == 0:
         print("[!][CH][{}] Error when retrieving from registry".format(tail_n))
-        return
+        raise NoIntelException
     
     infoarray = jsonobj[0]
     own_ops = infoarray.get('ownerOperators')

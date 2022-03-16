@@ -68,6 +68,10 @@ class bcolors:
     OKAY = '\033[32m'
     STOP = '\033[0m'
 
+class NoIntelException(Exception):
+    """ Raised when no information has been found in registers"""
+    pass 
+
 def printok(str):
     return print(bcolors.OKAY+'[OK]'+bcolors.STOP+' {}'.format(str))
 
@@ -142,18 +146,13 @@ def intel_from_tail_n(tail_number):
 
     try:
         if tail_prefix not in tail_to_register_function:
-            print("[!] Register for tail prefix {} not yet implemented ".format(tail_prefix))
             raise NotImplementedError
-
         owner_infos, aircraft_infos = tail_to_register_function[tail_prefix](tail_number)
         return owner_infos, aircraft_infos
-
-    except NotImplementedError as e:
-        raise e
     except Exception as e:
         print("[!] Exception while retrieving infos from register")
         print("[!] Exception: {}".format(e))
-        raise Exception("NoIntelError")
+        raise NoIntelException
     # Last changes of ownership
 
     # Last known position
