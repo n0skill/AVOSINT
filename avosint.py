@@ -23,6 +23,7 @@ import socket
 from registers import *
 from tail_to_register import *
 from investigation_authorities import *
+from wiki_api import search_wiki_commons
 
 # Data sources
 flightradar = 'http://data.flightradar24.com/zones/fcgi/feed.js?bounds='
@@ -134,7 +135,9 @@ def intel_from_tail_n(tail_number):
     2) Last changes of ownership
     3) Last known position
     """
-    
+    wiki_infos = None
+    owner_infos = None
+    aircraft_infos = None
     print("[*] Getting intel for tail number {}".format(tail_number))
     # Step 1 - Gather ownership information
     
@@ -147,13 +150,16 @@ def intel_from_tail_n(tail_number):
     if tail_prefix not in tail_to_register_function:
         raise NotImplementedError
     owner_infos, aircraft_infos = tail_to_register_function[tail_prefix](tail_number)
-    return owner_infos, aircraft_infos
 
+
+    # Wikipedia infos
+    wiki_infos = search_wiki_commons(tail_number)
     # Last changes of ownership
 
     # Last known position
 
     # Detailled info (pictures etc)
+    return owner_infos, aircraft_infos, wiki_infos
 
 def main():
     # 1 - Check OSINT from ICAO
@@ -191,7 +197,7 @@ def main():
     owner_infos         = None
     aicraft_infos       = None
     incident_reports    = None
-
+    wiki_infos          = None
     if not args.action:
         print("[*] No action was specified. Quit.")
         return
@@ -211,7 +217,7 @@ def main():
                 elif action == "tail":
                     if tail_number == None:
                         tail_number = input("Enter tail number to lookup: ")
-                    owner_infos, aircraft_infos = intel_from_tail_n(tail_number)
+                    owner_infos, aircraft_infos, wiki_infos = intel_from_tail_n(tail_number)
 
                     print("[*] Searching for incident reports ....")
                     incident_reports = \
@@ -254,8 +260,11 @@ def main():
 
                 if incident_reports is not None:
                     print("💥 Incident reports")
-                    print("\t"+incident_reports)
+                    print("\t{}".format(incident_reports))
 
+                if wiki_infos:
+                    print("Wikipedia informations")
+                    print("\t{}".format(wiki_infos))
                 action = input('New Action [ICAO, tail, convert, monitor, exit, quit] ({}):'.format(tail_number))
             except Exception as e:
                 tail_number = None
@@ -270,6 +279,7 @@ def main():
                 print("==========================================")
                 print("Last action: {}".format(action))
                 print("Current tail: {}".format(tail_number))
+                print("Try again with another tail number")
                 action = input('New Action:')
 
             
