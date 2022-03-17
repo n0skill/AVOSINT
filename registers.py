@@ -107,9 +107,23 @@ class DataSource:
         
         try:
             r = None
-            if self.src_type == 'html':
+            if self.src_type == 'html' or 'html' in self.src_type:
                 r = requests.get(self.url)
-                return BeautifulSoup(r.content, 'html.parser')
+                if r.status_code == 200:
+                    soup = BeautifulSoup(r.content, 'html.parser')
+                    # if html subtypes are present
+                    if 'html' in self.src_type and type(self.src_type) is dict:
+                            soup = BeautifulSoup(r.content, 'html.parser')
+                            elem = self.src_type.get('html')
+                            f = None
+                            for key, value in elem.items():
+                                f = soup.find(key, value)
+                            return f
+                    # Else, return the whole soup
+                    else:
+                        return soup
+
+
             if self.src_type == 'json':
                 if self.request_type=="GET":
                     r = requests.get(self.url+tail_n,headers=self.headers)
@@ -238,9 +252,10 @@ class Registry:
 
 
 def register_from_config(key):
-    with(open('./registers.json', 'r')) as f:
-        j = json.load(f)
+    f = open('./registers.json')
+    j = json.load(f)
 
+    # Getting config elements for country key
     config = j[key]
     generic_registry = Registry(
         config['name'],
@@ -725,17 +740,21 @@ def RS(tail_n):
     for item in items:
         if item['registarska_oznaka'] == tail_n:
             own = item['korisnik']
-            return Owner(own, '', '', '', 'Serbia')
+            return Owner(own, '', '', '', 'Serbia'), Aircraft(tail_n)
+    return None, None
 
 def DK(tail_n):
     register = register_from_config("DK")
-    infos = register.request_infos(tail_n)
-    soup = BeautifulSoup(infos, 'html.parser')
+    soup = register.request_infos(tail_n)
     tr = soup.find('tr', {'class':'ulige'})
     td_link = tr.find('a')
-
     # No owner infos fallback by sending link
-    return 'http://www-oy-reg.dk'+td_link['href']
+    r = requests.get('http://www-oy-reg.dk'+td_link['href'])
+    if r.status_code == 200:
+        print(r.content)
+        return Owner(r.text), Aircraft(tail_n)
+    else:
+        return None, None
 
 def LV(tail_n):
     register = register_from_config("LV")
@@ -914,3 +933,17 @@ def SC(tail_n):
                     return Owner(owner_name, country=country), Aircraft(tail_n)
     return None, None
     
+def EE(tail_n):
+    register = register_from_config("EE")
+    infos = register.request_infos(tail_n)
+    table_rows = infos.find_all('tr')
+    tail_formatted = tail_n.split('-')[0]+' - '+tail_n.split('-')[1]
+    for row in table_rows:
+        if tail_formatted in row.text:
+            tds = row.find_all('td')
+            own = Owner(tds[6].text)
+            return own, Aircraft(tail_n)
+    return None, None
+
+
+

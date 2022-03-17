@@ -83,6 +83,9 @@ def printwarn(str):
     return print(bcolors.WARN+'[WRN]'+bcolors.STOP+' {}'.format(str))
 
 def check_config():
+    check_config_file_coherence = False
+    check_docker_connectivity = False
+
     print("[*] Checking config")
 
     # Tests connectivity to the docker container
@@ -91,6 +94,9 @@ def check_config():
     sock.settimeout(timeout_seconds)
     result = sock.connect_ex((DOCKER_HOST, DOCKER_PORT))
     sock.close()
+
+    docker_result = result
+
     if result == 0:
         printok("Parsr docker container is reachable")
         return True
@@ -98,26 +104,11 @@ def check_config():
         printwarn("Could not contact docker container. PDF registery lookup will not work.")
         return False
 
+   # if check_config_file_coherence \
+   #         and check_docker_connectivity \
+   #         and additional_check:
+   #             return True
 
-# This method gets plane from an area and puts them in a list
-def fetch_planes_from_area(coords_1, coords_2):
-    print(coords_1, coords_2)
-    planelist = []
-    location = str(coords_2.latitude)+'.00,'+str(coords_1.latitude)+'.00,'+str(coords_1.longitude)+'.00,'+str(coords_2.longitude)+'.00'
-    try:
-        j = getjson(flightradar+location)
-    except Exception as e:
-        raise e
-
-    if j is not None:
-        for planeID in j:
-            # Filter out non-plane results
-            if planeID == 'full_count' or planeID == 'version' or planeID == 'stats':
-                pass
-            else:
-                 p = Plane(planeID, j[planeID][9], j[planeID][16], j[planeID][1], j[planeID][2], j[planeID][11], j[planeID][12], j[planeID][4])
-                 planelist.append(p)
-    return planelist
 
 def getInterestingPlaces():
     # Get news feed about things that could require a plane flyover
@@ -265,6 +256,10 @@ def main():
                 if wiki_infos:
                     print("Wikipedia informations")
                     print("\t{}".format(wiki_infos))
+
+                tail_number = None
+                owner_infos = None
+                aircraft_info = None
                 action = input('New Action [ICAO, tail, convert, monitor, exit, quit] ({}):'.format(tail_number))
             except Exception as e:
                 tail_number = None

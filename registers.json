@@ -163,6 +163,22 @@
 		"data_type": "html",
 		"tail_index_for_search": 0,
 		"infos": [""]
+	},
+	"EE": {
+		"name": "Estonian CAA",
+		"website": "https://transpordiamet.ee/",
+		"data_url": "https://transpordiamet.ee/maa-vee-ohusoiduk/lennundustehnika/ohusoidukite-register",
+		"request_type": "GET",
+		"data_type": {
+			"html": {
+				"table": 
+				{
+					"class":"table table-bordered table-bordered-vp"
+				}
+			}
+		},
+		"tail_index_for_search": 0,
+		"infos": [""]
 	}
 
 }
