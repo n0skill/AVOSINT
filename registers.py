@@ -942,7 +942,8 @@ def EE(tail_n):
         if tail_formatted in row.text:
             tds = row.find_all('td')
             own = Owner(tds[6].text)
-            return own, Aircraft(tail_n)
+            msn = tds[4].text
+            return own, Aircraft(tail_n, msn=msn)
     return None, None
 
 
