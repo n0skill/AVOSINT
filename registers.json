@@ -164,6 +164,15 @@
 		"tail_index_for_search": 0,
 		"infos": [""]
 	},
+	"ES": {
+		"name": "Ministerio de transportes, movilidad y agenda urbana",
+		"website": "seguridadaerea.gob.es",
+		"data_url": "https://www.seguridadaerea.gob.es/sites/default/files/aeronaves_inscritas.pdf",
+		"request_type": "GET",
+		"data_type": "pdf",
+		"tail_index_for_search": 0,
+		"infos": [""]
+	},
 	"EE": {
 		"name": "Estonian CAA",
 		"website": "https://transpordiamet.ee/",

@@ -43,4 +43,5 @@ tail_to_register_function = {
     "YV-": VE,
     "S7-": SC,
     "ES-": EE,
+    "EC-": ES,
 }

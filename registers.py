@@ -942,9 +942,26 @@ def EE(tail_n):
         if tail_formatted in row.text:
             tds = row.find_all('td')
             own = Owner(tds[6].text)
-            msn = tds[4].text
+            msn = tds[5].text
             return own, Aircraft(tail_n, msn=msn)
     return None, None
 
+def ES(tail_n):
+    register = register_from_config("ES")
+    infos = register.request_infos(tail_n)
+    for page in infos['pages']:
+        for element in page['elements']:
+            if element['type'] == 'table':
+                for line in element['content']:
+                    for elem in line['content']:
+                        if elem['content'][0]['content'] == tail_n:
+                            msn = ' '.join(
+                                    line['content'][4]['content'][i]['content'] \
+                                            for i in range(0, len(line['content'][4]['content'])))
+                            manuf = ' '.join(
+                                    line['content'][4]['content'][i]['content'] \
+                                            for i in range(0, len(line['content'][4]['content'])))
+                            return Owner(''), Aircraft(tail_n, msn=msn, manufacturer=manuf)
 
+    return None, None
 
