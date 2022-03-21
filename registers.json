@@ -141,7 +141,7 @@
 		"name": "Bellingcat's venezuelian aircraft ",
 		"website": "1Kgu0uoXLGhoCHUyMgDsdqtW_XH3fvIglkVx5EdJhRnU",
 		"data_url": "h1Kgu0uoXLGhoCHUyMgDsdqtW_XH3fvIglkVx5EdJhRn",
-		"request_type": "GET",
+		"request_type": "API",
 		"data_type": "google_sheets",
 		"tail_index_for_search": 0,
 		"infos": [""]
@@ -170,6 +170,15 @@
 		"data_url": "https://www.seguridadaerea.gob.es/sites/default/files/aeronaves_inscritas.pdf",
 		"request_type": "GET",
 		"data_type": "pdf",
+		"tail_index_for_search": 0,
+		"infos": [""]
+	},
+	"ME": {
+		"name": "Agencija za civilno vazduhoplovstvo",
+		"website": "https://caa.me/",
+		"data_url": "https://www.caa.me/en/{{tailn}}",
+		"request_type": "GET",
+		"data_type": "html",
 		"tail_index_for_search": 0,
 		"infos": [""]
 	},

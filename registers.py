@@ -16,8 +16,6 @@ from parsr_client import ParsrClient as client
 from pprint import pprint
 from aircraft import Aircraft
 
-debug = False
-
 from urllib3.exceptions import InsecureRequestWarning
 # Suppress only the single warning from urllib3 needed.
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
@@ -46,7 +44,7 @@ class NoIntelException(Exception):
 
 #################################################
 # Registers.py
-# Goal: Gather data from various agencies 
+# Goal: Gather data from various agencies
 # depending on country code of tail number
 #
 # Returns tuple: (owner infos, aircraft infos)
@@ -100,13 +98,108 @@ class DataSource:
         - BeautifulSoup soup for html sources
         """
 
-        print('[*] Gathering info from url', self.url)
-        if self.data != '' and self.data is not None:
-            print('[*] Replacing {{TAILN}} from data with acutal tail number', self.url)
+
+        # Match and replace tail number where appropriate
+        if self.data and '{{TAILN}}' in self.data:
+            print('[*] Replacing {{TAILN}} from data with acutal tail number')
             self.data = self.data.replace('{{TAILN}}', tail_n)
-        
-        try:
-            r = None
+
+        if '{{TAILN}}' in self.url:
+            print('[*] Replacing {{TAILN}} from url with actual tail number')
+            self.url = self.url.replace('{{TAILN}}', tail_n)
+
+        if '{{tailn}}' in self.url:
+            print('[*] Replacing {{tailn}} from url with actual tail number')
+            self.url = self.url.replace('{{tailn}}', tail_n.lower())
+
+        print('[*] Gathering info from url', self.url)
+
+        # For ressources that need to be fetched
+        # using an HTTP GET request
+        if self.request_type == 'GET':
+            okay = False
+            try:
+                r = requests.get(self.url)
+                if r.status_code == 200:
+                    okay = True
+
+                    # Online html
+                    if self.src_type == 'html' or 'html' in self.src_type:
+                            soup = BeautifulSoup(r.content, 'html.parser')
+                            # if html subtypes are present
+                            if 'html' in self.src_type and type(self.src_type) is dict:
+                                    soup = BeautifulSoup(r.content, 'html.parser')
+                                    elem = self.src_type.get('html')
+                                    f = None
+                                    for key, value in elem.items():
+                                        f = soup.find(key, value)
+                                    return f
+                            # Else, return the whole soup
+                            else:
+                                return soup
+
+                    # Online json
+                    if self.src_type == 'json':
+                        j = json.loads(r.content)
+                        return j
+
+                    # Online xls
+                    elif self.src_type == 'xlsx':
+                        with open('/tmp/book.xlsx', 'wb') as f:
+                            f.write(r.content)
+                            book = load_workbook(
+                                '/tmp/book.xlsx')
+                        return book
+                    # PDF file
+                    elif self.src_type == 'pdf':
+                        parsr = client('localhost:3001')
+                        with open('/tmp/avosint.pdf', 'wb') as f:
+                            f.write(r.content)
+                        job = parsr.send_document(
+                            file_path='/tmp/avosint.pdf',
+                            config_path='./parsr.conf',
+                            document_name='Sample File2',
+                            wait_till_finished=True,
+                            save_request_id=True,
+                            silent=False)
+                        j = parsr.get_json()
+                        return j
+                else:
+                    print("[WRN]", r.status_code)
+            except Exception as e:
+                print("[!] ", e)
+        elif self.request_type == 'API':
+            from google_auth_oauthlib.flow import InstalledAppFlow
+            from googleapiclient.discovery import build
+            from googleapiclient.errors import HttpError
+
+            # If modifying these scopes, delete the file token.json.
+            SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
+            # The ID and range of a sample spreadsheet.
+            SAMPLE_SPREADSHEET_ID = '1Kgu0uoXLGhoCHUyMgDsdqtW_XH3fvIglkVx5EdJhRnU'
+            SAMPLE_RANGE_NAME = 'Class Data!A2:E'
+             # Call the Sheets API
+            service = build('sheets', 'v4', credentials=creds)
+            sheet = service.spreadsheets()
+            result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                                        range=SAMPLE_RANGE_NAME).execute()
+            values = result.get('values', [])
+
+            if not values:
+                print('No data found.')
+                return
+
+            print('Name, Major:')
+            for row in values:
+                # Print columns A and E, which correspond to indices 0 and 4.
+                print('%s, %s' % (row[0], row[4]))
+            return 0
+        else:
+            print("[!] Error {} when retrieving from\n[!] URL: {}".format(r.status_code, self.url))
+            print("[!] DataSource error while gathering information.")
+            print("[!] Try to gather using session.")
+            s = requests.session()
+            r = s.get(self.url, headers=self.headers)
             if self.src_type == 'html' or 'html' in self.src_type:
                 r = requests.get(self.url)
                 if r.status_code == 200:
@@ -122,7 +215,8 @@ class DataSource:
                     # Else, return the whole soup
                     else:
                         return soup
-
+                else:
+                    print('[WRN]', r.url)
 
             if self.src_type == 'json':
                 if self.request_type=="GET":
@@ -133,7 +227,7 @@ class DataSource:
                     j = json.loads(r.content)
                 return j
 
-            # Online xls 
+            # Online xls
             elif self.src_type == 'xlsx':
                 r = requests.get(self.url)
                 with open('/tmp/book.xlsx', 'wb') as f:
@@ -142,89 +236,12 @@ class DataSource:
                         '/tmp/book.xlsx')
                 return book
 
-            # PDF file
-            elif self.src_type == 'pdf':
-                parsr = client('localhost:3001')
-                r = requests.get(self.url)
-                if r.status_code == 200:
-                    with open('/tmp/avosint.pdf', 'wb') as f:
-                        f.write(r.content)
-                    job = parsr.send_document(
-                        file_path='/tmp/avosint.pdf',
-                        config_path='./parsr.conf',
-                        document_name='Sample File2',
-                        wait_till_finished=True,
-                        save_request_id=True,
-                        silent=False)
-                    j = parsr.get_json()
-                    return j
-
-            # Google spreadsheet
-            elif self.src_type == 'google_sheets':
-                from google_auth_oauthlib.flow import InstalledAppFlow
-                from googleapiclient.discovery import build
-                from googleapiclient.errors import HttpError
-                
-                # If modifying these scopes, delete the file token.json.
-                SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
-                # The ID and range of a sample spreadsheet.
-                SAMPLE_SPREADSHEET_ID = '1Kgu0uoXLGhoCHUyMgDsdqtW_XH3fvIglkVx5EdJhRnU'
-                SAMPLE_RANGE_NAME = 'Class Data!A2:E'
-                 # Call the Sheets API
-                service = build('sheets', 'v4', credentials=creds)
-                sheet = service.spreadsheets()
-                result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
-                                            range=SAMPLE_RANGE_NAME).execute()
-                values = result.get('values', [])
-
-                if not values:
-                    print('No data found.')
-                    return
-
-                print('Name, Major:')
-                for row in values:
-                    # Print columns A and E, which correspond to indices 0 and 4.
-                    print('%s, %s' % (row[0], row[4]))
-                return 0
-
-        except NewConnectionError as e:
-            print("[!] Failed to establish new connection. Try again ?")
-        except Exception as e:
-            print("[!!!] Exception occurred", e)
-            print("[*] Try again with session")
-            s = requests.session()
-            r = s.get(self.url, headers=self.headers)
-            if self.src_type == 'pdf':
-                parsr = client('localhost:3001')
-                r = requests.get(self.url)
-                if r.status_code == 200:
-                    with open('/tmp/avosint.pdf', 'wb') as f:
-                            f.write(r.content)
-                    job = parsr.send_document(
-                        file_path='/tmp/avosint.pdf',
-                        config_path='./parsr.conf',
-                        document_name='Sample File2',
-                        wait_till_finished=True,
-                        save_request_id=True,
-                        silent=False)
-                    j = parsr.get_json()
-                    print(j)
-                    return j
-                
-            print(r)
-
-
-
-        else:
-            print("[!] Error {} when retrieving from\n[!] URL: {}".format(r.status_code, self.url))
-            print("[!] DataSource error while gathering information.")
-            print("[!] Try to gather using session.")
 
 class Registry:
-    def __init__(self, 
-            name, 
+    def __init__(self,
+            name,
             url,
-            data_source_url, 
+            data_source_url,
             data_source_type,
             data_request_type,
             post_data='',
@@ -238,9 +255,9 @@ class Registry:
                 data_source_url,
                 data_source_type,
                 data_request_type,
-                is_secure, 
+                is_secure,
                 post_data,
-                headers) 
+                headers)
         self.results = []
         self.tail_start = tail_start
 
@@ -282,7 +299,7 @@ def CH(tail_n):
     if len(jsonobj) == 0:
         print("[!][CH][{}] Error when retrieving from registry".format(tail_n))
         raise NoIntelException
-    
+
     infoarray = jsonobj[0]
     own_ops = infoarray.get('ownerOperators')
     leng = len(own_ops)
@@ -337,7 +354,7 @@ def FR(tail_n):
             print('[!][FR] Could not find supplied tail number in agency registers')
         else:
             response = s.get(
-                'https://immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'], 
+                'https://immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'],
                 headers=headers)
             soup    = BeautifulSoup(response.text, 'html.parser')
             bls     = soup.find('a', string="Données juridiques")
@@ -504,7 +521,7 @@ def CZ(tail_n):
                 return Owner(name), Aircraft(tail_n, msn=serial_n, manufacturer=manufacturer)
             else:
                 print("[!] Error while searching")
-                raise Exception("Error while searching") 
+                raise Exception("Error while searching")
 
 def UK(tail_n):
     data = {
@@ -609,8 +626,8 @@ def IT(tail_n):
     }
 
     r = s.post(
-        'https://gavs.it/rci/search_registration', 
-        data=data, 
+        'https://gavs.it/rci/search_registration',
+        data=data,
         headers=headers)
     if r.status_code == 200:
         record_url = r.headers['Refresh'].split(';')[1][4:]
@@ -647,14 +664,14 @@ def AU(tail_n):
     if r.status_code == 200:
         soup = BeautifulSoup(
             r.content, features="html.parser")
-        
-        name = soup.find('div', 
+
+        name = soup.find('div',
                 {'class':'field--name-field-registration-holder'}
                 ).text.strip('Registration holder:\n')
-        addr = soup.find('div', 
+        addr = soup.find('div',
                 {'class':'field--name-field-reg-hold-address-1'}
                 ).text.strip('Address 1:\n')
-        city = soup.find('div', 
+        city = soup.find('div',
                 {'class':'field--name-field-tx-reg-hold-suburb'}
                 ).text.strip('Suburb / City:\n')
         return Owner(name, addr, city, '', 'Australia'), Aircraft(tail_n)
@@ -778,7 +795,7 @@ def BA(tail_n):
                         owner_name = ' '.join(
                             [owner_line[i]['content'] for i in range(0, len(owner_line))]
                         )
-                        return Owner(owner_name, '', '', '', '') 
+                        return Owner(owner_name, '', '', '', '')
 
 def HR(tail_n):
     register = register_from_config("HR")
@@ -929,10 +946,10 @@ def SC(tail_n):
                 if tail_n in span.text:
                     owner_name = spans[2].text
                     # Only domesic owners are registered in this CAA
-                    country = 'Seychelles' 
+                    country = 'Seychelles'
                     return Owner(owner_name, country=country), Aircraft(tail_n)
     return None, None
-    
+
 def EE(tail_n):
     register = register_from_config("EE")
     infos = register.request_infos(tail_n)
@@ -965,3 +982,22 @@ def ES(tail_n):
 
     return None, None
 
+def ME(tail_n):
+    try:
+        register = register_from_config("ME")
+        infos = register.request_infos(tail_n)
+        if infos:
+            div_owner_name = infos.find('div', {'class': 'field-name-field-ime'})
+            div_owner_addr = infos.find('div', {'class': 'field-name-field-adresa'})
+            div_owner_city = infos.find('div', {'class': 'field-name-field-po-tanski-broj-ulice'})
+            div_msn   = infos.find('div', {'class': 'field-name-field-serijski-broj'})
+            owner_name = div_owner_name.text
+            owner_addr = div_owner_addr.text
+            owner_city = div_owner_city.text
+            msn = div_msn.text
+            return Owner(owner_name, owner_addr, owner_city, country="Montenegro"), Aircraft(tail_n, msn=msn)
+        else:
+            return None, None
+    except Exception as e:
+        print('[!] ', e)
+        return None, None
