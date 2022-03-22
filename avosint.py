@@ -168,7 +168,8 @@ def intel_from_tail_n(tail_number):
             icao = r.url.split('icao=')[1]
             # Get positions from icao
     except Exception as e:
-        print(e)
+        if args.verbose:
+            print(e)
 
     # Detailled info (pictures etc)
     return owner_infos, aircraft_infos, wiki_infos

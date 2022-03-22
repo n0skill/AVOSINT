@@ -116,59 +116,9 @@ class DataSource:
 
         # For ressources that need to be fetched
         # using an HTTP GET request
-        if self.request_type == 'GET':
-            okay = False
-            try:
-                r = requests.get(self.url)
-                if r.status_code == 200:
-                    okay = True
-
-                    # Online html
-                    if self.src_type == 'html' or 'html' in self.src_type:
-                            soup = BeautifulSoup(r.content, 'html.parser')
-                            # if html subtypes are present
-                            if 'html' in self.src_type and type(self.src_type) is dict:
-                                    soup = BeautifulSoup(r.content, 'html.parser')
-                                    elem = self.src_type.get('html')
-                                    f = None
-                                    for key, value in elem.items():
-                                        f = soup.find(key, value)
-                                    return f
-                            # Else, return the whole soup
-                            else:
-                                return soup
-
-                    # Online json
-                    if self.src_type == 'json':
-                        j = json.loads(r.content)
-                        return j
-
-                    # Online xls
-                    elif self.src_type == 'xlsx':
-                        with open('/tmp/book.xlsx', 'wb') as f:
-                            f.write(r.content)
-                            book = load_workbook(
-                                '/tmp/book.xlsx')
-                        return book
-                    # PDF file
-                    elif self.src_type == 'pdf':
-                        parsr = client('localhost:3001')
-                        with open('/tmp/avosint.pdf', 'wb') as f:
-                            f.write(r.content)
-                        job = parsr.send_document(
-                            file_path='/tmp/avosint.pdf',
-                            config_path='./parsr.conf',
-                            document_name='Sample File2',
-                            wait_till_finished=True,
-                            save_request_id=True,
-                            silent=False)
-                        j = parsr.get_json()
-                        return j
-                else:
-                    print("[WRN]", r.status_code)
-            except Exception as e:
-                print("[!] ", e)
-        elif self.request_type == 'API':
+        okay = False
+        
+        if self.request_type == 'API':
             from google_auth_oauthlib.flow import InstalledAppFlow
             from googleapiclient.discovery import build
             from googleapiclient.errors import HttpError
@@ -194,8 +144,59 @@ class DataSource:
                 # Print columns A and E, which correspond to indices 0 and 4.
                 print('%s, %s' % (row[0], row[4]))
             return 0
+
+        if self.request_type == 'GET':
+            r = requests.get(self.url)
+        elif self.request_type == 'POST':
+            r = requests.post(self.url, data=self.data, headers=self.headers)
+        if r.status_code == 200:
+            okay = True
+            # Online html
+            if self.src_type == 'html' or 'html' in self.src_type:
+                    soup = BeautifulSoup(r.content, 'html.parser')
+                    # if html subtypes are present
+                    if 'html' in self.src_type and type(self.src_type) is dict:
+                            soup = BeautifulSoup(r.content, 'html.parser')
+                            elem = self.src_type.get('html')
+                            f = None
+                            for key, value in elem.items():
+                                f = soup.find(key, value)
+                            return f
+                    # Else, return the whole soup
+                    else:
+                        return soup
+
+            # Online jso
+            if self.src_type == 'json':
+                j = json.loads(r.content)
+                return j
+
+            # Online xls
+            elif self.src_type == 'xlsx':
+                with open('/tmp/book.xlsx', 'wb') as f:
+                    f.write(r.content)
+                    book = load_workbook(
+                        '/tmp/book.xlsx')
+                return book
+            # PDF file
+            elif self.src_type == 'pdf':
+                parsr = client('localhost:3001')
+                with open('/tmp/avosint.pdf', 'wb') as f:
+                    f.write(r.content)
+                job = parsr.send_document(
+                    file_path='/tmp/avosint.pdf',
+                    config_path='./parsr.conf',
+                    document_name='Sample File2',
+                    wait_till_finished=True,
+                    save_request_id=True,
+                    silent=False)
+                j = parsr.get_json()
+                return j
+            else:
+                print("[WRN]", r.status_code)
         else:
-            print("[!] Error {} when retrieving from\n[!] URL: {}".format(r.status_code, self.url))
+            print("[!] Error {} when retrieving from\n[!] URL: {}"\
+                    .format(r.status_code, self.url))
             print("[!] DataSource error while gathering information.")
             print("[!] Try to gather using session.")
             s = requests.session()
@@ -299,17 +300,16 @@ def CH(tail_n):
     if len(jsonobj) == 0:
         print("[!][CH][{}] Error when retrieving from registry".format(tail_n))
         raise NoIntelException
-
-    infoarray = jsonobj[0]
-    own_ops = infoarray.get('ownerOperators')
-    leng = len(own_ops)
-    name = own_ops[leng-1].get('ownerOperator')
-    addr = own_ops[leng-1].get('address')
-    street = addr.get('street')
-    street_n = addr.get('streetNo')
-    zipcode = addr.get('zipCode')
-    city = addr.get('city')
-    owner = Owner(name, street + ' ' + street_n,
+    infoarray   = jsonobj[0]
+    own_ops     = infoarray.get('ownerOperators')
+    leng        = len(own_ops)
+    name        = own_ops[leng-1].get('ownerOperator')
+    addr        = own_ops[leng-1].get('address')
+    street      = addr.get('street')
+    street_n    = addr.get('streetNo')
+    zipcode     = addr.get('zipCode')
+    city        = addr.get('city')
+    owner       = Owner(name, street + ' ' + street_n,
                 city, zipcode, "Switzerland")
 
     return owner, Aircraft(tail_n)
