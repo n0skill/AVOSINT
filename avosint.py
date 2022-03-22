@@ -195,6 +195,7 @@ def main():
     aicraft_infos       = None
     incident_reports    = None
     wiki_infos          = None
+    status              = None
     if not args.action:
         print("[*] No action was specified. Quit.")
         return
@@ -240,9 +241,7 @@ def main():
                     print("[*] Monitor aircraft mode")
                     if icao is None:
                         icao = input("Enter icao number: ")
-                    while True:
-                        monitor(icao)
-                        time.sleep(2)
+                    monitor(icao)
 
 
 
