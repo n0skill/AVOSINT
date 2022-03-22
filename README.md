@@ -8,17 +8,15 @@ A tool to search Aviation-related intelligence from public sources.
 `docker run -p 3001:3001 axarev/parsr`
 
 ### Launch avosint
-```
-./avosint.py [--action ACTION] [--tail-number TAIL-NUMBER] [--icao ICAO]
-```
+`./avosint.py [--action ACTION] [--tail-number TAIL-NUMBER] [--icao ICAO]`
 
-With ACTION being either `ICAO`, `tail`, `convert`.
+With ACTION being either `ICAO`, `tail`, `convert`, `monitor`
 
-`ICAO` - Gather infos from ICAO transponder hex code.
-
-`tail` - Gather info from tail number. Option `--tail-number` is required.
+`tail` - Gather infos starting from tail number. Option `--tail-number` is required.
 
 `convert` - Convert USA hex to ICAO. Option `--icao` is required.
+
+`monitor` - Gathers positionnal information from osint sources and detects hovering patterns. Requires `--icao` number 
 
 Returns the following informations when possible:
 * Owner of the aircraft
