@@ -403,7 +403,7 @@ def US(tail_n):
                             city = city + ', ' + col.text
                         elif col['data-label'] == 'Zip Code':
                             zip_code = col.text
-                return Owner(name, addr, city, zip_code, 'USA'), Aircraft(tail_n)
+        return Owner(name, addr, city, zip_code, 'USA'), Aircraft(tail_n)
     else:
         print("[!][{}] HTTP status code from {}"\
                 .format(resp.status_code, resp.url))

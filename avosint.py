@@ -117,8 +117,10 @@ def getInterestingPlaces():
     # Wildfire, traffic accidents, police intervention, natural disasters, etc.
     return None
 
-def intel_from_ICAO():
-    print("TODO GET ICAO INFO")
+def intel_from_ICAO(icao):
+    """
+    Gather intel starting with icao number
+    """
     return None
 
 def intel_from_tail_n(tail_number):
@@ -145,15 +147,28 @@ def intel_from_tail_n(tail_number):
 
     if tail_prefix not in tail_to_register_function:
         raise NotImplementedError
+    
+    # Gather all information together
 
     owner_infos, aircraft_infos = tail_to_register_function[tail_prefix](tail_number)
-
-
     # Wikipedia infos
-    wiki_infos = search_wiki_commons(tail_number)
+    try:
+        wiki_infos = search_wiki_commons(tail_number)
+    except Exception as e:
+        print(e)
     # Last changes of ownership
 
     # Last known position
+    # Convert to icao
+    try:
+        r = requests.head(
+                'https://globe.adsbexchange.com/?reg={}'.format(tail_number), allow_redirects=False)
+        if r.status_code == 200:
+            print(r.headers['Location'])
+            icao = r.url.split('icao=')[1]
+            # Get positions from icao
+    except Exception as e:
+        print(e)
 
     # Detailled info (pictures etc)
     return owner_infos, aircraft_infos, wiki_infos
@@ -192,7 +207,7 @@ def main():
 
     # For storing intel recieved
     owner_infos         = None
-    aicraft_infos       = None
+    aircraft_infos       = None
     incident_reports    = None
     wiki_infos          = None
     status              = None
@@ -220,7 +235,8 @@ def main():
                     try:
                         if tail_number == None:
                             tail_number = input("Enter tail number to lookup: ")
-                        owner_infos, aircraft_infos, wiki_infos = intel_from_tail_n(tail_number)
+                        owner_infos, aircraft_infos, wiki_infos  = intel_from_tail_n(tail_number)
+                        print(owner_infos)
                     except Exception as e:
                         status = 'ActionTailException'
 
