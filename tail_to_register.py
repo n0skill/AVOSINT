@@ -47,4 +47,5 @@ tail_to_register_function = {
     "4O-": ME,
     "VP-": BM,
     "VQ-": BM,
+    "LZ-": BG,
 }

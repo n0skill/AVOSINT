@@ -206,6 +206,15 @@
 		"data_type": "pdf",
 		"tail_index_for_search": 0,
 		"infos": [""]
+	},
+	"BG": {
+		"name": "Bulgaria",
+		"website": "https://www.caa.bg",
+		"data_url": "https://www.caa.bg/sites/default/files/upload/documents/2021-11/Aircraft_Register%2026_11_2021.xlsx",
+		"request_type": "GET",
+		"data_type": "xlsx",
+		"tail_index_for_search": 0,
+		"infos": [""]
 	}
 
 }
