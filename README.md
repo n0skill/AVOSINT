@@ -27,6 +27,32 @@ Returns the following informations when possible:
 * Aircraft picture links
 * Aircraft incident history
 
+The following display is then presented:
+```==========================================
+Current Status: [Done]
+Last action: tail
+Current tail: {tail_n}
+==========================================
+✈️ Aircraft infos:
+
+        Manufacturer: {}
+        Manufacturer Serial Number: {}
+        Tail Number: {}
+        Call Sign: {}
+        Last known position: {}
+        Last known altitude: {}
+        
+🧍 Owner infos
+
+        Name: {} 
+        Street: {}   
+        City: {} 
+        ZIP: {}
+        Country: {}
+            
+New Action [ICAO, tail, convert, monitor, exit, quit] (None):
+```
+
 ## Dependencies
 ### Install requirements
 `pip install -r requirements.txt`

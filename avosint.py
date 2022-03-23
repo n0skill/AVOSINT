@@ -171,7 +171,6 @@ def intel_from_tail_n(tail_number):
             print(e)
 
     # Detailled info (pictures etc)
-    print(owner_infos, aircraft_infos, wiki_infos)
     return owner_infos, aircraft_infos, wiki_infos
 
 def main():
