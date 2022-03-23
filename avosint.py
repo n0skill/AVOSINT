@@ -237,7 +237,6 @@ def main():
                         if tail_number == None:
                             tail_number = input("Enter tail number to lookup: ")
                         owner_infos, aircraft_infos, wiki_infos  = intel_from_tail_n(tail_number)
-                        print(owner_infos)
                     except Exception as e:
                         status = 'ActionTailException'
 
