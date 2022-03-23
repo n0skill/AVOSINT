@@ -197,6 +197,15 @@
 		},
 		"tail_index_for_search": 0,
 		"infos": [""]
+	},
+	"BM": {
+		"name": "Bermuda Aircraft Registry",
+		"website": "https://www.bcaa.bm/",
+		"data_url": "https://www.bcaa.bm/sites/default/files/Web%20Docs/Notices_BACs_OTARs/Bermuda%20Aircraft%20Registry%20-%20Russian%20Air%20Operators.pdf",
+		"request_type": "GET",
+		"data_type": "pdf",
+		"tail_index_for_search": 0,
+		"infos": [""]
 	}
 
 }

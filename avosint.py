@@ -131,9 +131,9 @@ def intel_from_tail_n(tail_number):
     3) Last known position
     """
 
-    wiki_infos = None
-    owner_infos = None
-    aircraft_infos = None
+    wiki_infos      = None
+    owner_infos     = None
+    aircraft_infos  = None
     print("[*] Getting intel for tail number {}".format(tail_number))
 
     # Step 1 - Gather ownership information
@@ -168,10 +168,10 @@ def intel_from_tail_n(tail_number):
             icao = r.url.split('icao=')[1]
             # Get positions from icao
     except Exception as e:
-        if args.verbose:
             print(e)
 
     # Detailled info (pictures etc)
+    print(owner_infos, aircraft_infos, wiki_infos)
     return owner_infos, aircraft_infos, wiki_infos
 
 def main():

@@ -987,17 +987,46 @@ def ME(tail_n):
         register = register_from_config("ME")
         infos = register.request_infos(tail_n)
         if infos:
-            div_owner_name = infos.find('div', {'class': 'field-name-field-ime'})
-            div_owner_addr = infos.find('div', {'class': 'field-name-field-adresa'})
-            div_owner_city = infos.find('div', {'class': 'field-name-field-po-tanski-broj-ulice'})
-            div_msn   = infos.find('div', {'class': 'field-name-field-serijski-broj'})
+            div_owner_name = infos.find('div',
+                    {'class': 'field-name-field-ime'})
+            div_owner_addr = infos.find('div',
+                    {'class': 'field-name-field-adresa'})
+            div_owner_city = infos.find('div',
+                    {'class': 'field-name-field-po-tanski-broj-ulice'})
+            div_msn   = infos.find('div',
+                    {'class': 'field-name-field-serijski-broj'})
+
             owner_name = div_owner_name.text
             owner_addr = div_owner_addr.text
             owner_city = div_owner_city.text
             msn = div_msn.text
-            return Owner(owner_name, owner_addr, owner_city, country="Montenegro"), Aircraft(tail_n, msn=msn)
+            return Owner(owner_name, owner_addr,
+                    owner_city, country="Montenegro"), Aircraft(tail_n, msn=msn)
         else:
             return None, None
     except Exception as e:
         print('[!] ', e)
         return None, None
+
+
+def BM(tail_n):
+    try:
+        register = register_from_config("BM")
+        infos = register.request_infos(tail_n)
+        for page in infos['pages']:
+            for element in page['elements']:
+                if element['type'] == 'table':
+                    for line in element['content']:
+                        for elem in line['content']:
+                            if elem['content'][0]['content'] == tail_n:
+                                print('!!!!')
+                                name    = line['content'][4]['content'][0]['content']
+                                msn     = line['content'][1]['content'][0]['content']
+                                print(name)
+                                print(msn)
+                                return Owner(name), Aircraft(tail_n, msn=msn)
+        return None, None
+    except Exception as e:
+        print('[!] ', e)
+        return None, None
+
