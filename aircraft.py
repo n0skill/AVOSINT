@@ -9,7 +9,7 @@ from geoloc import Coordinates
 class Aircraft:
     def __init__(self, tail_n, msn=None, call=None, \
             latitude=None, longitude=None, craft_type=None, \
-            origin=None, destination=None, altitude=None, manufacturer=None):
+            origin=None, destination=None, altitude=None, manufacturer=None, notes=None):
 
         if latitude is not None and longitude is not None:
             self.coords = Coordinates(latitude, longitude)
@@ -22,6 +22,7 @@ class Aircraft:
         self.manufacturer = manufacturer
         self.destination = destination
         self.altitude = altitude	
+        self.notes = notes
 
 
     def __str__(self):
@@ -29,13 +30,16 @@ class Aircraft:
 
     def __repr__(self):
         return """
-        Manufacturer: %s
+        Manufacturer/Type: %s
         Manufacturer Serial Number: %s
         Tail Number: %s
         Call Sign: %s
         Last known position: %s
         Last known altitude: %s
-        """ % (self.manufacturer, self.msn, self.tail_n, self.call, self.coords, self.altitude)
+        
+        Notes: 
+        %s
+        """ % (self.manufacturer, self.msn, self.tail_n, self.call, self.coords, self.altitude, self.notes)
 
     def get_path(self):
         return []

@@ -927,8 +927,15 @@ def BZ(tail_n):
 def VE(tail_n):
     register = register_from_config("VE")
     infos = register.request_infos(tail_n)
-    print(infos)
-    time.sleep(10)
+    format_tail = tail_n.replace('-', '')
+    page = infos['Lista Master']
+    for line in page.values:
+        if format_tail in str(line[0]):
+            # Owner infos
+            msn = str(line[2])
+            notes = str(line[4])
+            type=str(line[1])
+            return None, Aircraft(tail_n, msn=msn, notes=notes, manufacturer=type)
     return infos
 
 
