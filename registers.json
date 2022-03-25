@@ -207,6 +207,15 @@
 		"tail_index_for_search": 0,
 		"infos": [""]
 	},
+	"KZ": {
+		"name": "Bellingcats' KZ spreadsheet",
+		"website": "",
+		"data_url": "https://docs.google.com/spreadsheets/d/1oXU0OPT5XYEDA1C1juHwsZ_xuBBGFQ4LC8g-bq9tH9k/export?format=xlsx",
+		"request_type": "GET",
+		"data_type": "xlsx",
+		"tail_index_for_search": 0,
+		"infos": [""]
+	},
 	"BG": {
 		"name": "Bulgaria",
 		"website": "https://www.caa.bg",

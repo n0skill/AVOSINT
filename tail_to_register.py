@@ -48,4 +48,6 @@ tail_to_register_function = {
     "VP-": BM,
     "VQ-": BM,
     "LZ-": BG,
+    "UP-": KZ,
+
 }

@@ -1052,3 +1052,21 @@ def BG(tail_n):
     except Exception as e:
         print('[!] ', e)
         return None, None
+
+def KZ(tail_n):
+    try:
+        register    = register_from_config("KZ")
+        book        = register.request_infos(tail_n)
+        infos_sheet = book["aircraft"]
+        for row in infos_sheet.values:
+            if tail_n in row:
+                msn = row[9]
+                model = row[15]
+                owner = row[12]
+                return Owner(owner, '', '', '', ''),\
+                        Aircraft(tail_n,  msn=msn, manufacturer=model)
+        return None, None
+    except Exception as e:
+        print('[!] ', e)
+        return None, None
+
