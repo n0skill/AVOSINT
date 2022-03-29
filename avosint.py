@@ -26,7 +26,7 @@ from tail_to_register import *
 from investigation_authorities import *
 from monitor import monitor
 from wiki_api import search_wiki_commons
-
+from opensky_api import OpenSkyApi
 
 # Data sources
 flightradar     = 'http://data.flightradar24.com/zones/fcgi/feed.js?bounds='
@@ -114,16 +114,20 @@ def intel_from_ICAO(icao):
 def opensky(tail_n):
     print("[*] Gathering infos from opensky network database. This can take some time")
     headers = {
-            'User-Agent': 'AVOSINT - CLI tool to gather aviation OSINT. Infos and contact: https://github.com/n0skill/AVOSINT'
-            }
+            'User-Agent': 'AVOSINT - CLI tool to gather aviation OSINT.'\
+                    'Infos and contact: https://github.com/n0skill/AVOSINT'
+    }
 
-    if os.path.exists('/tmp/opensky.cache') and \
-            os.stat("/tmp/opensky.cache").st_size != 0:
+    if os.path.exists('/tmp/opensky.cache') \
+            and os.stat("/tmp/opensky.cache").st_size != 0:
         print('[*] File exists. Do not download again')
 
     else:
-        r = requests.get('https://opensky-network.org/datasets/metadata/aircraftDatabase.csv',
-                stream=True, headers=headers)
+        r = requests.get(
+                'https://opensky-network.org/datasets/metadata/aircraftDatabase.csv',
+                stream=True,
+                headers=headers)
+
         if r.status_code == 200:
             with open('/tmp/opensky.cache', 'wb') as f: 
                 total_l  = int(r.headers.get('content-length'))
@@ -134,7 +138,7 @@ def opensky(tail_n):
                     print('\r[*] Downloading {:2f}'.format((dl/total_l)*100), end='')
                 print('\r[*] Done loading !')
         else:
-            print(r.status_code)
+            printwarn(r.status_code)
 
     with open('/tmp/opensky.cache', 'r') as f:
         parsed_content = csv.reader(f)
@@ -167,16 +171,12 @@ def intel_from_tail_n(tail_number):
     print("[*] Getting intel for tail number {}".format(tail_number))
 
     # Step 1 - Gather ownership information
-
     # Cleaning up tail for register lookup according to config file
     tail_number = tail_number.upper()
     if '-' in tail_number:
         tail_prefix = tail_number.split('-')[0]+'-'
     else:
         tail_prefix = tail_number[0]
-
-    if tail_prefix not in tail_to_register_function:
-        raise NotImplementedError
     
     # Gather all information together
 
@@ -186,32 +186,46 @@ def intel_from_tail_n(tail_number):
     except Exception as e:
         printverbose("[!] Exception while calling tail_to_register: {}".format(e))
     
-    finally:
-        # Opensky network
-        try:
-            os_aircraft, os_owner = opensky(tail_number)
-        except Exception as e:
-            printverbose("[!] Exception while calling opensky: {}".format(e))
+    # Opensky network
+    try:
+        os_aircraft, os_owner = opensky(tail_number)
+    except Exception as e:
+        printverbose("[!] Exception while calling opensky: {}".format(e))
 
-        # Wikipedia infos
-        try:
-            wiki_infos = search_wiki_commons(tail_number)
-        except Exception as e:
-            print(e)
-        # Last changes of ownership
+    # Wikipedia infos
+    try:
+        wiki_infos = search_wiki_commons(tail_number)
+    except Exception as e:
+        printwarn(e)
+    # Last changes of ownership
 
-        # Last known position
-        # TODO
-
-        # Detailled info (pictures etc)
+    # Last known position
+    icao    = os_aircraft.icao.lower()
+    api     = OpenSkyApi()
+    s       = api.get_states(icao24=icao)
     
-    # Merge infos and return them
-    if not owner_infos:
-        owner_infos = os_owner
-    if not aircraft_infos:
-        aircraft_infos =  os_aircraft
+    if s is not None and len(s.states) > 0:
+        last_lat = (s.states)[0].latitude
+        last_lon = (s.states)[0].longitude
+        aircraft_infos.latitude     = last_lat
+        aircraft_infos.longitude    = last_lon
+    
+    # Detailled info (pictures etc)
+    # TODO
 
-    return owner_infos, aircraft_infos, wiki_infos
+    # Merge infos and return them
+    try:
+        if aircraft_infos != None:
+            for attr, value in aircraft_infos.__dict__.items():
+                if value == None and getattr(os_aircraft, attr) is not None:
+                    setattr(aircraft_infos, attr, getattr(os_aircraft, attr))
+        else:
+            aircraft_infos =  os_aircraft
+
+    except Exception as e:
+        printko(e)
+    finally:
+        return owner_infos, aircraft_infos, wiki_infos
 
 def main():
     # 1 - Check OSINT from ICAO

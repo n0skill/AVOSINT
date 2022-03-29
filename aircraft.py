@@ -11,10 +11,6 @@ class Aircraft:
             latitude=None, longitude=None, craft_type=None, \
             origin=None, destination=None, altitude=None, manufacturer=None, icao=None,notes=None):
 
-        if latitude is not None and longitude is not None:
-            self.coords = Coordinates(latitude, longitude)
-        else:
-            self.coords = None
         self.tail_n         = tail_n
         self.msn            = msn
         self.call           = call
@@ -22,6 +18,8 @@ class Aircraft:
         self.manufacturer   = manufacturer
         self.destination    = destination
         self.altitude       = altitude	
+        self.latitude       = latitude
+        self.longitude      = longitude
         self.icao           = icao  
         self.notes          = notes
 
@@ -40,7 +38,7 @@ class Aircraft:
         
         Notes: 
         %s
-        """ % (self.manufacturer, self.msn, self.tail_n, self.call, self.coords, self.altitude, self.notes)
+        """ % (self.manufacturer, self.msn, self.tail_n, self.call, (self.latitude, self.longitude), self.altitude, self.notes)
 
     def get_path(self):
         return []
