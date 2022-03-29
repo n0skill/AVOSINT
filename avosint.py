@@ -75,7 +75,9 @@ def printverbose(str):
         print(str)
     else:
         pass
-
+def quit():
+    print('bye then !\nIf you wish, you can buy me a coffee at https://ko-fi.com/arctos')
+    return 0
 def check_config():
     check_config_file_coherence = False
     check_docker_connectivity = False
@@ -268,7 +270,6 @@ def main():
     if not args.action:
         print("[*] No action was specified. Quit.")
         return
-
     else:
         if check_config() == False:
             printwarn("Not all check passed. Usage may be degraded")
@@ -281,74 +282,77 @@ def main():
         verbose     = args.verbose
 
         while action != 'quit':
-                if action == "ICAO":
-                    try:
-                        intel_from_ICAO(icao)
-                    except Exception as e:
-                        status = 'ActionICAOException'
-                elif action == "tail":
-                    try:
-                        if tail_number == None:
-                            tail_number = input("Enter tail number to lookup: ")
+            if action == "ICAO":
+                try:
+                    intel_from_ICAO(icao)
+                except Exception as e:
+                    status = 'ActionICAOException'
+            elif action == "tail":
+                try:
+                    if tail_number == None:
+                        tail_number = input("Enter tail number to lookup: ")
 
-                        owner_infos, aircraft_infos, wiki_infos = intel_from_tail_n(tail_number)
-                        incident_reports                        = search_incidents(tail_number, args.verbose)
-                    except Exception as e:
-                        status = 'IncidentSearchException'
+                    owner_infos, aircraft_infos, wiki_infos = intel_from_tail_n(tail_number)
+                    incident_reports                        = search_incidents(tail_number, args.verbose)
+                except Exception as e:
+                    status = 'IncidentSearchException'
 
-                    status = 'Done'
-                elif action == "convert":
-                    convert_US_ICAO_to_tail()
-                    status = 'Done'
-                elif action == "monitor":
-                    if args.verbose == False:
-                        os.system('clear')
-                    print("[*] Monitor aircraft mode")
-                    if icao is None:
-                        icao = input("Enter icao number: ")
-                    monitor(icao)
-
-
-
-                # Exits context (deselection of tail_numer or ICAO etc)
-                elif action == 'exit':
-                    tail_number     = None
-                    owner_infos     = None
-                    aircraft_infos  = None
-                    status          = 'Waiting for action'
-                else:
-                    print("[!] Unknown action. Try again")
-                    action = input("Enter valid action [ICAO, tail, convert, monitor, exit, quit]")
-
-                # Print retrieved intel
+                status = 'Done'
+            elif action == "convert":
+                convert_US_ICAO_to_tail()
+                status = 'Done'
+            elif action == "monitor":
                 if args.verbose == False:
                     os.system('clear')
-                print("==========================================")
-                print("Current Status: "+bcolors.OKAY+"[{}]".format(status)+bcolors.STOP)
-                print("Last action: {}".format(action))
-                print("Current tail: {}".format(tail_number))
-                print("==========================================")
-                print("✈️ Aircraft infos:")
-                print(aircraft_infos)
-                print("🧍 Owner infos")
-                print(owner_infos)
+                print("[*] Monitor aircraft mode")
+                if icao is None:
+                    icao = input("Enter icao number: ")
+                monitor(icao)
 
-                if incident_reports is not None:
-                    print("💥 Incident reports")
-                    print("\t{}".format(incident_reports))
 
-                if wiki_infos:
-                    print("📖 Wikipedia informations")
-                    print("\t{}".format(wiki_infos))
 
+            # Exits context (deselection of tail_numer or ICAO etc)
+            elif action == 'exit':
                 tail_number     = None
                 owner_infos     = None
                 aircraft_infos  = None
-                action = input('New Action [ICAO, tail, convert, monitor, exit, quit] ({}):'.format(tail_number))
+                status          = 'Waiting for action'
+            else:
+                print("[!] Unknown action. Try again")
+                action = input("Enter valid action [ICAO, tail, convert, monitor, exit, quit]")
 
+            # Print retrieved intel
+            if args.verbose == False:
+                os.system('clear')
+            print("==========================================")
+            print("Current Status: "+bcolors.OKAY+"[{}]".format(status)+bcolors.STOP)
+            print("Last action: {}".format(action))
+            print("Current tail: {}".format(tail_number))
+            print("==========================================")
+            print("✈️ Aircraft infos:")
+            print(aircraft_infos)
+            print("🧍 Owner infos")
+            print(owner_infos)
 
-        print('bye then ! If you wish, you can buy me a coffee at ko-fi.com/arctos')
-            
+            if incident_reports is not None:
+                print("💥 Incident reports")
+                print("\t{}".format(incident_reports))
+
+            if wiki_infos:
+                print("📖 Wikipedia informations")
+                print("\t{}".format(wiki_infos))
+
+            tail_number     = None
+            owner_infos     = None
+            aircraft_infos  = None
+            action          = input('New Action [ICAO, tail,'\
+                    'convert, monitor, exit, quit] ({}):'\
+                    .format(tail_number))
+
+        quit() 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt as e:
+        quit()
