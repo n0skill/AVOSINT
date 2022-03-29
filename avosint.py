@@ -116,7 +116,9 @@ def opensky(tail_n):
     headers = {
             'User-Agent': 'AVOSINT - CLI tool to gather aviation OSINT. Infos and contact: https://github.com/n0skill/AVOSINT'
             }
-    if os.stat("/tmp/opensky.cache").st_size != 0:
+
+    if os.path.exists('/tmp/opensky.cache') and \
+            os.stat("/tmp/opensky.cache").st_size != 0:
         print('[*] File exists. Do not download again')
 
     else:
@@ -131,21 +133,24 @@ def opensky(tail_n):
                     f.write(data)
                     print('\r[*] Downloading {:2f}'.format((dl/total_l)*100), end='')
                 print('\r[*] Done loading !')
-            with open('/tmp/opensky.cache', 'r') as f:
-                parsed_content = csv.reader(f)
-                for line in parsed_content:
-                    if tail_n in line:
-                        # Aircraft infos
-                        icao            = line[0]
-                        manufacturer    = line[3]
-                        msn             = line[6]
-                        # Owner infos
-                        owner           = line[13]
-                        return Aircraft(tail_n, 
-                                    icao=icao,
-                                    manufacturer=manufacturer,
-                                    msn=msn),   \
-                                        Owner(owner)
+        else:
+            print(r.status_code)
+
+    with open('/tmp/opensky.cache', 'r') as f:
+        parsed_content = csv.reader(f)
+        for line in parsed_content:
+            if tail_n in line:
+                # Aircraft infos
+                icao            = line[0]
+                manufacturer    = line[3]
+                msn             = line[6]
+                # Owner infos
+                owner           = line[13]
+                return Aircraft(tail_n, 
+                            icao=icao,
+                            manufacturer=manufacturer,
+                            msn=msn),   \
+                                Owner(owner)
 
 def intel_from_tail_n(tail_number):
     """
