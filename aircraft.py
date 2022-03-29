@@ -31,6 +31,7 @@ class Aircraft:
         return """
         Manufacturer/Type: %s
         Manufacturer Serial Number: %s
+        Transponder code (ICAO24): %s
         Tail Number: %s
         Call Sign: %s
         Last known position: %s
@@ -38,11 +39,7 @@ class Aircraft:
         
         Notes: 
         %s
-        """ % (self.manufacturer, self.msn, self.tail_n, self.call, (self.latitude, self.longitude), self.altitude, self.notes)
-
-    def get_path(self):
-        return []
-        #j = getjson(flight_data_src+self.name)
-
-class RT_craft(Aircraft):
-	pass
+        """ % (self.manufacturer, self.msn, 
+                self.icao, self.tail_n,
+                self.call, (self.latitude, self.longitude), 
+                self.altitude, self.notes)
