@@ -346,6 +346,8 @@ def main():
                 aircraft_infos  = None
                 action = input('New Action [ICAO, tail, convert, monitor, exit, quit] ({}):'.format(tail_number))
 
+
+        print('bye then ! If you wish, you can buy me a coffee at ko-fi.com/arctos')
             
 
 if __name__ == "__main__":

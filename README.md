@@ -54,8 +54,14 @@ New Action [ICAO, tail, convert, monitor, exit, quit] (None):
 ```
 
 ## Dependencies
-### Install requirements
+### Install python requirements
 `pip install -r requirements.txt`
+
+This tool also uses the OpenSkyApi available at https://github.com/openskynetwork/opensky-api. Install it using:
+```bash
+git clone https://github.com/openskynetwork/opensky-api 
+pip install -e /path/to/repository/python
+```
 ### Install Parsr docker image
 `docker run -p 3001:3001 axarev/parsr`
 ### Parsr 

@@ -9,7 +9,8 @@ from geoloc import Coordinates
 class Aircraft:
     def __init__(self, tail_n, msn=None, call=None, \
             latitude=None, longitude=None, craft_type=None, \
-            origin=None, destination=None, altitude=None, manufacturer=None, icao=None,notes=None):
+            origin=None, destination=None, altitude=None, \
+            manufacturer=None, icao=None,notes=None):
 
         self.tail_n         = tail_n
         self.msn            = msn
