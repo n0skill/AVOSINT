@@ -216,6 +216,15 @@
 		"tail_index_for_search": 0,
 		"infos": [""]
 	},
+	"BY": {
+		"name": "Aeroflight Aviation Enthusiasts Cloud - Belarus",
+		"website": "",
+		"data_url": "https://docs.google.com/spreadsheets/d/1iIW69IaIGE-7Un6kKpVV8ERo1SFuRd2okUp2289wKlA/export?format=xlsx",
+		"request_type": "GET",
+		"data_type": "xlsx",
+		"tail_index_for_search": 0,
+		"infos": [""]
+	},
 	"BG": {
 		"name": "Bulgaria",
 		"website": "https://www.caa.bg",

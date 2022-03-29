@@ -49,5 +49,6 @@ tail_to_register_function = {
     "VQ-": BM,
     "LZ-": BG,
     "UP-": KZ,
-
+    "RB-": BY,
+    "EW-": BY,
 }

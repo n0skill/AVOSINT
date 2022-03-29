@@ -19,17 +19,20 @@ from bs4 import BeautifulSoup
 from threading import Thread
 import time
 import socket
-from wiki_api import search_wiki_commons
+import csv
 
 from registers import *
 from tail_to_register import *
 from investigation_authorities import *
 from monitor import monitor
+from wiki_api import search_wiki_commons
 
 
 # Data sources
-flightradar = 'http://data.flightradar24.com/zones/fcgi/feed.js?bounds='
-planefinder = 'https://planefinder.net/endpoints/update.php?callback=planeDataCallback&faa=1&routetype=iata&cfCache=true&bounds=37%2C-80%2C40%2C-74&_=1452535140'
+flightradar     = 'http://data.flightradar24.com/zones/fcgi/feed.js?bounds='
+planefinder     = 'https://planefinder.net/endpoints/update.php'\
+                    '?callback=planeDataCallback&faa=1&routetype=iata&cfCache=true'\
+                    '&bounds=37%2C-80%2C40%2C-74&_=1452535140'
 flight_data_src = 'http://data-live.flightradar24.com/clickhandler/?version=1.5&flight='
 
 
@@ -44,25 +47,8 @@ DOCKER_HOST = '127.0.0.1'
 DOCKER_PORT = 3001
 
 
-# Files 
-
-
-# Hard-coded areas
-#CH_AREA = [Coordinates(45,4.5), Coordinates(48.5 , 10)]
-#IS_AREA = [Coordinates(62.76,-32.18), Coordinates(66.92, -3.5)]
-#US_AREA = [Coordinates(0,0), Coordinates(0,0)]
-
-
-# Determines if you should use a proxy or not.
-# Examples:
-#proxies = {'http': '127.0.0.1:9150'}
-proxies = {}
-
-# Fake using a regular browser to avoid HTTP 401/501 errors
-user_agent = {'User-agent': 'Mozilla/5.0'}
-
 # GLOBAL VARIABLES
-FLG_DEBUG = False
+verbose = False
 
 # Text colors using ANSI escaping. Surely theres a better way to do this
 class bcolors:
@@ -83,6 +69,12 @@ def printko(str):
 
 def printwarn(str):
     return print(bcolors.WARN+'[WRN]'+bcolors.STOP+' {}'.format(str))
+
+def printverbose(str):
+    if verbose:
+        print(str)
+    else:
+        pass
 
 def check_config():
     check_config_file_coherence = False
@@ -106,10 +98,6 @@ def check_config():
         printwarn("Could not contact docker container. PDF registery lookup will not work.")
         return False
 
-   # if check_config_file_coherence \
-   #         and check_docker_connectivity \
-   #         and additional_check:
-   #             return True
 
 
 def getInterestingPlaces():
@@ -123,6 +111,42 @@ def intel_from_ICAO(icao):
     """
     return None
 
+def opensky(tail_n):
+    print("[*] Gathering infos from opensky network database. This can take some time")
+    headers = {
+            'User-Agent': 'AVOSINT - CLI tool to gather aviation OSINT. Infos and contact: https://github.com/n0skill/AVOSINT'
+            }
+    if os.stat("/tmp/opensky.cache").st_size != 0:
+        print('[*] File exists. Do not download again')
+
+    else:
+        r = requests.get('https://opensky-network.org/datasets/metadata/aircraftDatabase.csv',
+                stream=True, headers=headers)
+        if r.status_code == 200:
+            with open('/tmp/opensky.cache', 'wb') as f: 
+                total_l  = int(r.headers.get('content-length'))
+                dl       = 0
+                for data in r.iter_content(chunk_size=8192*4):
+                    dl += len(data)
+                    f.write(data)
+                    print('\r[*] Downloading {:2f}'.format((dl/total_l)*100), end='')
+                print('\r[*] Done loading !')
+            with open('/tmp/opensky.cache', 'r') as f:
+                parsed_content = csv.reader(f)
+                for line in parsed_content:
+                    if tail_n in line:
+                        # Aircraft infos
+                        icao            = line[0]
+                        manufacturer    = line[3]
+                        msn             = line[6]
+                        # Owner infos
+                        owner           = line[13]
+                        return Aircraft(tail_n, 
+                                    icao=icao,
+                                    manufacturer=manufacturer,
+                                    msn=msn),   \
+                                        Owner(owner)
+
 def intel_from_tail_n(tail_number):
     """
     Gather intel from tail number
@@ -134,6 +158,7 @@ def intel_from_tail_n(tail_number):
     wiki_infos      = None
     owner_infos     = None
     aircraft_infos  = None
+
     print("[*] Getting intel for tail number {}".format(tail_number))
 
     # Step 1 - Gather ownership information
@@ -150,27 +175,37 @@ def intel_from_tail_n(tail_number):
     
     # Gather all information together
 
-    owner_infos, aircraft_infos = tail_to_register_function[tail_prefix](tail_number)
-    # Wikipedia infos
+    # First, from official registers
     try:
-        wiki_infos = search_wiki_commons(tail_number)
+        owner_infos, aircraft_infos = tail_to_register_function[tail_prefix](tail_number)    
     except Exception as e:
-        print(e)
-    # Last changes of ownership
+        printverbose("[!] Exception while calling tail_to_register: {}".format(e))
+    
+    finally:
+        # Opensky network
+        try:
+            os_aircraft, os_owner = opensky(tail_number)
+        except Exception as e:
+            printverbose("[!] Exception while calling opensky: {}".format(e))
 
-    # Last known position
-    # Convert to icao
-    try:
-        r = requests.head(
-                'https://globe.adsbexchange.com/?reg={}'.format(tail_number), allow_redirects=False)
-        if r.status_code == 200:
-            print(r.headers['Location'])
-            icao = r.url.split('icao=')[1]
-            # Get positions from icao
-    except Exception as e:
+        # Wikipedia infos
+        try:
+            wiki_infos = search_wiki_commons(tail_number)
+        except Exception as e:
             print(e)
+        # Last changes of ownership
 
-    # Detailled info (pictures etc)
+        # Last known position
+        # TODO
+
+        # Detailled info (pictures etc)
+    
+    # Merge infos and return them
+    if not owner_infos:
+        owner_infos = os_owner
+    if not aircraft_infos:
+        aircraft_infos =  os_aircraft
+
     return owner_infos, aircraft_infos, wiki_infos
 
 def main():
@@ -224,6 +259,7 @@ def main():
         action      = args.action
         tail_number = args.tail_number
         icao        = args.icao
+        verbose     = args.verbose
 
         while action != 'quit':
                 if action == "ICAO":
@@ -235,14 +271,9 @@ def main():
                     try:
                         if tail_number == None:
                             tail_number = input("Enter tail number to lookup: ")
-                        owner_infos, aircraft_infos, wiki_infos  = intel_from_tail_n(tail_number)
-                    except Exception as e:
-                        status = 'ActionTailException'
 
-                    try:
-                        print("[*] Searching for incident reports ....")
-                        incident_reports = \
-                                search_incidents(tail_number, args.verbose)
+                        owner_infos, aircraft_infos, wiki_infos = intel_from_tail_n(tail_number)
+                        incident_reports                        = search_incidents(tail_number, args.verbose)
                     except Exception as e:
                         status = 'IncidentSearchException'
 
@@ -288,7 +319,7 @@ def main():
                     print("\t{}".format(incident_reports))
 
                 if wiki_infos:
-                    print("Wikipedia informations")
+                    print("📖 Wikipedia informations")
                     print("\t{}".format(wiki_infos))
 
                 tail_number     = None

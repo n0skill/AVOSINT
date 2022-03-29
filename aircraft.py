@@ -9,20 +9,21 @@ from geoloc import Coordinates
 class Aircraft:
     def __init__(self, tail_n, msn=None, call=None, \
             latitude=None, longitude=None, craft_type=None, \
-            origin=None, destination=None, altitude=None, manufacturer=None, notes=None):
+            origin=None, destination=None, altitude=None, manufacturer=None, icao=None,notes=None):
 
         if latitude is not None and longitude is not None:
             self.coords = Coordinates(latitude, longitude)
         else:
             self.coords = None
-        self.tail_n = tail_n
-        self.msn    = msn
-        self.call   = call
-        self.origin = origin
-        self.manufacturer = manufacturer
-        self.destination = destination
-        self.altitude = altitude	
-        self.notes = notes
+        self.tail_n         = tail_n
+        self.msn            = msn
+        self.call           = call
+        self.origin         = origin
+        self.manufacturer   = manufacturer
+        self.destination    = destination
+        self.altitude       = altitude	
+        self.icao           = icao  
+        self.notes          = notes
 
 
     def __str__(self):

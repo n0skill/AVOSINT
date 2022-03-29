@@ -183,6 +183,7 @@ class DataSource:
                 parsr = client('localhost:3001')
                 with open('/tmp/avosint.pdf', 'wb') as f:
                     f.write(r.content)
+
                 job = parsr.send_document(
                     file_path='/tmp/avosint.pdf',
                     config_path='./parsr.conf',
@@ -264,8 +265,8 @@ class Registry:
 
     def request_infos(self, tail_n):
         # Format tail number according to regex
-        tail_n = tail_n[self.tail_start:]
-        res = self.data_source.gather(tail_n)
+        tail_n  = tail_n[self.tail_start:]
+        res     = self.data_source.gather(tail_n)
         return res
 
 
@@ -435,27 +436,6 @@ def IS(tail_n):
             return Owner(name, street, city, '', 'Iceland'), Aircraft(tail_n)
 
 
-def BE(tail_n):
-    rep = requests.get('https://es.mobilit.fgov.be/aircraft-registry/rest/aircrafts?aircraftStates=REGISTERED&registrationMark=' +
-                       tail_n + '&page=0&pageSize=10&sort=REGISTRATIONMARK&sortDirection=ascending')
-
-    if rep.status_code == 200:
-        j = json.loads(rep.text)
-        if len(j) > 0:
-            if j[0].get('id') != '':
-                rep = requests.get(
-                    'https://es.mobilit.fgov.be/aircraft-registry/rest/aircrafts/'+str(j[0].get('id')))
-                if rep.status_code == 200:
-                    # print(rep.text)
-                    j = json.loads(rep.text)
-                    name = j.get('stakeHolderRoleList')[0].get('name')
-                    street = j.get('stakeHolderRoleList')[
-                        0].get('addresses').get('street')
-                    city = j.get('stakeHolderRoleList')[
-                        0].get('addresses').get('city')
-                    return Owner(name, street, city, '', 'Belgium'), Aircraft(tail_n)
-                else:
-                    return Exception("Error retrieving from BE")
 
 
 def SW(tail_n):
@@ -504,6 +484,144 @@ def AT(tail_n):
         city, street  = loc_info.split(', ')
         npa, city = city.split(' ')
         return Owner(name, street, city, npa, 'Austria'), Aircraft(tail_n)
+
+def AU(tail_n):
+    """
+    Australia Registry
+
+    """
+    r = requests.get(
+        'https://www.casa.gov.au/search-centre/aircraft-register/'+tail_n[3:])
+    if r.status_code == 200:
+        soup = BeautifulSoup(
+            r.content, features="html.parser")
+
+        name = soup.find('div',
+                {'class':'field--name-field-registration-holder'}
+                ).text.strip('Registration holder:\n')
+        addr = soup.find('div',
+                {'class':'field--name-field-reg-hold-address-1'}
+                ).text.strip('Address 1:\n')
+        city = soup.find('div',
+                {'class':'field--name-field-tx-reg-hold-suburb'}
+                ).text.strip('Suburb / City:\n')
+        return Owner(name, addr, city, '', 'Australia'), Aircraft(tail_n)
+    raise Exception(
+            "Could not get info from AU register")
+def BA(tail_n):
+    register = register_from_config("BA")
+    infos = register.request_infos(tail_n)
+    for page in infos['pages']:
+        for element in page['elements']:
+            if element['type'] == 'table':
+                for line in element['content']:
+                    tail_n_from_file = line['content'][1]['content'][0]['content']
+                    if tail_n == tail_n_from_file:
+                        owner_line = line['content'][5]['content']
+                        # Owner info
+                        owner_name = ' '.join(
+                            [owner_line[i]['content'] for i in range(0, len(owner_line))]
+                        )
+                        return Owner(owner_name, '', '', '', '')
+def BE(tail_n):
+    rep = requests.get(
+            'https://es.mobilit.fgov.be/aircraft-registry/'\
+                    'rest/aircrafts?aircraftStates=REGISTERED&registrationMark=' +
+                       tail_n + '&page=0&pageSize=10&sort=REGISTRATIONMARK&sortDirection=ascending')
+
+    if rep.status_code == 200:
+        j = json.loads(rep.text)
+        if len(j) > 0:
+            if j[0].get('id') != '':
+                rep = requests.get(
+                    'https://es.mobilit.fgov.be/aircraft-registry/rest/aircrafts/'+str(j[0].get('id')))
+                if rep.status_code == 200:
+                    # print(rep.text)
+                    j = json.loads(rep.text)
+                    name = j.get('stakeHolderRoleList')[0].get('name')
+                    street = j.get('stakeHolderRoleList')[
+                        0].get('addresses').get('street')
+                    city = j.get('stakeHolderRoleList')[
+                        0].get('addresses').get('city')
+                    return Owner(name, street, city, '', 'Belgium'), Aircraft(tail_n)
+                else:
+                    return Exception("Error retrieving from BE")
+def BG(tail_n):
+    try:
+        register    = register_from_config("BG")
+        book        = register.request_infos(tail_n)
+        infos_sheet = book["Registrations LZ"]
+        for row in infos_sheet.values:
+            if tail_n in row:
+                msn = row[3]
+                owner = row[6]
+                return Owner(owner, '', '', '', ''),\
+                        Aircraft(tail_n,  msn=msn)
+        return None, None
+    except Exception as e:
+        print('[!] ', e)
+        return None, None
+
+def BR(tail_n):
+    r = requests.get('https://sistemas.anac.gov.br'\
+            '/aeronaves/cons_rab_resposta.asp?textMarca=' + tail_n)
+    if r.status_code == 200:
+        soup 		= BeautifulSoup(r.text, features="html.parser")
+        headings 	= soup.find_all('th', {'scope':'row'})
+        for heading in headings:
+            if 'Proprietário' in heading.text:
+                name = heading.parent.td.text.strip()
+                return Owner(name, '', '', '', 'Brazil'), Aircraft(tail_n)
+            raise Exception("Could not get info from BR register. " + r.url + r.status_code )
+
+def BY(tail_n):
+    register = register_from_config("BY")
+    book = register.request_infos(tail_n)
+    for line in book['Data']:
+        if tail_n in line:
+            print(line)
+
+def BZ(tail_n):
+    register = register_from_config("BZ")
+    infos = register.request_infos(tail_n)
+    for page in infos['pages']:
+        print(page)
+        for content in page['elements']:
+            if content['type'] == 'table':
+                for item in content['content']:
+                    tail = item['content'][0]['content'][0]['content']
+                    if tail == tail_n:
+                        # Owner infos
+                        own = item['content'][3]['content'][0]['content']
+                        addr = ' '.join(
+                                item['content'][4]['content']\
+                                [i]['content']\
+                                for i in range(0, len(item['content'][4]['content'])))
+                        addr, city = addr.split(',')
+
+                        # Aircraft infos
+                        manufacturer = item['content'][1]['content'][0]['content']
+                        return Owner(own, addr, city=city), \
+                                Aircraft(tail_n, manufacturer=manufacturer)
+
+def CA(tail_n):
+    tail_n = tail_n.lstrip('C-')
+    r = requests.get('https://wwwapps.tc.gc.ca/'\
+            'saf-sec-sur/2/ccarcs-riacc/RchSimpRes.aspx'\
+            '?cn=%7c%7c&mn=%7c%7c&sn=%7c%7c&on=%7c%7c&m=%7c'+tail_n+'%7c&rfr=RchSimp.aspx')
+    if r.status_code == 200:
+        soup = BeautifulSoup(
+            r.content, features='html.parser')
+    div_owner   = soup.find('div', {'id':'dvOwnerName'})
+    if div_owner is not None:
+        name        = div_owner.find_all('div')[1].text.strip()
+        div_addr    = soup.find('div', {'id':'divOwnerAddress'})
+        addr        = div_addr.find_all('div')[1].text.strip()
+        div_city    = soup.find('div', {'id':'divOwnerCity'})
+        city        = div_city.find_all('div')[1].text.strip()
+        return Owner(name, addr, city, '', 'Canada'), Aircraft(tail_n)
+    else:
+        print('[!] Error retrieving from CA register. Ensure tail number exists and try again')
 
 def CZ(tail_n):
     SwissRegister = register_from_config("CZ")
@@ -587,24 +705,6 @@ def IM(tail_n):
                     street = infos
                     return Owner(name, street, '', '', ''), Aircraft(tail_n)
 
-def CA(tail_n):
-    tail_n = tail_n.lstrip('C-')
-    r = requests.get('https://wwwapps.tc.gc.ca/'\
-            'saf-sec-sur/2/ccarcs-riacc/RchSimpRes.aspx'\
-            '?cn=%7c%7c&mn=%7c%7c&sn=%7c%7c&on=%7c%7c&m=%7c'+tail_n+'%7c&rfr=RchSimp.aspx')
-    if r.status_code == 200:
-        soup = BeautifulSoup(
-            r.content, features='html.parser')
-    div_owner   = soup.find('div', {'id':'dvOwnerName'})
-    if div_owner is not None:
-        name        = div_owner.find_all('div')[1].text.strip()
-        div_addr    = soup.find('div', {'id':'divOwnerAddress'})
-        addr        = div_addr.find_all('div')[1].text.strip()
-        div_city    = soup.find('div', {'id':'divOwnerCity'})
-        city        = div_city.find_all('div')[1].text.strip()
-        return Owner(name, addr, city, '', 'Canada'), Aircraft(tail_n)
-    else:
-        print('[!] Error retrieving from CA register. Ensure tail number exists and try again')
 
 def DE(tail_n):
     raise NotImplementedError(
@@ -654,29 +754,6 @@ def HR(tail_n):
     raise NotImplementedError(
         'Croatian register is a pdf document. The document is available at https://www.ccaa.hr/english/popis-registriranih-zrakoplova_101/')
 
-def AU(tail_n):
-    """
-    Australia Registry
-
-    """
-    r = requests.get(
-        'https://www.casa.gov.au/search-centre/aircraft-register/'+tail_n[3:])
-    if r.status_code == 200:
-        soup = BeautifulSoup(
-            r.content, features="html.parser")
-
-        name = soup.find('div',
-                {'class':'field--name-field-registration-holder'}
-                ).text.strip('Registration holder:\n')
-        addr = soup.find('div',
-                {'class':'field--name-field-reg-hold-address-1'}
-                ).text.strip('Address 1:\n')
-        city = soup.find('div',
-                {'class':'field--name-field-tx-reg-hold-suburb'}
-                ).text.strip('Suburb / City:\n')
-        return Owner(name, addr, city, '', 'Australia'), Aircraft(tail_n)
-    raise Exception(
-            "Could not get info from AU register")
 
 def SG(tail_n):
     register    = register_from_config("SG")
@@ -699,18 +776,6 @@ def NZ(tail_n):
         street 		= owner_info.text.strip().split('\n')[2].strip()
         return Owner(name, street, '', '', 'New Zealand'), Aircraft(tail_n)
     raise Exception("Could not get info from NZ register")
-
-def BR(tail_n):
-    r = requests.get('https://sistemas.anac.gov.br'\
-            '/aeronaves/cons_rab_resposta.asp?textMarca=' + tail_n)
-    if r.status_code == 200:
-        soup 		= BeautifulSoup(r.text, features="html.parser")
-        headings 	= soup.find_all('th', {'scope':'row'})
-        for heading in headings:
-            if 'Proprietário' in heading.text:
-                name = heading.parent.td.text.strip()
-                return Owner(name, '', '', '', 'Brazil'), Aircraft(tail_n)
-            raise Exception("Could not get info from BR register. " + r.url + r.status_code )
 
 def UA(tail_n):
     r = requests.get('http://avia.gov.ua/register_of_aircraft.xls')
@@ -781,21 +846,6 @@ def LV(tail_n):
         if tail_n in row:
             return row
 
-def BA(tail_n):
-    register = register_from_config("BA")
-    infos = register.request_infos(tail_n)
-    for page in infos['pages']:
-        for element in page['elements']:
-            if element['type'] == 'table':
-                for line in element['content']:
-                    tail_n_from_file = line['content'][1]['content'][0]['content']
-                    if tail_n == tail_n_from_file:
-                        owner_line = line['content'][5]['content']
-                        # Owner info
-                        owner_name = ' '.join(
-                            [owner_line[i]['content'] for i in range(0, len(owner_line))]
-                        )
-                        return Owner(owner_name, '', '', '', '')
 
 def HR(tail_n):
     register = register_from_config("HR")
@@ -900,28 +950,6 @@ def MD(tail_n):
                             if retrieved_tail[0]['content'] == tail_n:
                                 owner_name = owner[0]['content']
                                 return Owner(owner_name, country='Moldova')
-def BZ(tail_n):
-    register = register_from_config("BZ")
-    infos = register.request_infos(tail_n)
-    for page in infos['pages']:
-        print(page)
-        for content in page['elements']:
-            if content['type'] == 'table':
-                for item in content['content']:
-                    tail = item['content'][0]['content'][0]['content']
-                    if tail == tail_n:
-                        # Owner infos
-                        own = item['content'][3]['content'][0]['content']
-                        addr = ' '.join(
-                                item['content'][4]['content']\
-                                [i]['content']\
-                                for i in range(0, len(item['content'][4]['content'])))
-                        addr, city = addr.split(',')
-
-                        # Aircraft infos
-                        manufacturer = item['content'][1]['content'][0]['content']
-                        return Owner(own, addr, city=city), \
-                                Aircraft(tail_n, manufacturer=manufacturer)
 
 
 def VE(tail_n):
@@ -1012,7 +1040,6 @@ def ME(tail_n):
         else:
             return None, None
     except Exception as e:
-        print('[!] ', e)
         return None, None
 
 
@@ -1026,32 +1053,13 @@ def BM(tail_n):
                     for line in element['content']:
                         for elem in line['content']:
                             if elem['content'][0]['content'] == tail_n:
-                                print('!!!!')
                                 name    = line['content'][4]['content'][0]['content']
                                 msn     = line['content'][1]['content'][0]['content']
-                                print(name)
-                                print(msn)
                                 return Owner(name), Aircraft(tail_n, msn=msn)
         return None, None
     except Exception as e:
-        print('[!] ', e)
         return None, None
 
-def BG(tail_n):
-    try:
-        register    = register_from_config("BG")
-        book        = register.request_infos(tail_n)
-        infos_sheet = book["Registrations LZ"]
-        for row in infos_sheet.values:
-            if tail_n in row:
-                msn = row[3]
-                owner = row[6]
-                return Owner(owner, '', '', '', ''),\
-                        Aircraft(tail_n,  msn=msn)
-        return None, None
-    except Exception as e:
-        print('[!] ', e)
-        return None, None
 
 def KZ(tail_n):
     try:
@@ -1067,6 +1075,4 @@ def KZ(tail_n):
                         Aircraft(tail_n,  msn=msn, manufacturer=model)
         return None, None
     except Exception as e:
-        print('[!] ', e)
         return None, None
-
