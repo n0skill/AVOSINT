@@ -15,8 +15,6 @@ import random as rand
 import json
 import logging
 import argparse
-from bs4 import BeautifulSoup
-from threading import Thread
 import time
 import socket
 import csv
@@ -27,6 +25,8 @@ from investigation_authorities import *
 from monitor import monitor
 from wiki_api import search_wiki_commons
 from opensky_api import OpenSkyApi
+from bs4 import BeautifulSoup
+from threading import Thread
 
 # Data sources
 flightradar     = 'http://data.flightradar24.com/zones/fcgi/feed.js?bounds='
@@ -192,8 +192,7 @@ def intel_from_tail_n(tail_number):
     try:
         os_aircraft, os_owner = opensky(tail_number)
     except Exception as e:
-        printverbose("[!] Exception while calling opensky: {}".format(e))
-
+        print("[!] Exception while calling opensky: {}".format(e))
     # Wikipedia infos
     try:
         wiki_infos = search_wiki_commons(tail_number)
@@ -206,11 +205,14 @@ def intel_from_tail_n(tail_number):
     api     = OpenSkyApi()
     s       = api.get_states(icao24=icao)
     
-    if s is not None and len(s.states) > 0:
-        last_lat = (s.states)[0].latitude
-        last_lon = (s.states)[0].longitude
-        aircraft_infos.latitude     = last_lat
-        aircraft_infos.longitude    = last_lon
+    try:
+        if s is not None and len(s.states) > 0:
+            last_lat = (s.states)[0].latitude
+            last_lon = (s.states)[0].longitude
+            os_aircraft.latitude     = last_lat
+            os_aircraft.longitude    = last_lon
+    except Exception as e:
+        printko(e)
     
     # Detailled info (pictures etc)
     # TODO
