@@ -76,7 +76,7 @@ return {
   'status_code': r.status_code,
   'server_response': r.text
 }
-
+```
 ### Donations
 If you wish to offer me a coffee, you can donate at 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/K3K4BO91O)
