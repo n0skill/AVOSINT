@@ -317,6 +317,7 @@ def CH(tail_n):
 
 
 def FR(tail_n):
+    print("[*] Getting infos from official french register")
     s = requests.session()
     headers = {
         'Origin': 'https://immat.aviation-civile.gouv.fr',
@@ -346,32 +347,25 @@ def FR(tail_n):
     response = s.post('https://immat.aviation-civile.gouv.fr/immat/servlet/aeronef_liste.html',
         headers=headers,
         data=data)
-
+    
     if response.status_code == 200:
-        soup    = BeautifulSoup(response.text, 'html.parser')
-        bls     = soup.find('a', string=tail_n)
-
-        if bls is None:
-            print('[!][FR] Could not find supplied tail number in agency registers')
+        soup = BeautifulSoup(response.content, 'html.parser')
+        link_details = soup.find(lambda tag: tag.name == 'a' and tail_n in tag.text)
+        if link_details is not None:
+            jsessionid = link_details.attrs.get('href').split(';')[-1]
+            r = s.get('https://immat.aviation-civile.gouv.fr/immat/servlet/aeronef_juridique.html;'+jsessionid)
+            soup = BeautifulSoup(r.content, 'html.parser')
+            datas = soup.find('table', {'class': 'tableListe'}).find_all('tr')[1].find_all('td')
+            name = datas[0].text
+            addr = datas[1].text
+            city = datas[2].text
+            return Owner(name, addr, city, '', 'France'), Aircraft(tail_n)
         else:
-            response = s.get(
-                'https://immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'],
-                headers=headers)
-            soup    = BeautifulSoup(response.text, 'html.parser')
-            bls     = soup.find('a', string="Données juridiques")
-            r       = s.get('https://immat.aviation-civile.gouv.fr/immat/servlet/' + bls['href'])
-            if r.status_code == 200:
-                soup = BeautifulSoup(r.text, 'html.parser')
-                bls  = soup.find_all('td', {'class': "tdLigneListe"})
-                if len(bls) > 0:
-                    name = bls[0].text
-                    addr = bls[1].text
-                    city = bls[2].text
-                    return Owner(name, addr, city, '', 'France'), Aircraft(tail_n)
-                else:
-                    print('[!][FR] Error while retrieving info for {}'.format(tail_n))
-            else:
-                print('[!][FR] Error while retrieving info for {}'.format(tail_n))
+            print("[*] Tail number not found in registry")
+            return None
+    else:
+        print("[*] Tail number not found in registry")
+        return None
 
 def US(tail_n):
     name = ''
