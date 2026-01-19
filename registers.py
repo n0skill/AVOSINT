@@ -377,8 +377,10 @@ def US(tail_n):
     name = ''
     addr = ''
     city = ''
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0'}
     resp = requests.get(
-        "https://registry.faa.gov/AircraftInquiry/Search/NNumberResult?nNumberTxt="+tail_n)
+        "https://registry.faa.gov/AircraftInquiry/Search/NNumberResult?nNumberTxt="+tail_n, headers=headers)
     if resp.status_code == 200:
         soup = BeautifulSoup(resp.content, 'html.parser')
 
