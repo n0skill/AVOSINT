@@ -472,20 +472,14 @@ def AT(tail_n):
                     'lfa-publish-service/v2/oenfl/'\
                     'luftfahrzeuge?kennzeichen='+tail_n
             )
-    print(rep.url)
 
     try:
         if rep.status_code == 200:
             j = json.loads(rep.content)
             owner_infos = [x for x in j if x['kennzeichen'] == tail_n]
             name, loc_info, country = owner_infos[0]['halter'].split('\r\n')
-            print(name)
-            print(loc_info)
-            print(country)
             city, street  = loc_info.split(', ')
             npa, city = city.split(' ')
-            print(npa)
-            print(city)
             return Owner(name, street, city, npa, 'Austria'), Aircraft(tail_n)
     except Exception as e:
         print(e)

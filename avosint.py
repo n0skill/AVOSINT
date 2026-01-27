@@ -123,7 +123,6 @@ def opensky(tail_n):
     if os.path.exists('/tmp/opensky.cache') \
             and os.stat("/tmp/opensky.cache").st_size != 0:
         print('[*] Opensky cache exists. Do not download again')
-
     else:
         r = requests.get(
                 'https://opensky-network.org/datasets/metadata/aircraftDatabase.csv',
@@ -141,6 +140,7 @@ def opensky(tail_n):
                 print('\r[*] Done loading !')
         else:
             printwarn(r.status_code)
+    
 
     with open('/tmp/opensky.cache', 'r') as f:
         parsed_content = csv.reader(f)
@@ -149,13 +149,14 @@ def opensky(tail_n):
                 # Aircraft infos
                 icao            = line[0]
                 manufacturer    = line[3]
-                msn             = line[6]
+                msn             = line[6] if line[6] else ''
                 # Owner infos
                 owner           = line[13]
                 return Aircraft(tail_n, 
                             icao=icao,
                             manufacturer=manufacturer,
                             msn=msn), Owner(owner)
+        return None
 
 def intel_from_tail_n(tail_number):
     """
@@ -192,19 +193,22 @@ def intel_from_tail_n(tail_number):
 
     # Opensky network
     try:
-        os_aircraft, os_owner = opensky(tail_number)
-        icao    = os_aircraft.icao.lower()
-        api     = OpenSkyApi()
-        s       = api.get_states(icao24=icao)
-        
-        try:
-            if s is not None and len(s.states) > 0:
-                last_lat = (s.states)[0].latitude
-                last_lon = (s.states)[0].longitude
-                os_aircraft.latitude     = last_lat
-                os_aircraft.longitude    = last_lon
-        except Exception as e:
-            printko(e)
+        results_os = opensky(tail_number)
+        if results_os is not None:
+            os_aircraft, os_owner = results_os
+            icao    = os_aircraft.icao.lower()
+            api     = OpenSkyApi()
+            s       = api.get_states(icao24=icao)
+            try:
+                if s is not None and len(s.states) > 0:
+                    last_lat = (s.states)[0].latitude
+                    last_lon = (s.states)[0].longitude
+                    os_aircraft.latitude     = last_lat
+                    os_aircraft.longitude    = last_lon
+            except Exception as e:
+                printko(e)
+        else:
+            printverbose("[!] Aircraft not found in opensky. returns None")
     except Exception as e:
         printko("[!] Exception while calling opensky: {}".format(e))
 
@@ -225,7 +229,7 @@ def intel_from_tail_n(tail_number):
 
     # Merge infos and return them
     try:
-        if aircraft_infos is not None:
+        if aircraft_infos is not None and os_aircraft is not None:
             for attr, value in aircraft_infos.__dict__.items():
                 if value == None and getattr(os_aircraft, attr) is not None:
                     setattr(aircraft_infos, attr, getattr(os_aircraft, attr))
