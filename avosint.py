@@ -122,7 +122,7 @@ def opensky(tail_n):
 
     if os.path.exists('/tmp/opensky.cache') \
             and os.stat("/tmp/opensky.cache").st_size != 0:
-        print('[*] File exists. Do not download again')
+        print('[*] Opensky cache exists. Do not download again')
 
     else:
         r = requests.get(
@@ -155,8 +155,7 @@ def opensky(tail_n):
                 return Aircraft(tail_n, 
                             icao=icao,
                             manufacturer=manufacturer,
-                            msn=msn),   \
-                                Owner(owner)
+                            msn=msn), Owner(owner)
 
 def intel_from_tail_n(tail_number):
     """
@@ -169,6 +168,8 @@ def intel_from_tail_n(tail_number):
     wiki_infos      = None
     owner_infos     = None
     aircraft_infos  = None
+    os_aircraft     = None
+    os_owner        = None
 
     print("[*] Getting intel for tail number {}".format(tail_number))
 
@@ -188,38 +189,43 @@ def intel_from_tail_n(tail_number):
     except Exception as e:
         printverbose("[!] Exception while calling tail_to_register: {}".format(e))
     
+
     # Opensky network
     try:
         os_aircraft, os_owner = opensky(tail_number)
+        icao    = os_aircraft.icao.lower()
+        api     = OpenSkyApi()
+        s       = api.get_states(icao24=icao)
+        
+        try:
+            if s is not None and len(s.states) > 0:
+                last_lat = (s.states)[0].latitude
+                last_lon = (s.states)[0].longitude
+                os_aircraft.latitude     = last_lat
+                os_aircraft.longitude    = last_lon
+        except Exception as e:
+            printko(e)
     except Exception as e:
-        print("[!] Exception while calling opensky: {}".format(e))
+        printko("[!] Exception while calling opensky: {}".format(e))
+
+
     # Wikipedia infos
     try:
         wiki_infos = search_wiki_commons(tail_number)
     except Exception as e:
         printwarn(e)
-    # Last changes of ownership
-
-    # Last known position
-    icao    = os_aircraft.icao.lower()
-    api     = OpenSkyApi()
-    s       = api.get_states(icao24=icao)
     
-    try:
-        if s is not None and len(s.states) > 0:
-            last_lat = (s.states)[0].latitude
-            last_lon = (s.states)[0].longitude
-            os_aircraft.latitude     = last_lat
-            os_aircraft.longitude    = last_lon
-    except Exception as e:
-        printko(e)
+    # Last changes of ownership
+    # TODO
+
+    
     
     # Detailled info (pictures etc)
     # TODO
 
     # Merge infos and return them
     try:
-        if aircraft_infos != None:
+        if aircraft_infos is not None:
             for attr, value in aircraft_infos.__dict__.items():
                 if value == None and getattr(os_aircraft, attr) is not None:
                     setattr(aircraft_infos, attr, getattr(os_aircraft, attr))
@@ -228,8 +234,8 @@ def intel_from_tail_n(tail_number):
 
     except Exception as e:
         printko(e)
-    finally:
-        return owner_infos, aircraft_infos, wiki_infos
+    
+    return owner_infos, aircraft_infos, wiki_infos
 
 def main():
     # 1 - Check OSINT from ICAO
@@ -291,9 +297,8 @@ def main():
                     status = 'ActionICAOException'
             elif action == "tail":
                 try:
-                    if tail_number == None:
+                    while tail_number == None:
                         tail_number = input("Enter tail number to lookup: ")
-
                     owner_infos, aircraft_infos, wiki_infos = intel_from_tail_n(tail_number)
                     incident_reports                        = search_incidents(tail_number, args.verbose)
                 except Exception as e:
