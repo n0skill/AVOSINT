@@ -28,17 +28,18 @@ from opensky_api import OpenSkyApi
 from bs4 import BeautifulSoup
 from threading import Thread
 
+
 # Data sources
-flightradar     = 'http://data.flightradar24.com/zones/fcgi/feed.js?bounds='
-planefinder     = 'https://planefinder.net/endpoints/update.php'\
+flightradar = 'http://data.flightradar24.com/zones/fcgi/feed.js?bounds='
+planefinder = 'https://planefinder.net/endpoints/update.php'\
                     '?callback=planeDataCallback&faa=1&routetype=iata&cfCache=true'\
                     '&bounds=37%2C-80%2C40%2C-74&_=1452535140'
 flight_data_src = 'http://data-live.flightradar24.com/clickhandler/?version=1.5&flight='
 
 
 # News source
-AP      = 'Associated Press'
-AFP     = 'Agence France Presse'
+AP = 'Associated Press'
+AFP = 'Agence France Presse'
 AP_KEY  = 'API KEY HERE'
 
 
@@ -50,6 +51,7 @@ DOCKER_PORT = 3001
 # GLOBAL VARIABLES
 verbose = False
 
+
 # Text colors using ANSI escaping. Surely theres a better way to do this
 class bcolors:
     ERRO = '\033[31m'
@@ -57,27 +59,36 @@ class bcolors:
     OKAY = '\033[32m'
     STOP = '\033[0m'
 
+
 class NoIntelException(Exception):
     """ Raised when no information has been found in registers"""
     pass 
 
+
 def printok(str):
     return print(bcolors.OKAY+'[OK]'+bcolors.STOP+' {}'.format(str))
+
 
 def printko(str):
     return print(bcolors.ERRO+'[KO]'+bcolors.STOP+' {}'.format(str))
 
+
 def printwarn(str):
     return print(bcolors.WARN+'[WRN]'+bcolors.STOP+' {}'.format(str))
+
 
 def printverbose(str):
     if verbose:
         print(str)
     else:
         pass
+
+
 def quit():
     print('bye then !\nIf you wish, you can buy me a coffee at https://ko-fi.com/arctos')
     return 0
+
+
 def check_config():
     check_config_file_coherence = False
     check_docker_connectivity = False
@@ -90,7 +101,6 @@ def check_config():
     sock.settimeout(timeout_seconds)
     result = sock.connect_ex((DOCKER_HOST, DOCKER_PORT))
     sock.close()
-
     docker_result = result
 
     if result == 0:
@@ -113,6 +123,7 @@ def intel_from_ICAO(icao):
     """
     return None
 
+
 def opensky(tail_n):
     print("[*] Gathering infos from opensky network database. This can take some time")
     headers = {
@@ -131,8 +142,8 @@ def opensky(tail_n):
 
         if r.status_code == 200:
             with open('/tmp/opensky.cache', 'wb') as f: 
-                total_l  = int(r.headers.get('content-length'))
-                dl       = 0
+                total_l = int(r.headers.get('content-length'))
+                dl = 0
                 for data in r.iter_content(chunk_size=8192*4):
                     dl += len(data)
                     f.write(data)
@@ -140,23 +151,24 @@ def opensky(tail_n):
                 print('\r[*] Done loading !')
         else:
             printwarn(r.status_code)
-    
 
     with open('/tmp/opensky.cache', 'r') as f:
         parsed_content = csv.reader(f)
         for line in parsed_content:
             if tail_n in line:
                 # Aircraft infos
-                icao            = line[0]
-                manufacturer    = line[3]
-                msn             = line[6] if line[6] else ''
+                icao = line[0]
+                manufacturer = line[3]
+                msn = line[6] if line[6] else ''
                 # Owner infos
-                owner           = line[13]
-                return Aircraft(tail_n, 
-                            icao=icao,
-                            manufacturer=manufacturer,
-                            msn=msn), Owner(owner)
+                owner = line[13]
+                return Aircraft(
+                    tail_n,
+                    icao=icao,
+                    manufacturer=manufacturer,
+                    msn=msn), Owner(owner)
         return None
+
 
 def intel_from_tail_n(tail_number):
     """
@@ -166,11 +178,11 @@ def intel_from_tail_n(tail_number):
     3) Last known position
     """
 
-    wiki_infos      = None
-    owner_infos     = None
-    aircraft_infos  = None
-    os_aircraft     = None
-    os_owner        = None
+    wiki_infos = None
+    owner_infos = None
+    aircraft_infos = None
+    os_aircraft = None
+    os_owner = None
 
     print("[*] Getting intel for tail number {}".format(tail_number))
 
@@ -181,7 +193,7 @@ def intel_from_tail_n(tail_number):
         tail_prefix = tail_number.split('-')[0]+'-'
     else:
         tail_prefix = tail_number[0]
-    
+
     # Gather all information together
 
     # First, from official registers
@@ -189,22 +201,21 @@ def intel_from_tail_n(tail_number):
         owner_infos, aircraft_infos = tail_to_register_function[tail_prefix](tail_number)    
     except Exception as e:
         printverbose("[!] Exception while calling tail_to_register: {}".format(e))
-    
 
     # Opensky network
     try:
         results_os = opensky(tail_number)
         if results_os is not None:
             os_aircraft, os_owner = results_os
-            icao    = os_aircraft.icao.lower()
-            api     = OpenSkyApi()
-            s       = api.get_states(icao24=icao)
+            icao = os_aircraft.icao.lower()
+            api = OpenSkyApi()
+            s = api.get_states(icao24=icao)
             try:
                 if s is not None and len(s.states) > 0:
                     last_lat = (s.states)[0].latitude
                     last_lon = (s.states)[0].longitude
-                    os_aircraft.latitude     = last_lat
-                    os_aircraft.longitude    = last_lon
+                    os_aircraft.latitude = last_lat
+                    os_aircraft.longitude = last_lon
             except Exception as e:
                 printko(e)
         else:
@@ -218,12 +229,9 @@ def intel_from_tail_n(tail_number):
         wiki_infos = search_wiki_commons(tail_number)
     except Exception as e:
         printwarn(e)
-    
     # Last changes of ownership
     # TODO
 
-    
-    
     # Detailled info (pictures etc)
     # TODO
 
@@ -231,15 +239,16 @@ def intel_from_tail_n(tail_number):
     try:
         if aircraft_infos is not None and os_aircraft is not None:
             for attr, value in aircraft_infos.__dict__.items():
-                if value == None and getattr(os_aircraft, attr) is not None:
+                if value is None and getattr(os_aircraft, attr) is not None:
                     setattr(aircraft_infos, attr, getattr(os_aircraft, attr))
         else:
-            aircraft_infos =  os_aircraft
+            aircraft_infos = os_aircraft
 
     except Exception as e:
         printko(e)
-    
+
     return owner_infos, aircraft_infos, wiki_infos
+
 
 def main():
     # 1 - Check OSINT from ICAO
@@ -271,14 +280,14 @@ def main():
             nargs=4,
             type=float)
 
-    args    = parser.parse_args()
+    args = parser.parse_args()
 
     # For storing intel recieved
-    owner_infos         = None
-    aircraft_infos       = None
-    incident_reports    = None
-    wiki_infos          = None
-    status              = None
+    owner_infos = None
+    aircraft_infos = None
+    incident_reports = None
+    wiki_infos = None
+    status = None
     if not args.action:
         print("[*] No action was specified. Quit.")
         return

@@ -466,21 +466,25 @@ def SW(tail_n):
 
 
 def AT(tail_n):
-    tail_n = tail_n.lstrip('OE-')
-    rep = requests.get(
-            'https://www.austrocontrol.at/'\
-                    'lfa-publish-service/v2/oenfl/'\
-                    'luftfahrzeuge?kennzeichen='+tail_n
-            )
-
+    print(tail_n)
+    tail_n = tail_n.removeprefix('OE-')
     try:
+        rep = requests.get(f'https://www.austrocontrol.at/lfa-publish-service/v2/'
+                        f'oenfl/luftfahrzeuge?kennzeichen={tail_n}&mtomOperation'
+                        f'=eq&halterMitAdresse=true&page=0&size=10&sort=kennzeichen%2Casc')
+        print(rep.url)
         if rep.status_code == 200:
             j = json.loads(rep.content)
+            print(j)
             owner_infos = [x for x in j if x['kennzeichen'] == tail_n]
+            print(owner_infos)
             name, loc_info, country = owner_infos[0]['halter'].split('\r\n')
-            city, street  = loc_info.split(', ')
+            city, street = loc_info.split(', ')
             npa, city = city.split(' ')
+            print(npa)
             return Owner(name, street, city, npa, 'Austria'), Aircraft(tail_n)
+        else:
+            print(rep.status_code)
     except Exception as e:
         print(e)
         raise e
