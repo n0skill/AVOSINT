@@ -6,6 +6,7 @@ from geoloc import Coordinates
 
 # Decoders for countries here
 
+
 class Aircraft:
     def __init__(self, tail_n, msn=None, call=None, \
             latitude=None, longitude=None, craft_type=None, \
@@ -18,12 +19,11 @@ class Aircraft:
         self.origin         = origin
         self.manufacturer   = manufacturer
         self.destination    = destination
-        self.altitude       = altitude	
+        self.altitude       = altitude
         self.latitude       = latitude
         self.longitude      = longitude
-        self.icao           = icao  
+        self.icao           = icao
         self.notes          = notes
-
 
     def __str__(self):
         return self.__repr__()
@@ -37,10 +37,9 @@ class Aircraft:
         Call Sign: %s
         Last known position: %s
         Last known altitude: %s
-        
-        Notes: 
+
+        Notes:
         %s
-        """ % (self.manufacturer, self.msn, 
-                self.icao, self.tail_n,
-                self.call, (self.latitude, self.longitude), 
-                self.altitude, self.notes)
+        """ % (self.manufacturer, self.msn, self.icao,
+               self.tail_n, self.call, (self.latitude, self.longitude),
+               self.altitude, self.notes)

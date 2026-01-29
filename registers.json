@@ -97,7 +97,7 @@
 	"MT": {
 		"name": "Malta CAA",
 		"website": "https://www.transport.gov.mt/",
-		"data_url": "https://www.transport.gov.mt/Query-Registration-24-Feb-2022.pdf-f7397",
+		"data_url": "https://www.transport.gov.mt/Current-Aircraft-Registry-List-26-12-2025.pdf-f11250",
 		"request_type": "GET",
 		"data_type": "pdf",
 		"tail_index_for_search": 0
@@ -231,6 +231,15 @@
 		"data_url": "https://www.caa.bg/sites/default/files/upload/documents/2021-11/Aircraft_Register%2026_11_2021.xlsx",
 		"request_type": "GET",
 		"data_type": "xlsx",
+		"tail_index_for_search": 0,
+		"infos": [""]
+	},
+	"QA": {
+		"name": "Qatar",
+		"website": "https://www.caa.gov.qa/",
+		"data_url": "https://commons.wikimedia.org/wiki/Category:{{TAILN}}_(aircraft)",
+		"request_type": "GET",
+		"data_type": "html",
 		"tail_index_for_search": 0,
 		"infos": [""]
 	}
