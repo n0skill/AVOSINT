@@ -9,13 +9,8 @@
 # Implement ADS-B
 # Implement news source, location API, and search based on location name
 import os
-import sys
 import requests
-import random as rand
-import json
-import logging
 import argparse
-import time
 import socket
 import csv
 

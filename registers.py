@@ -20,6 +20,7 @@ from urllib3.exceptions import InsecureRequestWarning
 # Suppress only the single warning from urllib3 needed.
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
+
 class TLSv1Adapter(HTTPAdapter):
     """"Transport adapter" that allows us to use TLSv1."""
 
@@ -38,6 +39,7 @@ class NODHAdapter(HTTPAdapter):
         kwargs['ssl_context'] = context
         return super(NODHAdapter, self).init_poolmanager(*args, **kwargs)
 
+
 class NoIntelException(Exception):
     """ Raised when no info has been found """
     pass
@@ -53,15 +55,15 @@ class NoIntelException(Exception):
 
 class Owner:
     def __init__(self):
-        self.name   = 'TBD'
-        self.country= 'TBD'
+        self.name = 'TBD'
+        self.country = 'TBD'
 
     def __init__(self, name, street='Unknown', city='Unknown', zip_code='Unknown', country='Unknown'):
-        self.name       = name
-        self.street     = street
-        self.city       = city
-        self.zip_code   = zip_code
-        self.country    = country
+        self.name = name
+        self.street = street
+        self.city = city
+        self.zip_code = zip_code
+        self.country = country
 
     def __repr__(self):
         return u"""
@@ -70,13 +72,15 @@ class Owner:
         City: %s
         ZIP: %s
         Country: %s
-            """ % (self.name, self.street, self.city, self.zip_code, self.country)
+            """ % (self.name, self.street, self.city,
+                   self.zip_code, self.country)
 
     def __str__(self):
         return self.__repr__()
 
 class DataSource:
-    def __init__(self, url, src_type, request_type, is_secure, http_data='', headers=''):
+    def __init__(self, url, src_type, request_type,
+                 is_secure, http_data='', headers=''):
         self.url = url
         self.src_type = src_type
         self.request_type = request_type
@@ -98,26 +102,25 @@ class DataSource:
         - BeautifulSoup soup for html sources
         """
 
-
+        print("[*] Gathering from datasource")
         # Match and replace tail number where appropriate
-        if self.data and '{{TAILN}}' in self.data:
-            print('[*] Replacing {{TAILN}} from data with acutal tail number')
+        if self.data and ('{{TAILN}}' or '{{tailn}}' in self.data):
+            print('[*] Replacing tail number from data with acutal tail number')
             self.data = self.data.replace('{{TAILN}}', tail_n)
-
-        if '{{TAILN}}' in self.url:
-            print('[*] Replacing {{TAILN}} from url with actual tail number')
-            self.url = self.url.replace('{{TAILN}}', tail_n)
+            self.data = self.data.replace('{{tailn}}', tail_n)
 
         if '{{tailn}}' in self.url:
             print('[*] Replacing {{tailn}} from url with actual tail number')
             self.url = self.url.replace('{{tailn}}', tail_n.lower())
-
+        if '{{TAILN}}' in self.url:
+            print('[*] Replacing {{TAILN}} from url with actual tail number')
+        self.url = self.url.replace('{{TAILN}}', tail_n)
         print('[*] Gathering info from url', self.url)
 
         # For ressources that need to be fetched
         # using an HTTP GET request
         okay = False
-        
+
         if self.request_type == 'API':
             from google_auth_oauthlib.flow import InstalledAppFlow
             from googleapiclient.discovery import build
@@ -149,7 +152,9 @@ class DataSource:
             r = requests.get(self.url)
         elif self.request_type == 'POST':
             r = requests.post(self.url, data=self.data, headers=self.headers)
+        
         if r.status_code == 200:
+            print("[*] 200")
             okay = True
             # Online html
             if self.src_type == 'html' or 'html' in self.src_type:
@@ -180,10 +185,10 @@ class DataSource:
                 return book
             # PDF file
             elif self.src_type == 'pdf':
-                parsr = client('localhost:3001')
                 with open('/tmp/avosint.pdf', 'wb') as f:
                     f.write(r.content)
 
+                parsr = client('localhost:3001')
                 job = parsr.send_document(
                     file_path='/tmp/avosint.pdf',
                     config_path='./parsr.conf',
@@ -465,21 +470,29 @@ def SW(tail_n):
 
 
 def AT(tail_n):
-    tail_n = tail_n.lstrip('OE-')
-    rep = requests.get(
-            'https://www.austrocontrol.at/'\
-                    'lfa-publish-service/v2/oenfl/'\
-                    'luftfahrzeuge?kennzeichen='+tail_n
-            )
-    print(rep.url)
+    print(tail_n)
+    tail_n = tail_n.removeprefix('OE-')
+    try:
+        rep = requests.get(f'https://www.austrocontrol.at/lfa-publish-service/v2/'
+                        f'oenfl/luftfahrzeuge?kennzeichen={tail_n}&mtomOperation'
+                        f'=eq&halterMitAdresse=true&page=0&size=10&sort=kennzeichen%2Casc')
+        print(rep.url)
+        if rep.status_code == 200:
+            j = json.loads(rep.content)
+            print(j)
+            owner_infos = [x for x in j if x['kennzeichen'] == tail_n]
+            print(owner_infos)
+            name, loc_info, country = owner_infos[0]['halter'].split('\r\n')
+            city, street = loc_info.split(', ')
+            npa, city = city.split(' ')
+            print(npa)
+            return Owner(name, street, city, npa, 'Austria'), Aircraft(tail_n)
+        else:
+            print(rep.status_code)
+    except Exception as e:
+        print(e)
+        raise e
 
-    if rep.status_code == 200:
-        j = json.loads(rep.content)
-        owner_infos = [x for x in j if x['kennzeichen'] == tail_n]
-        name, loc_info, country = owner_infos[0]['halter'].split('\r\n')
-        city, street  = loc_info.split(', ')
-        npa, city = city.split(' ')
-        return Owner(name, street, city, npa, 'Austria'), Aircraft(tail_n)
 
 def AU(tail_n):
     """
@@ -504,6 +517,8 @@ def AU(tail_n):
         return Owner(name, addr, city, '', 'Australia'), Aircraft(tail_n)
     raise Exception(
             "Could not get info from AU register")
+
+
 def BA(tail_n):
     register = register_from_config("BA")
     infos = register.request_infos(tail_n)
@@ -544,15 +559,15 @@ def BE(tail_n):
                     return Exception("Error retrieving from BE")
 def BG(tail_n):
     try:
-        register    = register_from_config("BG")
-        book        = register.request_infos(tail_n)
+        register = register_from_config("BG")
+        book = register.request_infos(tail_n)
         infos_sheet = book["Registrations LZ"]
         for row in infos_sheet.values:
             if tail_n in row:
                 msn = row[3]
                 owner = row[6]
-                return Owner(owner, '', '', '', ''),\
-                        Aircraft(tail_n,  msn=msn)
+                return Owner(owner, '', '', '', ''),
+            Aircraft(tail_n,  msn=msn)
         return None, None
     except Exception as e:
         print('[!] ', e)
@@ -601,7 +616,7 @@ def BZ(tail_n):
                                 Aircraft(tail_n, manufacturer=manufacturer)
 
 def CA(tail_n):
-    tail_n = tail_n.lstrip('C-')
+    tail_n = tail_n.removeprefix('C-')
     r = requests.get('https://wwwapps.tc.gc.ca/'\
             'saf-sec-sur/2/ccarcs-riacc/RchSimpRes.aspx'\
             '?cn=%7c%7c&mn=%7c%7c&sn=%7c%7c&on=%7c%7c&m=%7c'+tail_n+'%7c&rfr=RchSimp.aspx')
@@ -680,7 +695,7 @@ def IE(tail_n):
 
 
 def IM(tail_n):
-    tail_n = tail_n.lstrip('M-')
+    tail_n = tail_n.removeprefix('M-')
     r = requests.get('https://ardis.iomaircraftregistry.com/register/search?prs_rm__ptt=1&prs_rm__tt=1&prs_as__v=2&prs_rm__v1='+tail_n+'&prs_rm__pv1='+tail_n)
     if r.status_code == 200:
         soup = BeautifulSoup(
@@ -929,6 +944,8 @@ def MT(tail_n):
                             addr = owner_infos[1]
                             city = owner_infos[2]
                             return Owner(name, addr, city, '', country='Malta'), Aircraft(tail_n)
+            else:
+                print("[!] No table found in page")
     return Owner('', country="Malta")
 
 def MD(tail_n):
@@ -1056,6 +1073,13 @@ def BM(tail_n):
     except Exception as e:
         return None, None
 
+def QA(tail_n):
+    try:
+        register    = register_from_config("QA")
+        infos       = register.request_infos(tail_n)
+    except Exception as e:
+        print(e)
+        return None, None
 
 def KZ(tail_n):
     try:

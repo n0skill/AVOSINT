@@ -1,0 +1,133 @@
+```
+---
+# TODO: Add ASN to all, add officiality level (official, unofficial)
+
+registers:
+  - AF:
+    cc: AF
+    country: Afghanistan
+    data_sources:
+    - wikipedia_category:
+      url: 'https://commons.wikimedia.org/wiki/Category:{{tail_n}}_(aircraft)'
+      protocol: http
+      request_type: get
+      data_type: html
+      tail_split_char: None
+    - Aeroflight:
+      url: https://docs.google.com/spreadsheets/d/1KAVN_XEygH8BqwjDIG-yDrioGjPBLzsjoMkmIOZnTMY/
+      protocol: api_google_sheets
+      data_type: google_sheets
+  - AL:
+    cc: AL
+    country: Albania
+    data_sources:
+      - Unknown
+  - DZ:
+    cc: DZ
+    country: Algeria
+    data_sources:
+      - Unknown
+      - Aeroflight:
+        url: https://docs.google.com/spreadsheets/d/1SxVWiwEuJqIbnXi12RnAS4BRhqm8LIS0dkOmd4tIli8
+        protocol: api_google_sheets
+        data_type: api_google_sheets
+  - AD:
+    cc: AD
+    country: Andorra
+    data_sources:
+      - Aeroflight:
+        url: https://docs.google.com/spreadsheets/d/1XqHyyGSMZ0D9HKZbcjPDaNwYncg8FfH2nkH0Dkz-f_0
+  - AO:
+    cc: AO
+    country: Angola
+    data_sources:
+  - AI:
+    cc: AI
+    country: Anguilla
+    data_sources: None
+  - AG:
+    cc: AG
+    country: Antigua And Barbuda
+    data_sources: None
+    # same registry as Anguilla (eastern caribbean aviation authority)
+  - AR:
+    cc: AR
+    country: Argentina
+    data_sources: None
+
+  - BG:
+    cc: BG
+    country: Bulgaria
+    data_sources:
+      - CAA: 
+        website: https://www.ca.bg
+        url: https://www.caa.bg/sites/default/files/upload/documents/2021-11/Aircraft_Register%2026_11_2021.xlsx
+        protocol: http
+        headers: None
+        request_type: post
+        data_type: xlsx
+        tail_split_char: None
+  - BY:
+    cc: BY
+    country: Belarus
+    data_sources:
+    - Aeroflight Aviation Enthusiasts Cloud - Belarus:
+      website: None
+      data_url: https://docs.google.com/spreadsheets/d/1iIW69IaIGE-7Un6kKpVV8ERo1SFuRd2okUp2289wKlA/export?format=xlsx
+      protocol: http
+      headers: None
+      data_type: xlsx
+      tail_split_char: None
+  - BM:
+    cc: BM
+    country: Bermuda
+    data_sources:
+    - Bermuda Airgcraft Registery:
+      website: https://www.bcaa.bm
+      data_url: https://www.bcaa.bm/sites/default/files/Web%20Docs/Notices_BACs_OTARs/Bermuda%20Aircraft%20Registry%20-%20Russian%20Air%20Operators.pdf
+      request_type: GET
+      data_type: pdf
+      tail_split_char: None
+      infos": [""]
+  - CH:
+    cc: CH
+    country: Switzerland
+    data_sources:
+      - BAZL:
+        website: https://bazl.admin.ch
+        url: https://app02.bazl.admin.ch/web/bazl-backend/lfr
+        protocol: http
+        headers: {
+          "Origin": "https://app02.bazl.admin.ch/web/bazl/fr/",
+          "Pragma": "no-cache",
+          "Content-Type": "application/json",
+          "Referer": "https://app02.bazl.admin.ch/web/bazl/fr/"
+        }
+        request_type: post
+        data_type: json # json, html, yaml, xlsx, pdf, google spreadsheet
+        tail_split_char: None # can be None (tail number is not split), '-', or a number to represent the index where to split
+    
+tails:
+- YA: AF
+- ZA: AL
+- 7T: DZ
+- C3: AD
+- D2: AO
+- VP-A: AI
+- V2: AG
+- LV: AR
+- EK: AM
+- P4: AW
+- VH: AU
+- OE: AT
+# TODO: B-Z
+- HB: CH
+- LZ: BG
+- RB: BY
+- EW: BY
+- VP: BM
+- VQ: BM
+- 
+
+    
+```
