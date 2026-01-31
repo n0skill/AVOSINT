@@ -272,14 +272,14 @@ def main():
             nargs=4,
             type=float)
 
-    args    = parser.parse_args()
+    args = parser.parse_args()
 
     # For storing intel recieved
-    owner_infos         = None
-    aircraft_infos       = None
-    incident_reports    = None
-    wiki_infos          = None
-    status              = None
+    owner_infos = None
+    aircraft_infos = None
+    incident_reports = None
+    wiki_infos = None
+    status = None
     if not args.action:
         print("[*] No action was specified. Quit.")
         return
@@ -289,10 +289,10 @@ def main():
         else:
             printok("All checks passed")
         
-        action      = args.action
+        action = args.action
         tail_number = args.tail_number
-        icao        = args.icao
-        verbose     = args.verbose
+        icao = args.icao
+        verbose = args.verbose
 
         while action != 'quit':
             if action == "ICAO":
@@ -300,15 +300,19 @@ def main():
                     intel_from_ICAO(icao)
                 except Exception as e:
                     status = 'ActionICAOException'
+                    print(status, e)
             elif action == "tail":
                 try:
-                    if tail_number == None:
+                    if tail_number is None:
                         tail_number = input("Enter tail number to lookup: ")
 
-                    owner_infos, aircraft_infos, wiki_infos = intel_from_tail_n(tail_number)
-                    incident_reports                        = search_incidents(tail_number, args.verbose)
+                    owner_infos, aircraft_infos, wiki_infos \
+                        = intel_from_tail_n(tail_number)
+                    incident_reports \
+                        = search_incidents(tail_number, args.verbose)
                 except Exception as e:
                     status = 'IncidentSearchException'
+                    print(status, e)
 
                 status = 'Done'
             elif action == "convert":
