@@ -17,11 +17,13 @@ registers:
       url: https://docs.google.com/spreadsheets/d/1KAVN_XEygH8BqwjDIG-yDrioGjPBLzsjoMkmIOZnTMY/
       protocol: api_google_sheets
       data_type: google_sheets
+
   - AL:
     cc: AL
     country: Albania
     data_sources:
       - Unknown
+
   - DZ:
     cc: DZ
     country: Algeria
@@ -31,30 +33,67 @@ registers:
         url: https://docs.google.com/spreadsheets/d/1SxVWiwEuJqIbnXi12RnAS4BRhqm8LIS0dkOmd4tIli8
         protocol: api_google_sheets
         data_type: api_google_sheets
+
   - AD:
     cc: AD
     country: Andorra
     data_sources:
       - Aeroflight:
         url: https://docs.google.com/spreadsheets/d/1XqHyyGSMZ0D9HKZbcjPDaNwYncg8FfH2nkH0Dkz-f_0
+
   - AO:
     cc: AO
     country: Angola
-    data_sources:
+    data_sources: None
+
   - AI:
     cc: AI
     country: Anguilla
     data_sources: None
+
   - AG:
     cc: AG
     country: Antigua And Barbuda
     data_sources: None
     # same registry as Anguilla (eastern caribbean aviation authority)
+
   - AR:
     cc: AR
     country: Argentina
+    data_sources:
+      ANAC:
+        url: https://consulta-aeronaves.anac.gob.ar/
+        protocol: http
+        headers: None
+        request_type: get
+        data_type: json
+
+  - AM:
+    cc: AM
+    country: Armenia
+    data_sources:
+      CACRA:
+        url: https://www.aviation.am/d0b2c15d-4b61-4d19-a9fc-5a044ac0f1dd
+        website: https://www.aviation.am/registered_aircrafts
+        protocol: http_blob
+        data_type: pdf
+  - AW:
+    cc: AW
+    country: Aruba
     data_sources: None
 
+  - AU:
+    cc: AU
+    country: Australia
+    data_sources:
+      - CASA:
+        url: https://www.casa.gov.au/search-centre/aircraft-register/{{tail_n}}
+        protocol: http
+        data_type: html
+        tail_split_char: '-'
+        name_field: {'class':'field--name-field-registration-holder'}
+        addr_field: {'class':'field--name-field-reg-hold-address-1'}
+        city_field: {'class':'field--name-field-tx-reg-hold-suburb'}
   - BG:
     cc: BG
     country: Bulgaria
@@ -88,7 +127,7 @@ registers:
       request_type: GET
       data_type: pdf
       tail_split_char: None
-      infos": [""]
+      infos: [""]
   - CH:
     cc: CH
     country: Switzerland
