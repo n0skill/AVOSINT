@@ -3,15 +3,16 @@ import time
 import math
 import numpy as np
 import os
+
+
 def monitor(icao):
     positions = []
     api = OpenSkyApi()
     accumulated_angle = 0.0
-    old_alpha = 0
     url = 'https://globe.adsbexchange.com/?icao={}'.format(icao)
     hovering = False
     icao = icao.lower()
-    
+
     while True:
         s = api.get_states(icao24=icao)
         if s is not None and len(s.states) > 0:

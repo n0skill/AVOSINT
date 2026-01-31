@@ -38,6 +38,7 @@ class NODHAdapter(HTTPAdapter):
         kwargs['ssl_context'] = context
         return super(NODHAdapter, self).init_poolmanager(*args, **kwargs)
 
+
 class NoIntelException(Exception):
     """ Raised when no info has been found """
     pass
@@ -490,6 +491,7 @@ def AT(tail_n):
         raise e
 
 
+
 def AU(tail_n):
     """
     Australia Registry
@@ -513,6 +515,8 @@ def AU(tail_n):
         return Owner(name, addr, city, '', 'Australia'), Aircraft(tail_n)
     raise Exception(
             "Could not get info from AU register")
+
+
 def BA(tail_n):
     register = register_from_config("BA")
     infos = register.request_infos(tail_n)

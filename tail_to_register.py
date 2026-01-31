@@ -45,7 +45,7 @@ tail_to_register_function = {
     "ES-": EE,
     "EC-": ES,
     "4O-": ME,
-    "VP-": BM,
+	"VP-": BM,
     "VQ-": BM,
     "LZ-": BG,
     "UP-": KZ,
