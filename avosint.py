@@ -9,37 +9,31 @@
 # Implement ADS-B
 # Implement news source, location API, and search based on location name
 import os
-import sys
 import requests
-import random as rand
-import json
-import logging
 import argparse
-import time
 import socket
 import csv
 
 from registers import *
 from tail_to_register import *
 from investigation_authorities import *
+from aircraft import Aircraft
 from monitor import monitor
 from wiki_api import search_wiki_commons
 from opensky_api import OpenSkyApi
 from bs4 import BeautifulSoup
-from threading import Thread
 
 # Data sources
-flightradar     = 'http://data.flightradar24.com/zones/fcgi/feed.js?bounds='
-planefinder     = 'https://planefinder.net/endpoints/update.php'\
-                    '?callback=planeDataCallback&faa=1&routetype=iata&cfCache=true'\
-                    '&bounds=37%2C-80%2C40%2C-74&_=1452535140'
+flightradar = 'http://data.flightradar24.com/zones/fcgi/feed.js?bounds='
+planefinder = 'https://planefinder.net/endpoints/update.php?callback=planeDataCallback&faa=1&routetype=iata&cfCache=true'\
+              '&bounds=37%2C-80%2C40%2C-74&_=1452535140'
 flight_data_src = 'http://data-live.flightradar24.com/clickhandler/?version=1.5&flight='
 
 
 # News source
-AP      = 'Associated Press'
-AFP     = 'Agence France Presse'
-AP_KEY  = 'API KEY HERE'
+AP = 'Associated Press'
+AFP = 'Agence France Presse'
+AP_KEY = 'API KEY HERE'
 
 
 # Docker
@@ -50,6 +44,7 @@ DOCKER_PORT = 3001
 # GLOBAL VARIABLES
 verbose = False
 
+
 # Text colors using ANSI escaping. Surely theres a better way to do this
 class bcolors:
     ERRO = '\033[31m'
@@ -57,41 +52,45 @@ class bcolors:
     OKAY = '\033[32m'
     STOP = '\033[0m'
 
+
 class NoIntelException(Exception):
     """ Raised when no information has been found in registers"""
-    pass 
+    pass
+
 
 def printok(str):
     return print(bcolors.OKAY+'[OK]'+bcolors.STOP+' {}'.format(str))
 
+
 def printko(str):
     return print(bcolors.ERRO+'[KO]'+bcolors.STOP+' {}'.format(str))
 
+
 def printwarn(str):
     return print(bcolors.WARN+'[WRN]'+bcolors.STOP+' {}'.format(str))
+
 
 def printverbose(str):
     if verbose:
         print(str)
     else:
         pass
+
+
 def quit():
     print('bye then !\nIf you wish, you can buy me a coffee at https://ko-fi.com/arctos')
     return 0
-def check_config():
-    check_config_file_coherence = False
-    check_docker_connectivity = False
 
+
+def check_config():
     print("[*] Checking config")
 
     # Tests connectivity to the docker container
-    timeout_seconds=1
+    timeout_seconds = 1
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(timeout_seconds)
     result = sock.connect_ex((DOCKER_HOST, DOCKER_PORT))
     sock.close()
-
-    docker_result = result
 
     if result == 0:
         printok("Parsr docker container is reachable")
@@ -101,11 +100,11 @@ def check_config():
         return False
 
 
-
 def getInterestingPlaces():
     # Get news feed about things that could require a plane flyover
     # Wildfire, traffic accidents, police intervention, natural disasters, etc.
     return None
+
 
 def intel_from_ICAO(icao):
     """
@@ -113,11 +112,12 @@ def intel_from_ICAO(icao):
     """
     return None
 
+
 def opensky(tail_n):
     print("[*] Gathering infos from opensky network database. This can take some time")
     headers = {
-            'User-Agent': 'AVOSINT - CLI tool to gather aviation OSINT.'\
-                    'Infos and contact: https://github.com/n0skill/AVOSINT'
+            'User-Agent': 'AVOSINT - CLI tool to gather aviation OSINT.'
+            'Infos and contact: https://github.com/n0skill/AVOSINT'
     }
 
     if os.path.exists('/tmp/opensky.cache') \
@@ -132,12 +132,13 @@ def opensky(tail_n):
 
         if r.status_code == 200:
             with open('/tmp/opensky.cache', 'wb') as f: 
-                total_l  = int(r.headers.get('content-length'))
-                dl       = 0
+                total_l = int(r.headers.get('content-length'))
+                dl = 0
                 for data in r.iter_content(chunk_size=8192*4):
                     dl += len(data)
                     f.write(data)
-                    print('\r[*] Downloading {:2f}'.format((dl/total_l)*100), end='')
+                    print('\r[*] Downloading {:2f}'.format((dl/total_l)*100),
+                          end='')
                 print('\r[*] Done loading !')
         else:
             printwarn(r.status_code)
@@ -147,16 +148,17 @@ def opensky(tail_n):
         for line in parsed_content:
             if tail_n in line:
                 # Aircraft infos
-                icao            = line[0]
-                manufacturer    = line[3]
-                msn             = line[6]
+                icao = line[0]
+                manufacturer = line[3]
+                msn = line[6]
                 # Owner infos
-                owner           = line[13]
-                return Aircraft(tail_n, 
-                            icao=icao,
-                            manufacturer=manufacturer,
-                            msn=msn),   \
-                                Owner(owner)
+                owner = line[13]
+                return Aircraft(
+                    tail_n,
+                    icao=icao,
+                    manufacturer=manufacturer,
+                    msn=msn), Owner(owner)
+
 
 def intel_from_tail_n(tail_number):
     """
@@ -166,9 +168,9 @@ def intel_from_tail_n(tail_number):
     3) Last known position
     """
 
-    wiki_infos      = None
-    owner_infos     = None
-    aircraft_infos  = None
+    wiki_infos = None
+    owner_infos = None
+    aircraft_infos = None
 
     print("[*] Getting intel for tail number {}".format(tail_number))
 
@@ -184,7 +186,7 @@ def intel_from_tail_n(tail_number):
 
     # First, from official registers
     try:
-        owner_infos, aircraft_infos = tail_to_register_function[tail_prefix](tail_number)    
+        owner_infos, aircraft_infos = tail_to_register_function[tail_prefix](tail_number)
     except Exception as e:
         printverbose("[!] Exception while calling tail_to_register: {}".format(e))
     
@@ -201,57 +203,66 @@ def intel_from_tail_n(tail_number):
     # Last changes of ownership
 
     # Last known position
-    icao    = os_aircraft.icao.lower()
-    api     = OpenSkyApi()
-    s       = api.get_states(icao24=icao)
-    
+    icao = os_aircraft.icao.lower()
+    api = OpenSkyApi()
+    s = api.get_states(icao24=icao)
+
     try:
         if s is not None and len(s.states) > 0:
             last_lat = (s.states)[0].latitude
             last_lon = (s.states)[0].longitude
-            os_aircraft.latitude     = last_lat
-            os_aircraft.longitude    = last_lon
+            os_aircraft.latitude = last_lat
+            os_aircraft.longitude = last_lon
     except Exception as e:
         printko(e)
-    
+
     # Detailled info (pictures etc)
     # TODO
 
     # Merge infos and return them
     try:
-        if aircraft_infos != None:
+        if aircraft_infos is not None:
             for attr, value in aircraft_infos.__dict__.items():
-                if value == None and getattr(os_aircraft, attr) is not None:
+                if value is not None and \
+                   getattr(os_aircraft, attr) is not None:
                     setattr(aircraft_infos, attr, getattr(os_aircraft, attr))
         else:
-            aircraft_infos =  os_aircraft
+            aircraft_infos = os_aircraft
 
     except Exception as e:
         printko(e)
     finally:
         return owner_infos, aircraft_infos, wiki_infos
 
+
 def main():
     # 1 - Check OSINT from ICAO
     # 2 - Check OSINT from tail number
     # 3 - Tool to convert icao to tail number
-    parser  = argparse.ArgumentParser()
-    parser.add_argument("--action", 
-            help="Action to perform ('ICAO', 'tail', 'convert')",
-            type=str, required=True)
-    parser.add_argument('--tail-number',
-            help='Tail number to lookup')
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--action", 
+        help="Action to perform ('ICAO', 'tail', 'convert')",
+        type=str, required=True)
+    parser.add_argument(
+        '--tail-number',
+        help='Tail number to lookup')
     # Optional arguments
-    parser.add_argument("--icao",
-            help="ICAO code to retrieve OSINT for", required=False)
-    parser.add_argument("--config", 
-            help="Config file", type=str)
-    parser.add_argument("--proxy", 
-            help="Use proxy address", type=str)
-    parser.add_argument("--interactive", 
-            action="store_true")
-    parser.add_argument("--verbose",
-            action="store_true")
+    parser.add_argument(
+        "--icao",
+        help="ICAO code to retrieve OSINT for", required=False)
+    parser.add_argument(
+        "--config", 
+        help="Config file", type=str)
+    parser.add_argument(
+        "--proxy", 
+        help="Use proxy address", type=str)
+    parser.add_argument(
+        "--interactive", 
+        action="store_true")
+    parser.add_argument(
+        "--verbose",
+        action="store_true")
 
     require_group = parser.add_mutually_exclusive_group(required=False)
     require_group.add_argument("--country", help="country code", type=str)
