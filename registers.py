@@ -99,20 +99,19 @@ class DataSource:
         - BeautifulSoup soup for html sources
         """
 
-
+        print("[*] Gathering from datasource")
         # Match and replace tail number where appropriate
-        if self.data and '{{TAILN}}' in self.data:
-            print('[*] Replacing {{TAILN}} from data with acutal tail number')
+        if self.data and ('{{TAILN}}' or '{{tailn}}' in self.data):
+            print('[*] Replacing tail number from data with acutal tail number')
             self.data = self.data.replace('{{TAILN}}', tail_n)
-
-        if '{{TAILN}}' in self.url:
-            print('[*] Replacing {{TAILN}} from url with actual tail number')
-            self.url = self.url.replace('{{TAILN}}', tail_n)
+            self.data = self.data.replace('{{tailn}}', tail_n)
 
         if '{{tailn}}' in self.url:
             print('[*] Replacing {{tailn}} from url with actual tail number')
             self.url = self.url.replace('{{tailn}}', tail_n.lower())
-
+        if '{{TAILN}}' in self.url:
+            print('[*] Replacing {{TAILN}} from url with actual tail number')
+        self.url = self.url.replace('{{TAILN}}', tail_n)
         print('[*] Gathering info from url', self.url)
 
         # For ressources that need to be fetched
@@ -150,7 +149,9 @@ class DataSource:
             r = requests.get(self.url)
         elif self.request_type == 'POST':
             r = requests.post(self.url, data=self.data, headers=self.headers)
+        
         if r.status_code == 200:
+            print("[*] 200")
             okay = True
             # Online html
             if self.src_type == 'html' or 'html' in self.src_type:
@@ -181,10 +182,10 @@ class DataSource:
                 return book
             # PDF file
             elif self.src_type == 'pdf':
-                parsr = client('localhost:3001')
                 with open('/tmp/avosint.pdf', 'wb') as f:
                     f.write(r.content)
 
+                parsr = client('localhost:3001')
                 job = parsr.send_document(
                     file_path='/tmp/avosint.pdf',
                     config_path='./parsr.conf',
@@ -466,21 +467,29 @@ def SW(tail_n):
 
 
 def AT(tail_n):
-    tail_n = tail_n.lstrip('OE-')
-    rep = requests.get(
-            'https://www.austrocontrol.at/'\
-                    'lfa-publish-service/v2/oenfl/'\
-                    'luftfahrzeuge?kennzeichen='+tail_n
-            )
-    print(rep.url)
+    print(tail_n)
+    tail_n = tail_n.removeprefix('OE-')
+    try:
+        rep = requests.get(f'https://www.austrocontrol.at/lfa-publish-service/v2/'
+                        f'oenfl/luftfahrzeuge?kennzeichen={tail_n}&mtomOperation'
+                        f'=eq&halterMitAdresse=true&page=0&size=10&sort=kennzeichen%2Casc')
+        print(rep.url)
+        if rep.status_code == 200:
+            j = json.loads(rep.content)
+            print(j)
+            owner_infos = [x for x in j if x['kennzeichen'] == tail_n]
+            print(owner_infos)
+            name, loc_info, country = owner_infos[0]['halter'].split('\r\n')
+            city, street = loc_info.split(', ')
+            npa, city = city.split(' ')
+            print(npa)
+            return Owner(name, street, city, npa, 'Austria'), Aircraft(tail_n)
+        else:
+            print(rep.status_code)
+    except Exception as e:
+        print(e)
+        raise e
 
-    if rep.status_code == 200:
-        j = json.loads(rep.content)
-        owner_infos = [x for x in j if x['kennzeichen'] == tail_n]
-        name, loc_info, country = owner_infos[0]['halter'].split('\r\n')
-        city, street  = loc_info.split(', ')
-        npa, city = city.split(' ')
-        return Owner(name, street, city, npa, 'Austria'), Aircraft(tail_n)
 
 
 def AU(tail_n):
@@ -933,6 +942,8 @@ def MT(tail_n):
                             addr = owner_infos[1]
                             city = owner_infos[2]
                             return Owner(name, addr, city, '', country='Malta'), Aircraft(tail_n)
+            else:
+                print("[!] No table found in page")
     return Owner('', country="Malta")
 
 def MD(tail_n):
@@ -1060,6 +1071,13 @@ def BM(tail_n):
     except Exception as e:
         return None, None
 
+def QA(tail_n):
+    try:
+        register    = register_from_config("QA")
+        infos       = register.request_infos(tail_n)
+    except Exception as e:
+        print(e)
+        return None, None
 
 def KZ(tail_n):
     try:

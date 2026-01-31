@@ -51,4 +51,5 @@ tail_to_register_function = {
     "UP-": KZ,
     "RB-": BY,
     "EW-": BY,
+    "A7-": QA,
 }
